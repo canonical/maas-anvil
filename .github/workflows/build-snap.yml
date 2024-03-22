@@ -1,0 +1,109 @@
+name: Build Snap
+
+on:
+  workflow_call:
+    outputs:
+      snap-amd64:
+        description: "Filename of the built amd64 snap artifact"
+        value: ${{ jobs.build-amd64.outputs.snap }}
+      snap-arm64:
+        description: "Filename of the built arm64 snap artifact"
+        value: ${{ jobs.build-arm64.outputs.snap }}
+
+jobs:
+  build-amd64:
+    name: Build snap amd64
+    runs-on: ubuntu-latest
+    outputs:
+      snap: ${{ steps.snapcraft.outputs.snap }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build snap locally
+        uses: snapcore/action-build@v1
+        id: snapcraft
+
+      - name: Upload locally built snap artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-${{ steps.snapcraft.outputs.snap }}
+          path: ${{ steps.snapcraft.outputs.snap }}
+
+  build-arm64:
+    name: Build snap arm64
+    runs-on: [self-hosted, ARM64]
+    outputs:
+      snap: ${{ steps.snapcraft.outputs.snap }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build snap locally
+        uses: snapcore/action-build@v1
+        id: snapcraft
+
+      - name: Upload locally built snap artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-${{ steps.snapcraft.outputs.snap }}
+          path: ${{ steps.snapcraft.outputs.snap }}
+
+  functional-test-amd64:
+    needs: build-amd64
+    name: Functional test
+    runs-on: [self-hosted, xlarge]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download snap artifact
+        id: download
+        uses: actions/download-artifact@v4
+        with:
+          name: local-${{ needs.build-amd64.outputs.snap }}
+      - name: test
+        run: |
+          export COLUMNS=256
+          sudo snap install ${{ needs.build-amd64.outputs.snap }} --dangerous
+          maas-anvil prepare-node-script | bash -x
+          sudo snap connect maas-anvil:juju-bin juju:juju-bin
+          sudo snap connect maas-anvil:dot-local-share-juju
+          sg snap_daemon "maas-anvil -v cluster bootstrap --role database --role region --role agent --role haproxy --accept-defaults"
+      - name: Collect juju status
+        if: always()
+        run: |
+          juju status
+          juju debug-log --replay
+      - name: Setup tmate session
+        if: ${{ failure() && runner.debug }}
+        uses: canonical/action-tmate@main
+
+  # TODO (@skatsaounis): Uncomment when arm64 installation is supported
+  # functional-test-arm64:
+  #   needs: build-arm64
+  #   name: Functional test
+  #   runs-on: [self-hosted, large, ARM64]
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #     - name: Download snap artifact
+  #       id: download
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: local-${{ needs.build-arm64.outputs.snap }}
+  #     - name: test
+  #       run: |
+  #         export COLUMNS=256
+  #         sudo snap install ${{ needs.build-arm64.outputs.snap }} --dangerous
+  #         maas-anvil prepare-node-script | bash -x
+  #         sudo snap connect maas-anvil:juju-bin juju:juju-bin
+  #         sudo snap connect maas-anvil:dot-local-share-juju
+  #         sg snap_daemon "maas-anvil -v cluster bootstrap --role database --role region --role agent --role haproxy --accept-defaults"
+  #     - name: Collect juju status
+  #       if: always()
+  #       run: |
+  #         juju status
+  #         juju debug-log --replay
+  #     - name: Setup tmate session
+  #       if: ${{ failure() && runner.debug }}
+  #       uses: canonical/action-tmate@main

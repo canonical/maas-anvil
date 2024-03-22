@@ -1,0 +1,193 @@
+name: maas-anvil
+base: core22
+summary: Metal as a Service installer
+license: Apache-2.0
+description: |
+  Total automation of your physical servers for amazing data center operational efficiency.
+version: "0.1"
+confinement: strict
+grade: stable
+
+architectures:
+  - build-on: amd64
+  - build-on: arm64
+
+system-usernames:
+  snap_daemon: shared
+
+layout:
+  /usr/share/terraform/plugins:
+    symlink: $SNAP_DATA/terraform-plugins
+
+apps:
+  clusterd:
+    command: commands/clusterd.start
+    restart-condition: on-failure
+    daemon: simple
+    plugs:
+      - network
+      - network-bind
+  maas-anvil:
+    command: bin/maas-anvil
+    plugs:
+      - dot-local-share-juju
+      - home
+      - network
+      - network-bind
+      - ssh-keys
+      - dot-config-anvil
+    environment:
+      PATH: $PATH:$SNAP/juju/bin
+  terraform:
+    command: bin/terraform
+    plugs:
+      - home
+      - network
+      - ssh-public-keys
+      - juju-client-observe
+    environment:
+      PATH: $PATH:$SNAP/juju/bin
+
+parts:
+  dqlite:
+    build-attributes: [core22-step-dependencies]
+    after:
+      - raft
+    source: https://github.com/canonical/dqlite
+    source-type: git
+    source-depth: 1
+    plugin: autotools
+    autotools-configure-parameters:
+      - --prefix=
+    stage-packages:
+      - libuv1
+      - libsqlite3-0
+    build-packages:
+      - libuv1-dev
+      - libsqlite3-dev
+      - pkg-config
+    organize:
+      usr/lib/: lib/
+    prime:
+      - lib/libdqlite*so*
+      - lib/*/libuv*
+
+  raft:
+    build-attributes: [core22-step-dependencies]
+    source: https://github.com/canonical/raft
+    source-type: git
+    source-depth: 1
+    plugin: autotools
+    autotools-configure-parameters:
+      - --prefix=
+    stage-packages:
+      - libuv1
+      - liblz4-1
+    build-packages:
+      - libuv1-dev
+      - liblz4-dev
+      - pkg-config
+    organize:
+      usr/lib/: lib/
+    prime:
+      - lib/libraft*so*
+      - lib/*/libuv.so*
+
+  sunbeam-cluster:
+    after:
+      - dqlite
+    plugin: go
+    source: https://github.com/canonical/snap-openstack
+    source-branch: anvil-0.1
+    source-type: git
+    source-subdir: sunbeam-microcluster
+    build-snaps:
+      - go/1.21/stable
+    build-environment:
+      - GOFLAGS: -mod=readonly -ldflags=-s
+    override-build: |
+      set -ex
+
+      # Setup build environment
+      export CGO_CFLAGS="-I${SNAPCRAFT_STAGE}/include/ -I${SNAPCRAFT_STAGE}/usr/local/include/"
+      export CGO_LDFLAGS="-L${SNAPCRAFT_STAGE}/lib/ -L${SNAPCRAFT_STAGE}/usr/local/lib/"
+      export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)|(-s)"
+
+      # Build the binaries
+      cd sunbeam-microcluster
+      go build -o "${SNAPCRAFT_PART_INSTALL}/bin/sunbeamd" -tags=libsqlite3 ./cmd/sunbeamd
+    prime:
+      - bin/sunbeamd
+
+  terraform:
+    plugin: go
+    source: https://github.com/hashicorp/terraform
+    source-depth: 1
+    source-type: git
+    source-tag: "v1.3.7"
+    build-snaps: [go]
+    build-environment:
+      - CGO_ENABLED: "0"
+      - GOFLAGS: "-mod=readonly"
+    override-build: |
+      go mod download
+      go build -ldflags "-s -w"
+      mkdir -p $SNAPCRAFT_PART_INSTALL/bin
+      cp terraform $SNAPCRAFT_PART_INSTALL/bin/terraform
+    stage:
+      - bin/terraform
+
+  terraform-plan:
+    after: [terraform]
+    plugin: dump
+    source: cloud/
+    override-build: |
+      craftctl default
+      for plan in $(ls $SNAPCRAFT_PART_INSTALL/etc/);
+      do
+        cd $SNAPCRAFT_PART_INSTALL/etc/$plan
+        $SNAPCRAFT_STAGE/bin/terraform init
+        $SNAPCRAFT_STAGE/bin/terraform providers mirror $SNAPCRAFT_PRIME/usr/share/terraform-providers
+        rm -rf ./.terraform
+      done
+
+  wrappers:
+    plugin: dump
+    source: snap-wrappers/
+
+  anvil:
+    plugin: python
+    source: .
+    source-subdir: anvil-python/
+    python-requirements:
+      - requirements.txt
+    build-packages:
+      - libffi-dev
+      - libssl-dev
+      - libxml2-dev
+      - libxslt1-dev
+      - pkg-config
+      - gcc
+      - cython3
+      - rustc
+      - cargo
+    override-prime: |
+      craftctl default
+      # Write out snap hooks
+      snap-helpers write-hooks --module anvil.hooks
+
+plugs:
+  juju-bin:
+    interface: content
+    content: juju
+    target: $SNAP/juju
+
+  dot-local-share-juju:
+    interface: personal-files
+    write:
+      - $HOME/.local/share/juju
+
+  dot-config-anvil:
+    interface: personal-files
+    write:
+      - $HOME/.config/anvil

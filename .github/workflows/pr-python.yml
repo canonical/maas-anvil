@@ -1,0 +1,10 @@
+name: PR MAAS Anvil
+
+on:
+  pull_request:
+    paths:
+      - "anvil-python/**"
+
+jobs:
+  test:
+    uses: ./.github/workflows/test-python.yml

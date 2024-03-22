@@ -1,0 +1,12 @@
+name: Push (main)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test-python:
+    uses: ./.github/workflows/test-python.yml
+  build:
+    uses: ./.github/workflows/build-snap.yml

@@ -1,0 +1,8 @@
+name: PR Global
+
+on:
+  pull_request:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-snap.yml

@@ -1,0 +1,5 @@
+# MAAS Anvil
+
+A snap for managing charmed MAAS deployments.
+
+## NOT A PRODUCTION READY PRODUCT. STILL UNDER DEVELOPMENT AND IN ALPHA PHASE.

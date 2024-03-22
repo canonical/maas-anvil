@@ -1,0 +1,10 @@
+anvil-plugins:
+  description: Anvil core plugins
+  plugins:
+    []
+    # - name: "observability"
+    #   version: "0.0.1"
+    #   description: "Observability Plugin"
+    #   path: anvil.plugins.observability.plugin.ObservabilityPlugin
+    #   supported_architectures:
+    #     - amd64
