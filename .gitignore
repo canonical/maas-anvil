@@ -1,0 +1,38 @@
+# Editor directories and files
+.vscode
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# direnv and asdf
+.tool-versions
+.envrc
+
+# Python
+*.py[cod]
+*.egg-info
+
+# anvil-python venv dirs
+/anvil-python/.env
+/anvil-python/.venv
+/anvil-python/env/
+/anvil-python/venv/
+/anvil-python/ENV/
+
+# anvil-python tox and build
+/anvil-python/.coverage*
+/anvil-python/.tox
+/anvil-python/build
+/anvil-python/.mypy_cache
+/anvil-python/.ruff_cache
+
+# Snap files
+/*.snap
+
+# CI
+junit*.xml
