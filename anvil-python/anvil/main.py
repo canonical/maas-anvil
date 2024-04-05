@@ -19,14 +19,14 @@ from sunbeam import log
 from sunbeam.commands import (
     configure as configure_cmds,
 )
-from sunbeam.jobs import deployments as deployments_jobs
 from sunbeam.utils import CatchGroup
 
 from anvil.commands import (
     manifest as manifest_commands,
     prepare_node as prepare_node_cmds,
 )
-from anvil.provider import commands as provider_cmds
+from anvil.provider.local.commands import LocalProvider
+from anvil.provider.local.deployment import LocalDeployment
 
 # Update the help options to allow -h in addition to --help for
 # triggering the help for various commands
@@ -59,11 +59,9 @@ def main() -> None:
     cli.add_command(prepare_node_cmds.prepare_node_script)
 
     # Cluster management
-    provider_cmds.register_providers()
-    deployment = provider_cmds.load_deployment(
-        snap.paths.real_home / deployments_jobs.DEPLOYMENTS_CONFIG
-    )
-    provider_cmds.register_cli(cli, configure_cmds.configure, deployment)
+    deployment = LocalDeployment()
+    provider = LocalProvider()
+    provider.register_cli(cli, configure_cmds.configure, deployment)
 
     # Manifest management
     cli.add_command(manifest)

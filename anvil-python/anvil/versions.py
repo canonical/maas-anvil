@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any
-
 MAAS_REGION_CHANNEL = "latest/edge"
 MAAS_AGENT_CHANNEL = "latest/edge"
 POSTGRESQL_CHANNEL = "14/stable"

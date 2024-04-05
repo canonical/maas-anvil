@@ -31,3 +31,12 @@ sudo snap connect anvil:juju-bin juju:juju-bin
 
 anvil cluster bootstrap --role database --role region --role agent --role haproxy --accept-defaults
 ```
+
+## Remaining items
+
+- [ ] plugins
+- [ ] resize
+- [ ] refresh
+- [ ] configure
+- [ ] unit tests
+- [ ] inspect

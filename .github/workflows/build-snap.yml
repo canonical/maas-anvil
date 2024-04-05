@@ -1,0 +1,57 @@
+name: Build Snap
+
+on:
+  workflow_call:
+    outputs:
+      snap:
+        description: "Filename of the built snap artifact"
+        value: local-${{ jobs.build.outputs.snap }}
+
+jobs:
+  build:
+    name: Build snap
+    runs-on: ubuntu-latest
+    outputs:
+      snap: ${{ steps.snapcraft.outputs.snap }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build snap locally
+        uses: snapcore/action-build@v1
+        id: snapcraft
+
+      - name: Upload locally built snap artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-${{ steps.snapcraft.outputs.snap }}
+          path: ${{ steps.snapcraft.outputs.snap }}
+
+  functional-test:
+    needs: build
+    name: Functional test
+    runs-on: [self-hosted, xlarge]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download snap artifact
+        id: download
+        uses: actions/download-artifact@v4
+        with:
+          name: local-${{ needs.build.outputs.snap }}
+      - name: test
+        run: |
+          export COLUMNS=256
+          sudo snap install ${{ needs.build.outputs.snap }} --dangerous
+          anvil prepare-node-script | bash -x
+          sudo snap connect anvil:juju-bin juju:juju-bin
+          sudo snap connect anvil:dot-local-share-juju
+          sg snap_daemon "anvil -v cluster bootstrap --role database --role region --role agent --role haproxy --accept-defaults"
+      - name: Collect juju status
+        if: always()
+        run: |
+          juju status
+          juju debug-log --replay
+      - name: Setup tmate session
+        if: ${{ failure() && runner.debug }}
+        uses: canonical/action-tmate@main
