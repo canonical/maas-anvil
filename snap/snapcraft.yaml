@@ -1,6 +1,6 @@
-name: anvil
+name: maas-anvil
 base: core22
-summary: Dead simple OpenStack installation
+summary: Metal as a Service installer
 license: Apache-2.0
 description: |
   snap-maas aims to provide a scalable, simple to deploy MAAS solution.
