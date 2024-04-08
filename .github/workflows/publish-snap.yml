@@ -1,0 +1,24 @@
+name: Publish Snap to edge
+
+on:
+  workflow_call:
+    inputs:
+      snap-path:
+        type: string
+        required: false
+jobs:
+  publish:
+    name: Publish snap
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download snap artifact
+        id: download
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.snap-path }}
+      - uses: snapcore/action-publish@v1
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_CREDENTIALS }}
+        with:
+          snap: ${{ inputs.snap-path }}
+          release: edge
