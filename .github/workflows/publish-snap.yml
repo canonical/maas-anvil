@@ -6,6 +6,10 @@ on:
       snap-path:
         type: string
         required: false
+    secrets:
+      SNAPCRAFT_CREDENTIALS:
+        required: true
+
 jobs:
   publish:
     name: Publish snap
@@ -15,7 +19,7 @@ jobs:
         id: download
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.snap-path }}
+          name: local-${{ inputs.snap-path }}
       - uses: snapcore/action-publish@v1
         env:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_CREDENTIALS }}

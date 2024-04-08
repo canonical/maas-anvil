@@ -5,7 +5,7 @@ on:
     outputs:
       snap:
         description: "Filename of the built snap artifact"
-        value: local-${{ jobs.build.outputs.snap }}
+        value: ${{ jobs.build.outputs.snap }}
 
 jobs:
   build:

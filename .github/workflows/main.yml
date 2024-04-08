@@ -12,6 +12,9 @@ jobs:
     uses: ./.github/workflows/build-snap.yml
   publish:
     uses: ./.github/workflows/publish-snap.yml
-    needs: build
+    secrets: inherit
+    needs:
+      - test-python
+      - build
     with:
       snap-path: ${{ needs.build.outputs.snap }}
