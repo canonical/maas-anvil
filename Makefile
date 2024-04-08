@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := snap
 
 SNAPCRAFT := SNAPCRAFT_BUILD_INFO=1 snapcraft -v
-SNAP_FILE := anvil.snap
+SNAP_FILE := maas-anvil.snap
 
 snap:
 	$(SNAPCRAFT) -o $(SNAP_FILE)

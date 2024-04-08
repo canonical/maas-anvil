@@ -23,9 +23,9 @@ JUJU_CHANNEL = "3.4/stable"
 SUPPORTED_RELEASE = "jammy"
 
 PREPARE_NODE_TEMPLATE = f"""[ $(lsb_release -sc) != '{SUPPORTED_RELEASE}' ] && \
-{{ echo 'ERROR: Anvil deploy only supported on {SUPPORTED_RELEASE}'; exit 1; }}
+{{ echo 'ERROR: MAAS Anvil deploy only supported on {SUPPORTED_RELEASE}'; exit 1; }}
 
-# :warning: Node Preparation for Anvil :warning:
+# :warning: Node Preparation for MAAS Anvil :warning:
 # All of these commands perform privileged operations
 # please review carefully before execution.
 USER=$(whoami)
@@ -54,10 +54,10 @@ dpkg -s openssh-server &> /dev/null || {{
 # Connect snap to the ssh-keys interface to allow
 # read access to private keys - this supports bootstrap
 # of the Juju controller to the local machine via SSH.
-sudo snap connect anvil:ssh-keys
+sudo snap connect maas-anvil:ssh-keys
 
 # Add $USER to the snap_daemon group supporting interaction
-# with the anvil clustering daemon for cluster operations.
+# with the MAAS Anvil clustering daemon for cluster operations.
 sudo addgroup $USER snap_daemon
 
 # Generate keypair and set-up prompt-less access to local machine

@@ -26,8 +26,8 @@ apps:
     plugs:
       - network
       - network-bind
-  anvil:
-    command: bin/anvil
+  maas-anvil:
+    command: bin/maas-anvil
     plugs:
       - dot-local-share-juju
       - home

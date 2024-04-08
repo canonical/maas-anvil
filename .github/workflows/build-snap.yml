@@ -43,10 +43,10 @@ jobs:
         run: |
           export COLUMNS=256
           sudo snap install ${{ needs.build.outputs.snap }} --dangerous
-          anvil prepare-node-script | bash -x
-          sudo snap connect anvil:juju-bin juju:juju-bin
-          sudo snap connect anvil:dot-local-share-juju
-          sg snap_daemon "anvil -v cluster bootstrap --role database --role region --role agent --role haproxy --accept-defaults"
+          maas-anvil prepare-node-script | bash -x
+          sudo snap connect maas-anvil:juju-bin juju:juju-bin
+          sudo snap connect maas-anvil:dot-local-share-juju
+          sg snap_daemon "maas-anvil -v cluster bootstrap --role database --role region --role agent --role haproxy --accept-defaults"
       - name: Collect juju status
         if: always()
         run: |

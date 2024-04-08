@@ -6,7 +6,7 @@ requires = [
 
 [project]
 name = "anvil"
-description = "Anvil"
+description = "MAAS Anvil"
 readme = "README.md"
 maintainers = [
     {name = "MAAS Developers", email = "maas-devel@lists.launchpad.net"},
@@ -36,7 +36,7 @@ testing = [
   "pytest-xdist",
 ]
 [project.scripts]
-anvil = "anvil.main:main"
+maas-anvil = "anvil.main:main"
 [project.entry-points."snaphelpers.hooks"]
 configure = "anvil.hooks:configure"
 install = "anvil.hooks:install"
