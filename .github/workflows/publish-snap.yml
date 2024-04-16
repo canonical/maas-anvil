@@ -3,7 +3,10 @@ name: Publish Snap to edge
 on:
   workflow_call:
     inputs:
-      snap-path:
+      snap-amd64-path:
+        type: string
+        required: false
+      snap-arm64-path:
         type: string
         required: false
     secrets:
@@ -11,18 +14,35 @@ on:
         required: true
 
 jobs:
-  publish:
-    name: Publish snap
+  publish-amd64:
+    name: Publish snap amd64
     runs-on: ubuntu-latest
     steps:
       - name: Download snap artifact
         id: download
         uses: actions/download-artifact@v4
         with:
-          name: local-${{ inputs.snap-path }}
+          name: local-${{ inputs.snap-amd64-path }}
       - uses: snapcore/action-publish@v1
         env:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_CREDENTIALS }}
         with:
-          snap: ${{ inputs.snap-path }}
+          snap: ${{ inputs.snap-amd64-path }}
+          release: edge
+
+  publish-arm64:
+    name: Publish snap arm64
+    runs-on: ubuntu-latest
+    if: ${{ inputs.snap-arm64-path != '' }}
+    steps:
+      - name: Download snap artifact
+        id: download
+        uses: actions/download-artifact@v4
+        with:
+          name: local-${{ inputs.snap-arm64-path }}
+      - uses: snapcore/action-publish@v1
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_CREDENTIALS }}
+        with:
+          snap: ${{ inputs.snap-arm64-path }}
           release: edge

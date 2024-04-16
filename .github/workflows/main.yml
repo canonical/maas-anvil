@@ -17,4 +17,5 @@ jobs:
       - test-python
       - build
     with:
-      snap-path: ${{ needs.build.outputs.snap }}
+      snap-amd64-path: ${{ needs.build.outputs.snap-amd64 }}
+      snap-arm64-path: ${{ needs.build.outputs.snap-amd64 }}
