@@ -3,7 +3,7 @@ base: core22
 summary: Metal as a Service installer
 license: Apache-2.0
 description: |
-  snap-maas aims to provide a scalable, simple to deploy MAAS solution.
+  Total automation of your physical servers for amazing data center operational efficiency.
 version: "0.1"
 confinement: strict
 grade: stable

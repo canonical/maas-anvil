@@ -16,6 +16,7 @@ jobs:
         working-directory: ./anvil-python
         run: tox -e lint,check
 
+  # TODO (@skatsaounis): Uncomment when unit tests are implemented
   # unit-test:
   #   name: Unit tests
   #   runs-on: ubuntu-latest
