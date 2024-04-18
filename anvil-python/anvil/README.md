@@ -39,4 +39,3 @@ maas-anvil cluster bootstrap --role database --role region --role agent --role h
 - [ ] refresh
 - [ ] configure
 - [ ] unit tests
-- [ ] inspect

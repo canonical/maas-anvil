@@ -19,14 +19,15 @@ from sunbeam import log
 from sunbeam.commands import (
     configure as configure_cmds,
 )
-from sunbeam.utils import CatchGroup
 
 from anvil.commands import (
+    inspect as inspect_cmds,
     manifest as manifest_commands,
     prepare_node as prepare_node_cmds,
 )
 from anvil.provider.local.commands import LocalProvider
 from anvil.provider.local.deployment import LocalDeployment
+from anvil.utils import CatchGroup
 
 # Update the help options to allow -h in addition to --help for
 # triggering the help for various commands
@@ -37,7 +38,7 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 @click.option("--quiet", "-q", default=False, is_flag=True)
 @click.option("--verbose", "-v", default=False, is_flag=True)
 @click.pass_context
-def cli(ctx: click.Context, quiet: bool, verbose: bool) -> CatchGroup:
+def cli(ctx: click.Context, quiet: bool, verbose: bool) -> CatchGroup:  # type: ignore[empty-body]
     """Anvil is a MAAS installer for MAAS charms.
 
     To get started with a single node, all-in-one MAAS installation, start
@@ -57,6 +58,7 @@ def main() -> None:
     logfile = log.prepare_logfile(snap.paths.user_common / "logs", "sunbeam")
     log.setup_root_logging(logfile)
     cli.add_command(prepare_node_cmds.prepare_node_script)
+    cli.add_command(inspect_cmds.inspect)
 
     # Cluster management
     deployment = LocalDeployment()

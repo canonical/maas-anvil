@@ -71,7 +71,6 @@ from sunbeam.jobs.juju import JujuHelper
 from sunbeam.jobs.manifest import AddManifestStep
 from sunbeam.provider.base import ProviderBase
 from sunbeam.provider.local.deployment import LOCAL_TYPE
-from sunbeam.utils import CatchGroup
 import yaml
 
 from anvil.commands.haproxy import (
@@ -103,6 +102,7 @@ from anvil.jobs.common import (
 from anvil.jobs.juju import CONTROLLER
 from anvil.jobs.manifest import Manifest
 from anvil.provider.local.deployment import LocalDeployment
+from anvil.utils import CatchGroup
 
 LOG = logging.getLogger(__name__)
 console = Console()
