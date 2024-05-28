@@ -2,4 +2,4 @@
 
 A snap for managing charmed MAAS deployments.
 
-## NOT A PRODUCTION READY PRODUCT. STILL UNDER DEVELOPMENT AND IN ALPHA PHASE.
+## MAAS Anvil is currently in a closed beta stage, approaching production stability
