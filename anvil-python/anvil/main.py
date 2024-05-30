@@ -42,7 +42,7 @@ def cli(ctx: click.Context, quiet: bool, verbose: bool) -> CatchGroup:  # type: 
     """Anvil is a MAAS installer for MAAS charms.
 
     To get started with a single node, all-in-one MAAS installation, start
-    with by initializing the local node. Once the local node has been initialized,
+    with initializing the local node. Once the local node has been initialized,
     run the bootstrap process to get a live MAAS deployment.
     """
 
