@@ -73,6 +73,12 @@ sudo snap install --channel {JUJU_CHANNEL} juju
 # Workaround a bug between snapd and juju
 mkdir -p $HOME/.local/share
 mkdir -p $HOME/.config/anvil
+
+# Connect snap to the Juju snap interface and provide access to Juju directory.
+# These actions will allow anvil bootstrap Juju controller and manage the
+# Juju model.
+sudo snap connect maas-anvil:juju-bin juju:juju-bin
+sudo snap connect maas-anvil:dot-local-share-juju
 """
 
 

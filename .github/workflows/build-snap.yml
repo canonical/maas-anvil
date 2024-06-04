@@ -66,8 +66,6 @@ jobs:
           export COLUMNS=256
           sudo snap install ${{ needs.build-amd64.outputs.snap }} --dangerous
           maas-anvil prepare-node-script | bash -x
-          sudo snap connect maas-anvil:juju-bin juju:juju-bin
-          sudo snap connect maas-anvil:dot-local-share-juju
           sg snap_daemon "maas-anvil -v cluster bootstrap --role database --role region --role agent --role haproxy --accept-defaults"
       - name: Collect juju status
         if: always()
@@ -96,8 +94,6 @@ jobs:
   #         export COLUMNS=256
   #         sudo snap install ${{ needs.build-arm64.outputs.snap }} --dangerous
   #         maas-anvil prepare-node-script | bash -x
-  #         sudo snap connect maas-anvil:juju-bin juju:juju-bin
-  #         sudo snap connect maas-anvil:dot-local-share-juju
   #         sg snap_daemon "maas-anvil -v cluster bootstrap --role database --role region --role agent --role haproxy --accept-defaults"
   #     - name: Collect juju status
   #       if: always()
