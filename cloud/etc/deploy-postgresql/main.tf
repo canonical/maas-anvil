@@ -44,3 +44,32 @@ resource "juju_application" "postgresql" {
 
   config = var.charm_postgresql_config
 }
+
+resource "juju_application" "pgbouncer" {
+  name  = "pgbouncer"
+  model = data.juju_model.machine_model.name
+  units = 0 # it is a subordinate charm
+
+  charm {
+    name     = "pgbouncer"
+    channel  = var.charm_pgbouncer_channel
+    revision = var.charm_pgbouncer_revision
+    base     = "ubuntu@22.04"
+  }
+
+  config = var.charm_pgbouncer_config
+}
+
+resource "juju_integration" "postgresql-pgbouncer" {
+  model = data.juju_model.machine_model.name
+
+  application {
+    name     = juju_application.postgresql.name
+    endpoint = "database"
+  }
+
+  application {
+    name     = juju_application.pgbouncer.name
+    endpoint = "backend-database"
+  }
+}
