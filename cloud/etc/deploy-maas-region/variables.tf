@@ -47,3 +47,21 @@ variable "enable_haproxy" {
   type        = bool
   default     = false
 }
+
+variable "charm_pgbouncer_channel" {
+  description = "Operator channel for PgBouncer deployment"
+  type        = string
+  default     = "1/candidate"
+}
+
+variable "charm_pgbouncer_revision" {
+  description = "Operator channel revision for PgBouncer deployment"
+  type        = number
+  default     = null
+}
+
+variable "charm_pgbouncer_config" {
+  description = "Operator config for PgBouncer deployment"
+  type        = map(string)
+  default     = {}
+}
