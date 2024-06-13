@@ -46,14 +46,14 @@ resource "juju_application" "keepalived" {
 }
 
 resource "juju_relation" "haprox_keepalived" {
-  provider = data.juju_application.haproxy.name
-  requirer = data.juju_application.keepalived.name
+  provider = juju_application.haproxy.name
+  requirer = juju_application.keepalived.name
 }
 
 resource "juju_config" "keepalived" {
   # do nothing if the vip is not given
   count       = var.virtual_ip != "" ? 1 : 0
-  application = data.juju_application.keepalived.name
+  application = juju_application.keepalived.name
   model       = data.juju_model.machine_model.name
 
   config = {

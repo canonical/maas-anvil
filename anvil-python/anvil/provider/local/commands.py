@@ -164,7 +164,7 @@ class LocalProvider(ProviderBase):
 )
 @click.option(
     "--vip",
-    type=click.String,
+    type=click.STRING,
     callback=validate_ip_address,
     help="Specify the Virtual IP address.",
 )
