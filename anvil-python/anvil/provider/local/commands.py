@@ -90,6 +90,7 @@ from anvil.jobs.checks import DaemonGroupCheck, SystemRequirementsCheck
 from anvil.jobs.common import (
     Role,
     roles_to_str_list,
+    validate_ip_address,
     validate_roles,
 )
 from anvil.jobs.juju import CONTROLLER
@@ -161,12 +162,19 @@ class LocalProvider(ProviderBase):
     help="Specify additional roles, region or agent, for the "
     "bootstrap node. Defaults to the database role.",
 )
+@click.option(
+    "--vip",
+    type=click.String,
+    callback=validate_ip_address,
+    help="Specify the Virtual IP address.",
+)
 @click.pass_context
 def bootstrap(
     ctx: click.Context,
     roles: List[Role],
     manifest: Path | None = None,
     accept_defaults: bool = False,
+    vip: str | None = None,
 ) -> None:
     """Bootstrap the local node.
 
@@ -272,6 +280,7 @@ def bootstrap(
                 client, manifest_obj, jhelper, deployment, fqdn
             )
         )
+
     if is_region_node:
         plan4.extend(
             maas_region_install_steps(
@@ -519,6 +528,9 @@ def remove(ctx: click.Context, name: str) -> None:
             client, name, jhelper, deployment.infrastructure_model
         ),
         RemoveHAProxyUnitStep(
+            client, name, jhelper, deployment.infrastructure_model
+        ),
+        RemoveVirtualIpUnitStep(
             client, name, jhelper, deployment.infrastructure_model
         ),
         RemoveMAASRegionUnitStep(

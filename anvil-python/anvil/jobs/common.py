@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import enum
+import ipaddress
 from typing import Any
 
 import click
@@ -25,7 +26,7 @@ class Role(enum.Enum):
     """The role that the current node will play
 
     This determines if the role will be a region node, a rack/agent node,
-    r database node or a haproxy node. The role will help determine which
+    database node, or a haproxy node. The role will help determine which
     particular services need to be configured and installed on the system.
     """
 
@@ -78,3 +79,12 @@ def validate_roles(
         return [Role[role.upper()] for role in value]
     except KeyError as e:
         raise click.BadParameter(str(e))
+
+
+def validate_ip_address(
+    ctx: click.core.Context, param: click.core.Option, value: str
+) -> str:
+    try:
+        return ipaddress.ip_address(value).exploded
+    except ValueError as e:
+        raise click.BadParameter(f"{value} is not a valid IP address!")

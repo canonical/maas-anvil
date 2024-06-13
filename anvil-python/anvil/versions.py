@@ -17,12 +17,14 @@ MAAS_REGION_CHANNEL = "latest/edge"
 MAAS_AGENT_CHANNEL = "latest/edge"
 POSTGRESQL_CHANNEL = "14/stable"
 HAPROXY_CHANNEL = "latest/stable"
+VIRTUALIP_CHANNEL = "latest/stable"
 
 MACHINE_CHARMS = {
     "maas-region": MAAS_REGION_CHANNEL,
     "maas-agent": MAAS_AGENT_CHANNEL,
     "haproxy": HAPROXY_CHANNEL,
     "postgresql": POSTGRESQL_CHANNEL,
+    "virtual-ip": VIRTUALIP_CHANNEL,
 }
 K8S_CHARMS: dict[str, str] = {}
 
@@ -35,6 +37,7 @@ TERRAFORM_DIR_NAMES = {
     "maas-agent-plan": "deploy-maas-agent",
     "haproxy-plan": "deploy-haproxy",
     "postgresql-plan": "deploy-postgresql",
+    "virtual-ip-plan": "deploy-virtual-ip",
 }
 
 DEPLOY_MAAS_REGION_TFVAR_MAP = {
@@ -77,9 +80,20 @@ DEPLOY_POSTGRESQL_TFVAR_MAP = {
     }
 }
 
+DEPLOY_VIRTUALIP_TFVAR_MAP = {
+    "charms": {
+        "keepalived": {
+            "channel": "charm_keepalived_channel",
+            "revision": "charm_keepalived_revision",
+            "config": "charm_keepalived_config",
+        }
+    }
+}
+
 MANIFEST_ATTRIBUTES_TFVAR_MAP = {
     "maas-region-plan": DEPLOY_MAAS_REGION_TFVAR_MAP,
     "maas-agent-plan": DEPLOY_MAAS_AGENT_TFVAR_MAP,
     "haproxy-plan": DEPLOY_HAPROXY_TFVAR_MAP,
     "postgresql-plan": DEPLOY_POSTGRESQL_TFVAR_MAP,
+    "keepalive-plan": DEPLOY_VIRTUALIP_TFVAR_MAP,
 }
