@@ -45,7 +45,7 @@ resource "juju_application" "keepalived" {
   config = var.charm_keepalived_config
 }
 
-resource "juju_relation" "haprox_keepalived" {
+resource "juju_relation" "haproxy_keepalived" {
   provider = juju_application.haproxy.name
   requirer = juju_application.keepalived.name
 }
