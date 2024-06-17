@@ -48,7 +48,7 @@ resource "juju_application" "keepalived" {
 }
 
 resource "juju_relation" "haproxy_keepalived" {
-  provider = juju.haproxy.name
+  provider = juju.haproxy
   requirer = juju_application.keepalived.name
 }
 
