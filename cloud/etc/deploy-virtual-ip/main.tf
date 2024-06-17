@@ -24,7 +24,9 @@ terraform {
 
 }
 
-provider "juju" {}
+provider "juju" {
+  alias = "haproxy"
+}
 
 data "juju_model" "machine_model" {
   name = var.machine_model
@@ -46,7 +48,7 @@ resource "juju_application" "keepalived" {
 }
 
 resource "juju_relation" "haproxy_keepalived" {
-  provider = juju_application.haproxy.name
+  provider = juju.haproxy.name
   requirer = juju_application.keepalived.name
 }
 
