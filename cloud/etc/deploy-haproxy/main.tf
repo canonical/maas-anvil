@@ -44,3 +44,30 @@ resource "juju_application" "haproxy" {
 
   config = var.charm_haproxy_config
 }
+
+resource "juju_application" "keepalived" {
+  name   = "keepalived"
+  model  = data.juju_model.machine_model.name
+  units  = 1
+  // enable only if vip is given
+  counts = length(var.virtual_ip) > 0 ? 1 : 0
+
+  charm {
+    name     = "keepalived"
+    channel  = var.charm_keepalived_channel
+    revision = var.charm_keepalived_revision
+    base     = "ubuntu@22.04"
+  }
+
+  config = {
+    virtual_ip = var.virtual_ip
+  }
+}
+
+resource "juju_integration" "haproxy_keepalived" {
+  // enable only if vip is given
+  count = length(var.virtual_ip) > 0 ? 1 : 0
+  
+  provider = juju.haproxy
+  requirer = juju_application.keepalived.name
+}

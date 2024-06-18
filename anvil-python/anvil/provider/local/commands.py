@@ -205,6 +205,10 @@ def bootstrap(
     if Role.DATABASE not in roles:
         LOG.debug("Enabling database role for bootstrap")
         roles.append(Role.DATABASE)
+    # VIP functionality requires haproxy
+    if Role.HAPROXY not in roles and vip:
+        LOG.debug("Enabling haproxy for VIP")
+        roles.append(Role.HAPROXY)
     is_region_node = any(role.is_region_node() for role in roles)
     is_agent_node = any(role.is_agent_node() for role in roles)
     is_haproxy_node = any(role.is_haproxy_node() for role in roles)
@@ -528,9 +532,6 @@ def remove(ctx: click.Context, name: str) -> None:
             client, name, jhelper, deployment.infrastructure_model
         ),
         RemoveHAProxyUnitStep(
-            client, name, jhelper, deployment.infrastructure_model
-        ),
-        RemoveVirtualIpUnitStep(
             client, name, jhelper, deployment.infrastructure_model
         ),
         RemoveMAASRegionUnitStep(

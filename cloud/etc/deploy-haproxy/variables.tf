@@ -41,3 +41,21 @@ variable "machine_model" {
   description = "Model to deploy to"
   type        = string
 }
+
+variable "charm_keepalived_channel" {
+  description = "Operator channel for Keepalived"
+  type        = string
+  default     = "latest/stable"
+}
+
+variable "charm_keepalived_revision" {
+  description = "Operator channel revision for Keepalived"
+  type        = number
+  default     = null
+}
+
+variable "virtual_ip" {
+  description = "Virtual IP Address for keepalived
+  type        = string
+  default     = ""
+}

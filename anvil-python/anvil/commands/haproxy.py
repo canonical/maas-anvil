@@ -15,6 +15,9 @@
 
 from typing import List
 
+from typing import List
+
+from typing import Any
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformInitStep
 from sunbeam.jobs.juju import JujuHelper
@@ -62,6 +65,12 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
 
     def get_application_timeout(self) -> int:
         return HAPROXY_APP_TIMEOUT
+
+    def extra_tfvars(self) -> dict[str, Any]:
+        # TODO: How do we pass the VIP from command line to here?
+        if virtual_ip := None:
+            return {"virtual_ip": virtual_ip}
+        return {}
 
 
 class AddHAProxyUnitsStep(AddMachineUnitsStep):
