@@ -55,7 +55,7 @@ variable "charm_keepalived_revision" {
 }
 
 variable "virtual_ip" {
-  description = "Virtual IP Address for keepalived
+  description = "Virtual IP Address for keepalived"
   type        = string
   default     = ""
 }

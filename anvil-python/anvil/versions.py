@@ -69,7 +69,7 @@ DEPLOY_HAPROXY_TFVAR_MAP = {
         "keepalived": {
             "channel": "charm_keepalived_channel",
             "revision": "charm_keepalived_revision",
-        }
+        },
     }
 }
 
