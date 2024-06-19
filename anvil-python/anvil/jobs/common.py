@@ -15,7 +15,7 @@
 
 import enum
 import ipaddress
-from typing import Any
+from typing import Any, Optional
 
 import click
 
@@ -83,7 +83,9 @@ def validate_roles(
 
 def validate_ip_address(
     ctx: click.core.Context, param: click.core.Option, value: str
-) -> str:
+) -> Optional[str]:
+    if value is None:
+        return None
     try:
         return ipaddress.ip_address(value).exploded
     except ValueError as e:
