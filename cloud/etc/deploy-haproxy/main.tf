@@ -46,11 +46,12 @@ resource "juju_application" "haproxy" {
 }
 
 resource "juju_application" "keepalived" {
-  name   = "keepalived"
-  model  = data.juju_model.machine_model.name
-  units  = 1
+  name     = "keepalived"
+  model    = data.juju_model.machine_model.name
+  units    = 1
+
   // enable only if vip is given
-  counts = length(var.virtual_ip) > 0 ? 1 : 0
+  count = length(var.virtual_ip) > 0 ? 1 : 0
 
   charm {
     name     = "keepalived"
