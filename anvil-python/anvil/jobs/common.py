@@ -83,7 +83,7 @@ def validate_roles(
 
 def validate_ip_address(
     ctx: click.core.Context, param: click.core.Option, value: str
-) -> Optional[str]:
+) -> str | None:
     if value is None:
         return None
     try:
