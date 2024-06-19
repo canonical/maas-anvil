@@ -24,7 +24,6 @@ from snaphelpers import Snap
 from sunbeam import utils
 
 # from sunbeam.commands import refresh as refresh_cmds
-from sunbeam.commands import resize as resize_cmds
 from sunbeam.commands.clusterd import (
     ClusterAddJujuUserStep,
     ClusterAddNodeStep,
@@ -48,7 +47,6 @@ from sunbeam.commands.juju import (
 )
 from sunbeam.commands.terraform import TerraformInitStep
 from sunbeam.jobs.checks import (
-    DaemonGroupCheck,
     JujuSnapCheck,
     LocalShareCheck,
     SshKeysConnectedCheck,
@@ -93,7 +91,7 @@ from anvil.commands.postgresql import (
     DeployPostgreSQLApplicationStep,
     RemovePostgreSQLUnitStep,
 )
-from anvil.jobs.checks import SystemRequirementsCheck
+from anvil.jobs.checks import DaemonGroupCheck, SystemRequirementsCheck
 from anvil.jobs.common import (
     Role,
     roles_to_str_list,
@@ -140,7 +138,6 @@ class LocalProvider(ProviderBase):
         cluster.add_command(join)
         cluster.add_command(list)
         cluster.add_command(remove)
-        cluster.add_command(resize_cmds.resize)
         # cluster.add_command(refresh_cmds.refresh)
 
     def deployment_type(self) -> tuple[str, type[Deployment]]:

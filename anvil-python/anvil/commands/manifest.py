@@ -25,12 +25,12 @@ from sunbeam.clusterd.service import (
     ClusterServiceUnavailableException,
     ManifestItemNotFoundException,
 )
-from sunbeam.jobs.checks import DaemonGroupCheck, VerifyBootstrappedCheck
 from sunbeam.jobs.common import FORMAT_TABLE, FORMAT_YAML, run_preflight_checks
 from sunbeam.jobs.deployment import Deployment
 from sunbeam.utils import asdict_with_extra_fields
 import yaml
 
+from anvil.jobs.checks import DaemonGroupCheck, VerifyBootstrappedCheck
 from anvil.jobs.manifest import Manifest
 
 LOG = logging.getLogger(__name__)
