@@ -68,7 +68,9 @@ resource "juju_application" "keepalived" {
 resource "juju_integration" "haproxy_keepalived" {
   // enable only if vip is given
   count = length(var.virtual_ip) > 0 ? 1 : 0
-  
-  provider = juju.haproxy
+
+  provider = juju
+  model    = data.juju_model.machine_model.name
+  provider = juju_application.haproxy.name
   requirer = juju_application.keepalived.name
 }
