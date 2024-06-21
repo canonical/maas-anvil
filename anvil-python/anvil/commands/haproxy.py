@@ -12,7 +12,6 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import ipaddress
 import logging
 import os.path
@@ -130,6 +129,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         )
         self.preseed = deployment_preseed or {}
         self.accept_defaults = accept_defaults
+        self.variables: dict[str, Any] = {"charm_haproxy_config": {}}
 
     def get_application_timeout(self) -> int:
         return HAPROXY_APP_TIMEOUT
