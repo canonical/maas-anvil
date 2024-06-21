@@ -70,6 +70,6 @@ resource "juju_integration" "haproxy_keepalived" {
   count = length(var.virtual_ip) > 0 ? 1 : 0
 
   model    = data.juju_model.machine_model.name
-  provider = juju_application.haproxy.name
+  provider = juju.haproxy
   requirer = juju_application.keepalived.name
 }
