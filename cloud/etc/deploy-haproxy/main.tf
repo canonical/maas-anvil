@@ -45,8 +45,6 @@ resource "juju_application" "haproxy" {
   config = var.charm_haproxy_config
 }
 
-provider "haproxy" {}
-
 resource "juju_application" "keepalived" {
   name     = "keepalived"
   model    = data.juju_model.machine_model.name
@@ -72,6 +70,6 @@ resource "juju_integration" "haproxy_keepalived" {
   count = length(var.virtual_ip) > 0 ? 1 : 0
 
   model    = data.juju_model.machine_model.name
-  provider = juju.haproxy
+  provider = juju_application.keepalived[0].name
   requirer = juju_application.keepalived.name
 }
