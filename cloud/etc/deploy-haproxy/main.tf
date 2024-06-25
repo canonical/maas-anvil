@@ -45,6 +45,8 @@ resource "juju_application" "haproxy" {
   config = var.charm_haproxy_config
 }
 
+provider "haproxy" {}
+
 resource "juju_application" "keepalived" {
   name     = "keepalived"
   model    = data.juju_model.machine_model.name
