@@ -46,7 +46,7 @@ resource "juju_application" "haproxy" {
 }
 
 resource "juju_application" "keepalived" {
-  count = var.vip != "" ? 1 : 0
+  count = var.virtual_ip != "" ? 1 : 0
   name  = "keepalived"
   model = data.juju_model.machine_model.name
 
@@ -57,13 +57,11 @@ resource "juju_application" "keepalived" {
     base     = "ubuntu@22.04"
   }
 
-  config = merge(var.charm_keepalived_config, {
-    vip = var.vip
-  })
+  config = var.charm_haproxy_config
 }
 
 resource "juju_integration" "haproxy_keepalived" {
-  count = var.vip != "" ? 1 : 0
+  count = var.virtual_ip != "" ? 1 : 0
   model = data.juju_model.machine_model.name
   applications = [
     juju_application.haproxy.name,
