@@ -86,7 +86,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             console=console,  # type: ignore
         )
 
-        self.variables["bootstrap"]["virtual_ip"] = (
+        self.variables["virtual_ip"] = (
             bootstrap_bank.virtual_ip.ask()
         )
 
