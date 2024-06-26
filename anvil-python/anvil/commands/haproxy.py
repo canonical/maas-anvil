@@ -13,8 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import List
+
 from sunbeam.clusterd.client import Client
+from sunbeam.commands.terraform import TerraformInitStep
 from sunbeam.jobs.juju import JujuHelper
+from sunbeam.jobs.manifest import BaseStep
 from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
     DeployMachineApplicationStep,
@@ -22,6 +26,7 @@ from sunbeam.jobs.steps import (
 )
 
 from anvil.jobs.manifest import Manifest
+from anvil.provider.local.deployment import LocalDeployment
 
 APPLICATION = "haproxy"
 CONFIG_KEY = "TerraformVarsHaproxyPlan"
@@ -103,3 +108,21 @@ class RemoveHAProxyUnitStep(RemoveMachineUnitStep):
 
     def get_unit_timeout(self) -> int:
         return HAPROXY_UNIT_TIMEOUT
+
+
+def haproxy_install_steps(
+    client: Client,
+    manifest: Manifest,
+    jhelper: JujuHelper,
+    deployment: LocalDeployment,
+    fqdn: str,
+) -> List[BaseStep]:
+    return [
+        TerraformInitStep(manifest.get_tfhelper("haproxy-plan")),
+        DeployHAProxyApplicationStep(
+            client, manifest, jhelper, deployment.infrastructure_model
+        ),
+        AddHAProxyUnitsStep(
+            client, fqdn, jhelper, deployment.infrastructure_model
+        ),
+    ]
