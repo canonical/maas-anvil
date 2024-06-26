@@ -63,8 +63,6 @@ resource "juju_application" "keepalived" {
 resource "juju_integration" "haproxy_keepalived" {
   count = var.virtual_ip != "" ? 1 : 0
   model = data.juju_model.machine_model.name
-  applications = [
-    juju_application.haproxy.name,
-    juju_application.keepalived[0].name
-  ]
+  application_one = juju_application.haproxy.name
+  application_two = juju_application.keepalived[0].name
 }

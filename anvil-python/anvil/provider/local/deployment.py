@@ -21,7 +21,12 @@ from sunbeam.clusterd.service import (
     ClusterServiceUnavailableException,
 )
 from sunbeam.commands.juju import BOOTSTRAP_CONFIG_KEY, bootstrap_questions
-from sunbeam.jobs.questions import QuestionBank, load_answers, show_questions
+from sunbeam.jobs.questions import (
+    PromptQuestion,
+    QuestionBank,
+    load_answers,
+    show_questions,
+)
 from sunbeam.provider.local.deployment import (
     LocalDeployment as SunbeamLocalDeployment,
 )
@@ -43,7 +48,13 @@ class LocalDeployment(SunbeamLocalDeployment):
         except ClusterServiceUnavailableException:
             variables = {}
         bootstrap_bank = QuestionBank(
-            questions=bootstrap_questions(),
+            questions=bootstrap_questions()
+            | {
+                "virtual_ip": PromptQuestion(
+                    "Virtual IP to use for the Cluster in HA",
+                    default_value=None,
+                )
+            },
             console=console,
             previous_answers=variables.get("bootstrap", {}),
         )
