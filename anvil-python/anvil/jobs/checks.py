@@ -14,8 +14,13 @@
 # limitations under the License.
 
 import logging
+import os
 
-from sunbeam.jobs.checks import Check
+from sunbeam.jobs.checks import (
+    DaemonGroupCheck as SunbeamDaemonGroupCheck,
+    SystemRequirementsCheck as SunbeamSystemRequirementsCheck,
+    VerifyBootstrappedCheck as SunbeamVerifyBootstrappedCheck,
+)
 from sunbeam.jobs.common import (
     get_host_total_cores,
     get_host_total_ram,
@@ -26,14 +31,8 @@ from anvil.jobs.common import RAM_4_GB_IN_KB
 LOG = logging.getLogger(__name__)
 
 
-class SystemRequirementsCheck(Check):
+class SystemRequirementsCheck(SunbeamSystemRequirementsCheck):
     """Check if machine has minimum 4 cores and 16GB RAM."""
-
-    def __init__(self) -> None:
-        super().__init__(
-            "Check for system requirements",
-            "Checking for host configuration of minimum 4 core and 16G RAM",
-        )
 
     def run(self) -> bool:
         host_total_ram = get_host_total_ram()
@@ -43,3 +42,23 @@ class SystemRequirementsCheck(Check):
             LOG.warning(self.message)
 
         return True
+
+
+class DaemonGroupCheck(SunbeamDaemonGroupCheck):
+    """Check if user is member of socket group."""
+
+    def run(self) -> bool:
+        ret: bool = super().run()
+        if not ret:
+            self.message: str = self.message.replace("sunbeam", "anvil")
+        return ret
+
+
+class VerifyBootstrappedCheck(SunbeamVerifyBootstrappedCheck):
+    """Check deployment has been bootstrapped."""
+
+    def run(self) -> bool:
+        ret: bool = super().run()
+        if not ret:
+            self.message: str = self.message.replace("sunbeam", "anvil")
+        return ret

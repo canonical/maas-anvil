@@ -24,13 +24,14 @@ import click
 from rich.console import Console
 from snaphelpers import Snap
 from sunbeam.commands.juju import WriteCharmLogStep, WriteJujuStatusStep
-from sunbeam.jobs.checks import DaemonGroupCheck
 from sunbeam.jobs.common import (
     run_plan,
     run_preflight_checks,
 )
 from sunbeam.jobs.deployment import Deployment
 from sunbeam.jobs.juju import JujuHelper
+
+from anvil.jobs.checks import DaemonGroupCheck
 
 LOG = logging.getLogger(__name__)
 console = Console()

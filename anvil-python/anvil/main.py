@@ -55,7 +55,7 @@ def manifest(ctx: click.Context) -> None:
 
 def main() -> None:
     snap = Snap()
-    logfile = log.prepare_logfile(snap.paths.user_common / "logs", "sunbeam")
+    logfile = log.prepare_logfile(snap.paths.user_common / "logs", "anvil")
     log.setup_root_logging(logfile)
     cli.add_command(prepare_node_cmds.prepare_node_script)
     cli.add_command(inspect_cmds.inspect)
