@@ -19,9 +19,11 @@ from typing import List
 
 from typing import Any
 
+from rich.console import Console
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformInitStep
 from sunbeam.jobs.juju import JujuHelper
+from sunbeam.jobs.questions import PromptQuestion, QuestionBank, write_answers
 from sunbeam.jobs.manifest import BaseStep
 from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
@@ -30,6 +32,8 @@ from sunbeam.jobs.steps import (
 )
 
 from anvil.jobs.manifest import Manifest
+
+LOG = logging.getLogger(__name__)
 from anvil.provider.local.deployment import LocalDeployment
 
 APPLICATION = "haproxy"
@@ -63,15 +67,34 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             "Deploying HAProxy",
             refresh,
         )
+        self.variables = {"virtual_ip": None}
 
     def get_application_timeout(self) -> int:
         return HAPROXY_APP_TIMEOUT
 
+    def has_prompts(self) -> bool:
+        return True
+
+    def prompt(self, console: Console | None = None) -> None:
+        bootstrap_bank = QuestionBank(
+            questions={
+                "virtual_ip": PromptQuestion(
+                    "Virtual IP to use for the Cluster in HA",
+                    default_value=None,
+                )
+            },
+            console=console,  # type: ignore
+        )
+
+        self.variables["bootstrap"]["virtual_ip"] = (
+            bootstrap_bank.virtual_ip.ask()
+        )
+
+        LOG.debug(self.variables)
+        write_answers(self.client, CONFIG_KEY, self.variables)
+
     def extra_tfvars(self) -> dict[str, Any]:
-        # TODO: How do we pass the VIP from command line to here?
-        if virtual_ip := None:
-            return {"virtual_ip": virtual_ip}
-        return {}
+        return self.variables
 
 
 class AddHAProxyUnitsStep(AddMachineUnitsStep):
