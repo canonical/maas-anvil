@@ -83,7 +83,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
                     default_value=None,
                 )
             },
-            console=console,  # type: ignore
+            console=console,
         )
 
         self.variables["virtual_ip"] = (
