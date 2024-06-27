@@ -81,12 +81,11 @@ def validate_roles(
         raise click.BadParameter(str(e))
 
 
-def validate_ip_address(
-    ctx: click.core.Context, param: click.core.Option, value: str
-) -> str | None:
+def validate_ip_address(value: str) -> str:
+    """We allow passing an empty IP for Virtual_ip"""
     if value is None:
-        return None
+        return ""
     try:
         return ipaddress.ip_address(value).exploded
     except ValueError as e:
-        raise click.BadParameter(f"{value} is not a valid IP address!")
+        raise click.BadParameter(f"{value} is not a valid IP address: {e}")

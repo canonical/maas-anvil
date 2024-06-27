@@ -90,7 +90,6 @@ from anvil.jobs.checks import DaemonGroupCheck, SystemRequirementsCheck
 from anvil.jobs.common import (
     Role,
     roles_to_str_list,
-    validate_ip_address,
     validate_roles,
 )
 from anvil.jobs.juju import CONTROLLER

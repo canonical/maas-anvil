@@ -31,6 +31,9 @@ from sunbeam.jobs.steps import (
     RemoveMachineUnitStep,
 )
 
+from anvil.jobs.common import (
+    validate_ip_address,
+)
 from anvil.jobs.manifest import Manifest
 
 LOG = logging.getLogger(__name__)
@@ -81,19 +84,16 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
                 "virtual_ip": PromptQuestion(
                     "Virtual IP to use for the Cluster in HA",
                     default_value=None,
+                    validation_function=validate_ip_address,
                 )
             },
             console=console,
         )
 
-        self.variables["virtual_ip"] = (
-            bootstrap_bank.virtual_ip.ask()
-        )
+        self.variables["virtual_ip"] = bootstrap_bank.virtual_ip.ask()
 
         LOG.debug(self.variables)
         write_answers(self.client, CONFIG_KEY, self.variables)
-
-        
 
     def extra_tfvars(self) -> dict[str, Any]:
         return self.variables
