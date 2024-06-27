@@ -13,18 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
-
-from typing import List
-
-from typing import Any
+import logging
+from typing import Any, List
 
 from rich.console import Console
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformInitStep
 from sunbeam.jobs.juju import JujuHelper
-from sunbeam.jobs.questions import PromptQuestion, QuestionBank, write_answers
 from sunbeam.jobs.manifest import BaseStep
+from sunbeam.jobs.questions import PromptQuestion, QuestionBank, write_answers
 from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
     DeployMachineApplicationStep,
