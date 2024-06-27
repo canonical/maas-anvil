@@ -45,7 +45,6 @@ from sunbeam.commands.juju import (
     RemoveJujuMachineStep,
     SaveJujuUserLocallyStep,
 )
-from sunbeam.commands.terraform import TerraformInitStep
 from sunbeam.jobs.checks import (
     JujuSnapCheck,
     LocalShareCheck,
@@ -72,24 +71,20 @@ from sunbeam.provider.local.deployment import LOCAL_TYPE
 import yaml
 
 from anvil.commands.haproxy import (
-    AddHAProxyUnitsStep,
-    DeployHAProxyApplicationStep,
     RemoveHAProxyUnitStep,
+    haproxy_install_steps,
 )
 from anvil.commands.maas_agent import (
-    AddMAASAgentUnitsStep,
-    DeployMAASAgentApplicationStep,
     RemoveMAASAgentUnitStep,
+    maas_agent_install_steps,
 )
 from anvil.commands.maas_region import (
-    AddMAASRegionUnitsStep,
-    DeployMAASRegionApplicationStep,
     RemoveMAASRegionUnitStep,
+    maas_region_install_steps,
 )
 from anvil.commands.postgresql import (
-    AddPostgreSQLUnitsStep,
-    DeployPostgreSQLApplicationStep,
     RemovePostgreSQLUnitStep,
+    postgresql_install_steps,
 )
 from anvil.jobs.checks import DaemonGroupCheck, SystemRequirementsCheck
 from anvil.jobs.common import (
@@ -220,120 +215,77 @@ def bootstrap(
     juju_bootstrap_args = manifest_obj.software_config.juju.bootstrap_args  # type: ignore[union-attr]
     data_location = snap.paths.user_data
 
-    preflight_checks = []
-    preflight_checks.append(SystemRequirementsCheck())
-    preflight_checks.append(JujuSnapCheck())
-    preflight_checks.append(SshKeysConnectedCheck())
-    preflight_checks.append(DaemonGroupCheck())
-    preflight_checks.append(LocalShareCheck())
-
+    preflight_checks = [
+        SystemRequirementsCheck(),
+        JujuSnapCheck(),
+        SshKeysConnectedCheck(),
+        DaemonGroupCheck(),
+        LocalShareCheck(),
+    ]
     run_preflight_checks(preflight_checks, console)
 
-    plan = []
-    plan.append(JujuLoginStep(deployment.juju_account))
-    # bootstrapped node is always machine 0 in controller model
-    plan.append(ClusterInitStep(client, roles_to_str_list(roles), 0))
-    if manifest:
-        plan.append(AddManifestStep(client, manifest))
-    plan.append(AddCloudJujuStep(cloud_name, cloud_definition))
-    plan.append(
+    plan = [
+        JujuLoginStep(deployment.juju_account),
+        ClusterInitStep(
+            client, roles_to_str_list(roles), 0
+        ),  # bootstrapped node is always machine 0 in controller model
+        AddManifestStep(client, manifest) if manifest else None,
+        AddCloudJujuStep(cloud_name, cloud_definition),
         BootstrapJujuStep(
             client,
             cloud_name,
             cloud_type,
             CONTROLLER,
             bootstrap_args=juju_bootstrap_args,
-            accept_defaults=accept_defaults,
             deployment_preseed=preseed,
-        )
-    )
-    run_plan(plan, console)
+            accept_defaults=accept_defaults,
+        ),
+    ]
+    run_plan(filter(None, plan), console)
 
-    plan2 = []
-    plan2.append(CreateJujuUserStep(fqdn))
-    plan2.append(ClusterUpdateJujuControllerStep(client, CONTROLLER))
+    plan2 = [
+        CreateJujuUserStep(fqdn),
+        ClusterUpdateJujuControllerStep(client, CONTROLLER),
+    ]
     plan2_results = run_plan(plan2, console)
-
     token = get_step_message(plan2_results, CreateJujuUserStep)
 
-    plan3 = []
-    plan3.append(ClusterAddJujuUserStep(client, fqdn, token))
-    plan3.append(BackupBootstrapUserStep(fqdn, data_location))
-    plan3.append(SaveJujuUserLocallyStep(fqdn, data_location))
-    plan3.append(
+    plan3 = [
+        ClusterAddJujuUserStep(client, fqdn, token),
+        BackupBootstrapUserStep(fqdn, data_location),
+        SaveJujuUserLocallyStep(fqdn, data_location),
         RegisterJujuUserStep(
             client, fqdn, CONTROLLER, data_location, replace=True
-        )
-    )
+        ),
+    ]
     run_plan(plan3, console)
 
     deployment.reload_juju_credentials()
     jhelper = JujuHelper(deployment.get_connected_controller())
-    plan4 = []
-    # Deploy PostgreSQL charm
-    plan4.append(
-        TerraformInitStep(manifest_obj.get_tfhelper("postgresql-plan"))
-    )
-    plan4.append(
-        DeployPostgreSQLApplicationStep(
-            client, manifest_obj, jhelper, deployment.infrastructure_model
-        )
-    )
-    plan4.append(
-        AddPostgreSQLUnitsStep(
-            client, fqdn, jhelper, deployment.infrastructure_model
-        )
-    )
 
+    plan4 = postgresql_install_steps(
+        client, manifest_obj, jhelper, deployment, fqdn
+    )
     if is_haproxy_node:
-        # Deploy HAProxy charm
-        plan4.append(
-            TerraformInitStep(manifest_obj.get_tfhelper("haproxy-plan"))
-        )
-        plan4.append(
-            DeployHAProxyApplicationStep(
-                client, manifest_obj, jhelper, deployment.infrastructure_model
+        plan4.extend(
+            haproxy_install_steps(
+                client, manifest_obj, jhelper, deployment, fqdn
             )
         )
-        plan4.append(
-            AddHAProxyUnitsStep(
-                client, fqdn, jhelper, deployment.infrastructure_model
-            )
-        )
-
     if is_region_node:
-        # Deploy MAAS Region charm
-        plan4.append(
-            TerraformInitStep(manifest_obj.get_tfhelper("maas-region-plan"))
-        )
-        plan4.append(
-            DeployMAASRegionApplicationStep(
-                client, manifest_obj, jhelper, deployment.infrastructure_model
+        plan4.extend(
+            maas_region_install_steps(
+                client, manifest_obj, jhelper, deployment, fqdn
             )
         )
-        plan4.append(
-            AddMAASRegionUnitsStep(
-                client, fqdn, jhelper, deployment.infrastructure_model
-            )
-        )
-
     if is_agent_node:
-        # Deploy MAAS Agent charm
-        plan4.append(
-            TerraformInitStep(manifest_obj.get_tfhelper("maas-agent-plan"))
-        )
-        plan4.append(
-            DeployMAASAgentApplicationStep(
-                client, manifest_obj, jhelper, deployment.infrastructure_model
+        plan4.extend(
+            maas_agent_install_steps(
+                client, manifest_obj, jhelper, deployment, fqdn
             )
         )
-        plan4.append(
-            AddMAASAgentUnitsStep(
-                client, fqdn, jhelper, deployment.infrastructure_model
-            )
-        )
-
     run_plan(plan4, console)
+
     click.echo(f"Node has been bootstrapped with roles: {pretty_roles}")
 
 
@@ -423,7 +375,7 @@ def join(
     is_database_node = any(role.is_database_node() for role in roles)
     is_haproxy_node = any(role.is_haproxy_node() for role in roles)
 
-    # Register juju user with same name as Node fqdn
+    # Register Juju user with same name as Node fqdn
     name = utils.get_fqdn()
     ip = utils.get_local_ip_by_default_route()
 
@@ -431,14 +383,14 @@ def join(
     pretty_roles = ", ".join(role_.name.lower() for role_ in roles)
     LOG.debug(f"Node joining the cluster with roles: {pretty_roles}")
 
-    preflight_checks = []
-    preflight_checks.append(SystemRequirementsCheck())
-    preflight_checks.append(JujuSnapCheck())
-    preflight_checks.append(SshKeysConnectedCheck())
-    preflight_checks.append(DaemonGroupCheck())
-    preflight_checks.append(LocalShareCheck())
-    preflight_checks.append(TokenCheck(name, token))
-
+    preflight_checks = [
+        SystemRequirementsCheck(),
+        JujuSnapCheck(),
+        SshKeysConnectedCheck(),
+        DaemonGroupCheck(),
+        LocalShareCheck(),
+        TokenCheck(name, token),
+    ]
     run_preflight_checks(preflight_checks, console)
 
     controller = CONTROLLER
@@ -457,37 +409,41 @@ def join(
 
     deployment.reload_juju_credentials()
 
+    # Get manifest object once the cluster is joined
+    manifest_obj = Manifest.load_latest_from_clusterdb(
+        deployment, include_defaults=True
+    )
+
     machine_id = -1
     machine_id_result = get_step_message(plan1_results, AddJujuMachineStep)
     if machine_id_result is not None:
         machine_id = int(machine_id_result)
 
     jhelper = JujuHelper(deployment.get_connected_controller())
-    plan2 = []
-    plan2.append(ClusterUpdateNodeStep(client, name, machine_id=machine_id))
+    plan2 = [ClusterUpdateNodeStep(client, name, machine_id=machine_id)]
 
     if is_database_node:
-        plan2.append(
-            AddPostgreSQLUnitsStep(
-                client, name, jhelper, deployment.infrastructure_model
+        plan2.extend(
+            postgresql_install_steps(
+                client, manifest_obj, jhelper, deployment, name
             )
         )
     if is_haproxy_node:
-        plan2.append(
-            AddHAProxyUnitsStep(
-                client, name, jhelper, deployment.infrastructure_model
+        plan2.extend(
+            haproxy_install_steps(
+                client, manifest_obj, jhelper, deployment, name
             )
         )
     if is_region_node:
-        plan2.append(
-            AddMAASRegionUnitsStep(
-                client, name, jhelper, deployment.infrastructure_model
+        plan2.extend(
+            maas_region_install_steps(
+                client, manifest_obj, jhelper, deployment, name
             )
         )
     if is_agent_node:
-        plan2.append(
-            AddMAASAgentUnitsStep(
-                client, name, jhelper, deployment.infrastructure_model
+        plan2.extend(
+            maas_agent_install_steps(
+                client, manifest_obj, jhelper, deployment, name
             )
         )
 
