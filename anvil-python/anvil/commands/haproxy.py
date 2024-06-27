@@ -70,7 +70,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             "Deploying HAProxy",
             refresh,
         )
-        self.variables = {"virtual_ip": None}
+        self.variables = {"virtual_ip": ""}
 
     def get_application_timeout(self) -> int:
         return HAPROXY_APP_TIMEOUT
@@ -83,7 +83,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             questions={
                 "virtual_ip": PromptQuestion(
                     "Virtual IP to use for the Cluster in HA",
-                    default_value=None,
+                    default_value="",
                     validation_function=validate_ip_address,
                 )
             },
