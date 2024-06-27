@@ -46,7 +46,7 @@ resource "juju_application" "haproxy" {
 }
 
 resource "juju_application" "keepalived" {
-  count = length(var.virtual_ip) > 0 ? 1 : 0
+  count = max(length(var.virtual_ip), 1)
   name  = "keepalived"
   model = data.juju_model.machine_model.name
 
@@ -63,7 +63,7 @@ resource "juju_application" "keepalived" {
 }
 
 resource "juju_integration" "maas-region-haproxy" {
-  count = length(var.virtual_ip) > 0 ? 1 : 0
+  count = max(length(var.virtual_ip), 1)
   model = data.juju_model.machine_model.name
 
   application {
