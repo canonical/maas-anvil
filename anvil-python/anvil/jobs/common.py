@@ -83,7 +83,7 @@ def validate_roles(
 
 def validate_ip_address(value: str) -> str:
     """We allow passing an empty IP for Virtual_ip"""
-    if value is None:
+    if value == "":
         return ""
     try:
         return ipaddress.ip_address(value).exploded
