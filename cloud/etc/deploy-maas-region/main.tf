@@ -45,7 +45,7 @@ resource "juju_application" "maas-region" {
   config = var.charm_maas_region_config
 }
 
-resource "juju_integration" "maas-region-postgresql" {
+resource "juju_integration" "maas-region-pgbouncer" {
   model = data.juju_model.machine_model.name
 
   application {
@@ -54,7 +54,7 @@ resource "juju_integration" "maas-region-postgresql" {
   }
 
   application {
-    name     = "postgresql"
+    name     = "pgbouncer"
     endpoint = "database"
   }
 }
