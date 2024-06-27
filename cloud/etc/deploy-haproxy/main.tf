@@ -46,7 +46,7 @@ resource "juju_application" "haproxy" {
 }
 
 resource "juju_application" "keepalived" {
-  count = var.virtual_ip != "" ? 1 : 0
+  count = length(var.virtual_ip) > 0 ? 1 : 0
   name  = "keepalived"
   model = data.juju_model.machine_model.name
 
@@ -57,12 +57,22 @@ resource "juju_application" "keepalived" {
     base     = "ubuntu@22.04"
   }
 
-  config = var.charm_haproxy_config
+  config = {
+    "virtual_ip": var.virtual_ip,
+  }
 }
 
-resource "juju_integration" "haproxy_keepalived" {
-  count = var.virtual_ip != "" ? 1 : 0
+resource "juju_integration" "maas-region-haproxy" {
+  count = length(var.virtual_ip) > 0 ? 1 : 0
   model = data.juju_model.machine_model.name
-  application_one = juju_application.haproxy.name
-  application_two = juju_application.keepalived[0].name
+
+  application {
+    name     = juju_application.haproxy.name
+    endpoint = "juju-info"
+  }
+
+  application {
+    name     = juju_application.keepalived.name
+    endpoint = "juju-info"
+  }
 }

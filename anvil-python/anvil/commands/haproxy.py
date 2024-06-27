@@ -93,6 +93,8 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         LOG.debug(self.variables)
         write_answers(self.client, CONFIG_KEY, self.variables)
 
+        
+
     def extra_tfvars(self) -> dict[str, Any]:
         return self.variables
 

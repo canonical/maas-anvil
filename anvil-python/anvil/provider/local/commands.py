@@ -162,19 +162,12 @@ class LocalProvider(ProviderBase):
     help="Specify additional roles, region or agent, for the "
     "bootstrap node. Defaults to the database role.",
 )
-@click.option(
-    "--vip",
-    type=click.STRING,
-    callback=validate_ip_address,
-    help="Specify the Virtual IP address.",
-)
 @click.pass_context
 def bootstrap(
     ctx: click.Context,
     roles: List[Role],
     manifest: Path | None = None,
     accept_defaults: bool = False,
-    vip: str | None = None,
 ) -> None:
     """Bootstrap the local node.
 
@@ -205,10 +198,6 @@ def bootstrap(
     if Role.DATABASE not in roles:
         LOG.debug("Enabling database role for bootstrap")
         roles.append(Role.DATABASE)
-    # VIP functionality requires haproxy
-    if Role.HAPROXY not in roles and vip:
-        LOG.debug("Enabling haproxy for VIP")
-        roles.append(Role.HAPROXY)
     is_region_node = any(role.is_region_node() for role in roles)
     is_agent_node = any(role.is_agent_node() for role in roles)
     is_haproxy_node = any(role.is_haproxy_node() for role in roles)
