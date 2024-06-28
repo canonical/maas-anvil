@@ -34,7 +34,6 @@ from anvil.provider.local.deployment import LocalDeployment
 
 APPLICATION = "haproxy"
 CONFIG_KEY = "TerraformVarsHaproxyPlan"
-ADDONS_CONFIG_KEY = "TerraformVarsHaproxyAddons"
 HAPROXY_APP_TIMEOUT = 180  # 3 minutes, managing the application should be fast
 HAPROXY_UNIT_TIMEOUT = (
     1200  # 15 minutes, adding / removing units can take a long time
@@ -61,7 +60,7 @@ def validate_key_file(filepath: str) -> None:
 class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
     """Deploy HAProxy application using Terraform"""
 
-    _HAPROXY_ADDONS_QUESTIONS = {
+    _HAPROXY_QUESTIONS = {
         "ssl_cert": questions.PromptQuestion(
             "Path to SSL Certificate for HAProxy: ",
             validation_function=validate_cert_file,
@@ -112,7 +111,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
 
     def prompt(self, console: Console | None = None) -> None:
         haproxy_addons_bank = questions.QuestionBank(
-            questions=self._HAPROXY_ADDONS_QUESTIONS,
+            questions=self._HAPROXY_QUESTIONS,
             console=console,
         )
         with open(haproxy_addons_bank.ssl_cert.ask(), "r") as cert_file:
