@@ -46,26 +46,16 @@ LOG = logging.getLogger(__name__)
 def validate_cert_file(filepath: str) -> None:
     if not os.path.isfile(filepath):
         raise ValueError(f"{filepath} does not exist")
-    try:
-        with open(filepath, "r") as f:
-            parse_cert(f.read())
-    except:
-        raise ValueError("Invalid certificate file format")
+    with open(filepath, "r") as f:
+        if "BEGIN CERTIFICATE" not in f.read():
+            raise ValueError("Invalid certificate file")
 
 def validate_key_file(filepath: str) -> None:
     if not os.path.isfile(filepath):
         raise ValueError(f"{filepath} does not exist")
-    try:
-        with open(filepath, "r") as f:
-            parse_key(f.read())
-    except:
-        raise ValueError("Invalid key file format")
-
-def parse_cert(cert: str) -> str:
-    return '\n'.join([x for x in cert.split("\n") if x and "CERTIFICATE" not in x])
-
-def parse_key(key: str) -> str:
-    return '\n'.join([x for x in key.split("\n") if x and "KEY" not in x])
+    with open(filepath, "r") as f:
+        if "BEGIN PRIVATE KEY" not in f.read():
+            raise ValueError("Invalid key file")
 
 
 class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
@@ -136,13 +126,6 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         
         self.variables["charm_haproxy_config"]["services"] = self._TLS_SERVICES_CONFIG
         LOG.debug(f"HAProxy prompt variables: {self.variables}")
-
-        # TODO: do we need this? probably for refresh?
-        questions.write_answers(self.client, ADDONS_CONFIG_KEY, self.variables)
-
-        tfhelper = self.manifest.get_tfhelper(self.tfplan)
-        answer_file = tfhelper.path / "addons.auto.tfvars.json"
-        tfhelper.write_tfvars(self.variables, answer_file)
 
     def extra_tfvars(self) -> dict:
         return self.variables
