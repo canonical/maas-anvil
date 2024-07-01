@@ -21,7 +21,12 @@ from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformInitStep
 from sunbeam.jobs.juju import JujuHelper
 from sunbeam.jobs.manifest import BaseStep
-from sunbeam.jobs.questions import PromptQuestion, QuestionBank, write_answers
+from sunbeam.jobs.questions import (
+    PromptQuestion,
+    QuestionBank,
+    load_answers,
+    write_answers,
+)
 from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
     DeployMachineApplicationStep,
@@ -76,6 +81,8 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         return True
 
     def prompt(self, console: Console | None = None) -> None:
+        previous_answers = load_answers(self.client, CONFIG_KEY)
+
         bootstrap_bank = QuestionBank(
             questions={
                 "virtual_ip": PromptQuestion(
@@ -85,6 +92,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
                 )
             },
             console=console,
+            previous_answers=previous_answers,
         )
 
         self.variables["virtual_ip"] = bootstrap_bank.virtual_ip.ask()
