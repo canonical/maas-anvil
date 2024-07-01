@@ -12,11 +12,15 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
+from os import environ, mkdir
+import os.path
+from typing import Any, ClassVar, List
 
-from typing import List
-
+from rich.console import Console
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformInitStep
+from sunbeam.jobs import questions
 from sunbeam.jobs.juju import JujuHelper
 from sunbeam.jobs.manifest import BaseStep
 from sunbeam.jobs.steps import (
@@ -34,10 +38,52 @@ HAPROXY_APP_TIMEOUT = 180  # 3 minutes, managing the application should be fast
 HAPROXY_UNIT_TIMEOUT = (
     1200  # 15 minutes, adding / removing units can take a long time
 )
+HAPROXY_CERTS_DIR = os.path.join(environ["HOME"], "certs/")
+LOG = logging.getLogger(__name__)
+
+
+def validate_cert_file(filepath: str | None) -> None:
+    if filepath is None:
+        return
+    if not os.path.isfile(filepath):
+        raise ValueError(f"{filepath} does not exist")
+    with open(filepath) as f:
+        if "BEGIN CERTIFICATE" not in f.read():
+            raise ValueError("Invalid certificate file")
+
+
+def validate_key_file(filepath: str | None) -> None:
+    if filepath is None:
+        return
+    if not os.path.isfile(filepath):
+        raise ValueError(f"{filepath} does not exist")
+    with open(filepath) as f:
+        if "BEGIN PRIVATE KEY" not in f.read():
+            raise ValueError("Invalid key file")
 
 
 class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
     """Deploy HAProxy application using Terraform"""
+
+    _HAPROXY_QUESTIONS: ClassVar[dict[str, Any]] = {
+        "ssl_cert": questions.PromptQuestion(
+            "Path to SSL Certificate for HAProxy (enter nothing to skip TLS)",
+            validation_function=validate_cert_file,
+        ),
+        "ssl_key": questions.PromptQuestion(
+            "Path to private key for the SSL certificate (enter nothing to skip TLS)",
+            validation_function=validate_key_file,
+        ),
+    }
+    _TLS_SERVICES_CONFIG: str = f"""- service_name: haproxy_service
+  service_host: "0.0.0.0"
+  service_port: 443
+  service_options:
+    - balance leastconn
+    - cookie SRVNAME insert
+  server_options: maxconn 100 cookie S{"{i}"} check
+  crts: [{HAPROXY_CERTS_DIR}]
+"""
 
     def __init__(
         self,
@@ -59,9 +105,44 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             "Deploying HAProxy",
             refresh,
         )
+        self.variables: dict[str, Any] = {"charm_haproxy_config": {}}
 
     def get_application_timeout(self) -> int:
         return HAPROXY_APP_TIMEOUT
+
+    def has_prompts(self) -> bool:
+        # maybe return False if it's a refresh?
+        return True
+
+    def prompt(self, console: Console | None = None) -> None:
+        haproxy_addons_bank = questions.QuestionBank(
+            questions=self._HAPROXY_QUESTIONS,
+            console=console,
+        )
+        cert_filepath = haproxy_addons_bank.ssl_cert.ask()
+        key_filepath = haproxy_addons_bank.ssl_key.ask()
+        if cert_filepath is not None and key_filepath is not None:
+            with open(cert_filepath) as cert_file:
+                cert = cert_file.read()
+            with open(key_filepath) as key_file:
+                key = key_file.read()
+            if not os.path.isdir(HAPROXY_CERTS_DIR):
+                mkdir(HAPROXY_CERTS_DIR)
+            with open(
+                os.path.join(HAPROXY_CERTS_DIR, "haproxy.pem"), "w"
+            ) as combined_file:
+                combined_file.write(key + cert)
+            self.variables["charm_haproxy_config"]["services"] = (
+                self._TLS_SERVICES_CONFIG
+            )
+        else:
+            LOG.debug(
+                "No certificate/key provided, skipping TLS configuration"
+            )
+        LOG.debug(f"HAProxy prompt variables: {self.variables}")
+
+    def extra_tfvars(self) -> dict[str, Any]:
+        return self.variables
 
 
 class AddHAProxyUnitsStep(AddMachineUnitsStep):
