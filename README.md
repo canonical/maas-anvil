@@ -24,8 +24,9 @@ ubuntu@infra{1,2,3}:~$ newgrp snap_daemon
 ```
 
 ### Bootstrap the first node
-During installation of the HAProxy charm, you will be asked for a virtual_ip. Pass an empty value to disable it.
-Passing any other valid IP will install the KeepAliveD charm, allowing you to connect to HA MAAS using the VIP.
+
+Note: If accept defaults is not passed, you will be asked for a `virtual_ip` during installation of the HAProxy charm.
+Pass an empty value to disable it, or any valid IP to enable; the Keepalived charm will be installed to enable connecting to HA MAAS using the VIP.
 
 ```bash
 ubuntu@infra1:~$ maas-anvil cluster bootstrap \
@@ -44,8 +45,6 @@ Token for the Node infra3.: eyJuYW1lIjoibWFhcy00Lm1hYXMiLCJzZWNyZXQiOiI3MmE51234
 ```
 
 ### Join new nodes to the MAAS cluster
-During installation of the HAProxy charm, you will be asked for a virtual_ip. Pass an empty value to disable it.
-Passing any other valid IP will install the KeepAliveD charm, allowing you to connect to HA MAAS using the VIP.
 
 ```bash
 ubuntu@infra2:~$ maas-anvil cluster join \
