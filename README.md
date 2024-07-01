@@ -25,7 +25,7 @@ ubuntu@infra{1,2,3}:~$ newgrp snap_daemon
 
 ### Bootstrap the first node
 
-Note: If accept defaults is not passed, you will be asked for a `virtual_ip` during installation of the HAProxy charm.
+Note: You will be asked for a `virtual_ip` during installation of the HAProxy charm, `accept-defaults` does not modify this behaviour.
 Pass an empty value to disable it, or any valid IP to enable; the Keepalived charm will be installed to enable connecting to HA MAAS using the VIP.
 
 ```bash
