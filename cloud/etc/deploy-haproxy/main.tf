@@ -70,7 +70,7 @@ resource "juju_integration" "maas-region-haproxy" {
   }
 
   application {
-    name     = juju_application.keepalived[*].name
+    name     = juju_application.keepalived[0].name
     endpoint = "juju-info"
   }
 }
