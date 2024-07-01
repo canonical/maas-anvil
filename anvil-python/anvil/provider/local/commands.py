@@ -272,6 +272,7 @@ def bootstrap(
                 client, manifest_obj, jhelper, deployment, fqdn
             )
         )
+
     if is_region_node:
         plan4.extend(
             maas_region_install_steps(

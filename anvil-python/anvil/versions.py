@@ -17,12 +17,14 @@ MAAS_REGION_CHANNEL = "latest/edge"
 MAAS_AGENT_CHANNEL = "latest/edge"
 POSTGRESQL_CHANNEL = "14/stable"
 HAPROXY_CHANNEL = "latest/stable"
+KEEPALIVED_CHANNEL = "latest/stable"
 
 MACHINE_CHARMS = {
     "maas-region": MAAS_REGION_CHANNEL,
     "maas-agent": MAAS_AGENT_CHANNEL,
     "haproxy": HAPROXY_CHANNEL,
     "postgresql": POSTGRESQL_CHANNEL,
+    "keepalived": KEEPALIVED_CHANNEL,
 }
 K8S_CHARMS: dict[str, str] = {}
 
@@ -63,7 +65,12 @@ DEPLOY_HAPROXY_TFVAR_MAP = {
             "channel": "charm_haproxy_channel",
             "revision": "charm_haproxy_revision",
             "config": "charm_haproxy_config",
-        }
+        },
+        "keepalived": {
+            "channel": "charm_keepalived_channel",
+            "revision": "charm_keepalived_revision",
+            "config": "charm_haproxy_config",
+        },
     }
 }
 

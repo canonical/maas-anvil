@@ -13,19 +13,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
+import logging
+from typing import Any, List
 
+from rich.console import Console
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformInitStep
 from sunbeam.jobs.juju import JujuHelper
 from sunbeam.jobs.manifest import BaseStep
+from sunbeam.jobs.questions import (
+    PromptQuestion,
+    QuestionBank,
+    load_answers,
+    write_answers,
+)
 from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
     DeployMachineApplicationStep,
     RemoveMachineUnitStep,
 )
 
+from anvil.jobs.common import (
+    validate_ip_address,
+)
 from anvil.jobs.manifest import Manifest
+
+LOG = logging.getLogger(__name__)
 from anvil.provider.local.deployment import LocalDeployment
 
 APPLICATION = "haproxy"
@@ -59,9 +72,36 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             "Deploying HAProxy",
             refresh,
         )
+        self.variables = {"virtual_ip": ""}
 
     def get_application_timeout(self) -> int:
         return HAPROXY_APP_TIMEOUT
+
+    def has_prompts(self) -> bool:
+        return True
+
+    def prompt(self, console: Console | None = None) -> None:
+        previous_answers = load_answers(self.client, CONFIG_KEY)
+
+        bootstrap_bank = QuestionBank(
+            questions={
+                "virtual_ip": PromptQuestion(
+                    "Virtual IP to use for the Cluster in HA",
+                    default_value="",
+                    validation_function=validate_ip_address,
+                )
+            },
+            console=console,
+            previous_answers=previous_answers,
+        )
+
+        self.variables["virtual_ip"] = bootstrap_bank.virtual_ip.ask()
+
+        LOG.debug(self.variables)
+        write_answers(self.client, CONFIG_KEY, self.variables)
+
+    def extra_tfvars(self) -> dict[str, Any]:
+        return self.variables
 
 
 class AddHAProxyUnitsStep(AddMachineUnitsStep):

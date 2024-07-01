@@ -25,6 +25,9 @@ ubuntu@infra{1,2,3}:~$ newgrp snap_daemon
 
 ### Bootstrap the first node
 
+Note: You will be asked for a `virtual_ip` during installation of the HAProxy charm, `accept-defaults` does not modify this behaviour.
+Pass an empty value to disable it, or any valid IP to enable; the Keepalived charm will be installed to enable connecting to HA MAAS using the VIP.
+
 ```bash
 ubuntu@infra1:~$ maas-anvil cluster bootstrap \
     --role database --role region --role agent --role haproxy \
@@ -72,14 +75,6 @@ ubuntu@infra1:~$ maas-anvil cluster list
 
 ```bash
 ubuntu@infra1:~$ juju run maas-region/0 create-admin username=admin password=pass email=admin@maas.io ssh-import=lp:maasadmin
-```
-
-### (Optional) Add VIP functionality through Keepalived charm
-
-```bash
-ubuntu@infra1:~$ juju deploy containers/keepalived
-ubuntu@infra1:~$ juju relate haproxy:juju-info keepalived:juju-info
-ubuntu@infra1:~$ juju config keepalived virtual_ip=<ip_address>
 ```
 
 ### Charm documentation

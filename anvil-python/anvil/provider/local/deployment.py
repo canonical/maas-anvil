@@ -21,7 +21,11 @@ from sunbeam.clusterd.service import (
     ClusterServiceUnavailableException,
 )
 from sunbeam.commands.juju import BOOTSTRAP_CONFIG_KEY, bootstrap_questions
-from sunbeam.jobs.questions import QuestionBank, load_answers, show_questions
+from sunbeam.jobs.questions import (
+    QuestionBank,
+    load_answers,
+    show_questions,
+)
 from sunbeam.provider.local.deployment import (
     LocalDeployment as SunbeamLocalDeployment,
 )
