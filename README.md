@@ -31,6 +31,11 @@ ubuntu@infra1:~$ maas-anvil cluster bootstrap \
     --accept-defaults
 ```
 
+#### TLS Termination at HA Proxy
+While deploying HA Proxy, MAAS Anvil will ask you for filepaths pointing to an SSL certificate and private key. If passed, HA Proxy will be configured to use the given certificate and key for TLS termination. To skip TLS configuration, enter nothing when prompted for the certificate and key files.
+
+Note that the certificate and key must be accessible by the `maas-anvil` snap; please make sure these files are in a directory that can be accessed, such as `$HOME/.config/anvil`.
+
 ### Add new nodes to the MAAS cluster
 
 ```bash
