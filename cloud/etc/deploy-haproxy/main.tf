@@ -57,7 +57,9 @@ resource "juju_application" "keepalived" {
     base     = "ubuntu@22.04"
   }
 
-  config = var.charm_haproxy_config
+  config = {
+    "virtual_ip": var.virtual_ip,
+  }
 }
 
 resource "juju_integration" "maas-region-haproxy" {
