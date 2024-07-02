@@ -12,7 +12,7 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import asyncio
 import logging
 from pathlib import Path
 from typing import List
@@ -44,6 +44,7 @@ from sunbeam.commands.juju import (
     RegisterJujuUserStep,
     RemoveJujuMachineStep,
     SaveJujuUserLocallyStep,
+    ScaleJujuStep,
 )
 from sunbeam.jobs.checks import (
     JujuSnapCheck,
@@ -501,6 +502,19 @@ def join(
         )
 
     run_plan(plan2, console)
+    machines = asyncio.run(
+        jhelper.get_machines(deployment.infrastructure_model)
+    )
+    n_machines = len(machines)
+    LOG.debug(f"Juju machines: {machines}")
+    if n_machines > 2 and n_machines % 2 == 1:
+        plan2.append(
+            ScaleJujuStep(
+                controller,
+                n_machines,
+                ["--to", ",".join([str(x) for x in n_machines.keys()])],
+            )
+        )
 
     click.echo(f"Node joined cluster with roles: {pretty_roles}")
 
