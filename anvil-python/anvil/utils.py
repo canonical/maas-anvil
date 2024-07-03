@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import logging
+import subprocess
 import sys
 
 import click
@@ -43,3 +45,20 @@ class CatchGroup(click.Group):
             LOG.warn(message)
             LOG.error("Error: %s", e)
             sys.exit(1)
+
+
+def machines_missing_juju_controllers() -> list[str]:
+    result = subprocess.run(
+        ["juju", "show-controller", "anvil-controller", "--format", "json"],
+        capture_output=True,
+    )
+    controllers = json.loads(result.stdout)
+    controller_machines = set(
+        controllers["anvil-controller"]["controller-machines"].keys()
+    )
+
+    machines_res = subprocess.run(
+        ["juju", "machines", "--format", "json"], capture_output=True
+    )
+    machines = set(json.loads(machines_res.stdout)["machines"].keys())
+    return list(machines - controller_machines)

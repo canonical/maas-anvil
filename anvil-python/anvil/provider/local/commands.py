@@ -13,8 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import asyncio
+import json
 import logging
 from pathlib import Path
+import subprocess
 from typing import List
 
 import click
@@ -98,7 +100,7 @@ from anvil.jobs.common import (
 from anvil.jobs.juju import CONTROLLER
 from anvil.jobs.manifest import Manifest
 from anvil.provider.local.deployment import LocalDeployment
-from anvil.utils import CatchGroup
+from anvil.utils import CatchGroup, machines_missing_juju_controllers
 
 LOG = logging.getLogger(__name__)
 console = Console()
@@ -501,17 +503,21 @@ def join(
             )
         )
 
-    machines = asyncio.run(
-        jhelper.get_machines(deployment.infrastructure_model)
+    machines_res = subprocess.run(
+        ["juju", "machines", "--format", "json"], capture_output=True
     )
+    machines = json.loads(machines_res.stdout)["machines"]
     n_machines = len(machines)
-    LOG.debug(f"Juju machines: {machines}")
     if n_machines > 2 and n_machines % 2 == 1:
+        machines_to_join = machines_missing_juju_controllers()
+        LOG.debug(
+            f"Will enable Juju controller on machines {machines_to_join}"
+        )
         plan2.append(
             ScaleJujuStep(
                 controller,
                 n_machines,
-                ["--to", ",".join(machines.keys())],
+                ["--to", ",".join(machines_to_join)],
             )
         )
     run_plan(plan2, console)
