@@ -93,9 +93,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         return True
 
     def prompt(self, console: Console | None = None) -> None:
-        self.variables: CONF_VAR = load_answers(
-            self.client, KEEPALIVED_CONFIG_KEY
-        )
+        self.variables = load_answers(self.client, KEEPALIVED_CONFIG_KEY)
         self.variables.setdefault("keepalived_config", {})
         self.variables["keepalived_config"].setdefault("virtual_ip", "")
 
