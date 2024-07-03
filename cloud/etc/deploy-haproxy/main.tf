@@ -58,7 +58,7 @@ resource "juju_application" "keepalived" {
   }
 
   config = merge(
-    charm_keepalive_config,
+    var.charm_keepalived_config,
     {
       "virtual_ip": var.virtual_ip,
     }
