@@ -501,7 +501,6 @@ def join(
             )
         )
 
-    run_plan(plan2, console)
     machines = asyncio.run(
         jhelper.get_machines(deployment.infrastructure_model)
     )
@@ -512,9 +511,10 @@ def join(
             ScaleJujuStep(
                 controller,
                 n_machines,
-                ["--to", ",".join([str(x) for x in n_machines.keys()])],
+                ["--to", ",".join(machines.keys())],
             )
         )
+    run_plan(plan2, console)
 
     click.echo(f"Node joined cluster with roles: {pretty_roles}")
 
