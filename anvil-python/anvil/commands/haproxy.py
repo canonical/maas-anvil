@@ -50,6 +50,8 @@ HAPROXY_UNIT_TIMEOUT = (
     1200  # 15 minutes, adding / removing units can take a long time
 )
 
+CONF_VAR = dict[str, dict[str, Any]]
+
 
 def keepalived_questions() -> dict[str, Any]:
     return {
@@ -81,7 +83,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             "Deploying HAProxy",
             refresh,
         )
-        self.variables = {}
+        self.variables: CONF_VAR = {}
         self.accept_defaults = accept_defaults
 
     def get_application_timeout(self) -> int:
@@ -91,7 +93,9 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         return True
 
     def prompt(self, console: Console | None = None) -> None:
-        self.variables = load_answers(self.client, KEEPALIVED_CONFIG_KEY)
+        self.variables: CONF_VAR = load_answers(
+            self.client, KEEPALIVED_CONFIG_KEY
+        )
         self.variables.setdefault("keepalived_config", {})
         self.variables["keepalived_config"].setdefault("virtual_ip", "")
 
