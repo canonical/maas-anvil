@@ -43,10 +43,18 @@ from anvil.provider.local.deployment import LocalDeployment
 
 APPLICATION = "haproxy"
 CONFIG_KEY = "TerraformVarsHaproxyPlan"
+HAPROXY_CONFIG_KEY = "TerraformVarsHaproxy"
+KEEPALIVED_CONFIG_KEY = "TerraformVarsKeepalived"
 HAPROXY_APP_TIMEOUT = 180  # 3 minutes, managing the application should be fast
 HAPROXY_UNIT_TIMEOUT = (
     1200  # 15 minutes, adding / removing units can take a long time
 )
+
+
+def keepalived_questions() -> None:
+    return {
+        "virtual_ip": "",
+    }
 
 
 class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
@@ -59,6 +67,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         jhelper: JujuHelper,
         model: str,
         refresh: bool = False,
+        accept_defaults: bool = False,
     ):
         super().__init__(
             client,
@@ -72,7 +81,8 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             "Deploying HAProxy",
             refresh,
         )
-        self.variables = {"virtual_ip": ""}
+        self.variables = {}
+        self.accept_defaults = accept_defaults
 
     def get_application_timeout(self) -> int:
         return HAPROXY_APP_TIMEOUT
@@ -81,21 +91,26 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         return True
 
     def prompt(self, console: Console | None = None) -> None:
-        previous_answers = load_answers(self.client, CONFIG_KEY)
+        self.variables = load_answers(self.client, KEEPALIVED_CONFIG_KEY)
+        self.variables.setdefault("keepalived_config", {})
+        self.variables["keepalived_config"].setdefault("virtual_ip", "")
 
-        bootstrap_bank = QuestionBank(
+        keepalive_bank = QuestionBank(
             questions={
                 "virtual_ip": PromptQuestion(
                     "Virtual IP to use for the Cluster in HA",
-                    default_value="",
+                    default_value=keepalived_questions().get("virtual_ip"),
                     validation_function=validate_ip_address,
                 )
             },
             console=console,
-            previous_answers=previous_answers,
+            previous_answers=self.variables,
+            accept_defaults=self.accept_defaults,
         )
 
-        self.variables["virtual_ip"] = bootstrap_bank.virtual_ip.ask()
+        self.variables["keepalived_config"]["virtual_ip"] = (
+            keepalive_bank.virtual_ip.ask()
+        )
 
         LOG.debug(self.variables)
         write_answers(self.client, CONFIG_KEY, self.variables)
@@ -156,11 +171,16 @@ def haproxy_install_steps(
     jhelper: JujuHelper,
     deployment: LocalDeployment,
     fqdn: str,
+    accept_defaults: bool = False,
 ) -> List[BaseStep]:
     return [
         TerraformInitStep(manifest.get_tfhelper("haproxy-plan")),
         DeployHAProxyApplicationStep(
-            client, manifest, jhelper, deployment.infrastructure_model
+            client,
+            manifest,
+            jhelper,
+            deployment.infrastructure_model,
+            accept_defaults=accept_defaults,
         ),
         AddHAProxyUnitsStep(
             client, fqdn, jhelper, deployment.infrastructure_model

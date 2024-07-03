@@ -269,7 +269,12 @@ def bootstrap(
     if is_haproxy_node:
         plan4.extend(
             haproxy_install_steps(
-                client, manifest_obj, jhelper, deployment, fqdn
+                client,
+                manifest_obj,
+                jhelper,
+                deployment,
+                fqdn,
+                accept_defaults,
             )
         )
 

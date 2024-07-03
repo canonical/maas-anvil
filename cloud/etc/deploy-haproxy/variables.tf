@@ -59,3 +59,9 @@ variable "virtual_ip" {
   type        = string
   default     = ""
 }
+
+variable "charm_keepalive_config" {
+  description = "Operator config for Keepalived deployment"
+  type        = map(string)
+  default     = {}
+}
