@@ -51,7 +51,7 @@ HAPROXY_UNIT_TIMEOUT = (
 )
 
 
-def keepalived_questions() -> None:
+def keepalived_questions() -> dict[str, Any]:
     return {
         "virtual_ip": "",
     }
