@@ -45,7 +45,39 @@ resource "juju_application" "maas-region" {
   config = var.charm_maas_region_config
 }
 
-resource "juju_integration" "maas-region-postgresql" {
+resource "juju_application" "pgbouncer" {
+  name  = "pgbouncer"
+  model = data.juju_model.machine_model.name
+  units = 0 # it is a subordinate charm
+
+  charm {
+    name     = "pgbouncer"
+    channel  = var.charm_pgbouncer_channel
+    revision = var.charm_pgbouncer_revision
+    base     = "ubuntu@22.04"
+  }
+
+  config = merge({
+    pool_mode          = "transaction"
+    max_db_connections = floor(90 / max(length(var.machine_ids), 1))
+  }, var.charm_pgbouncer_config)
+}
+
+resource "juju_integration" "postgresql-pgbouncer" {
+  model = data.juju_model.machine_model.name
+
+  application {
+    name     = "postgresql"
+    endpoint = "database"
+  }
+
+  application {
+    name     = juju_application.pgbouncer.name
+    endpoint = "backend-database"
+  }
+}
+
+resource "juju_integration" "maas-region-pgbouncer" {
   model = data.juju_model.machine_model.name
 
   application {
@@ -54,7 +86,7 @@ resource "juju_integration" "maas-region-postgresql" {
   }
 
   application {
-    name     = "postgresql"
+    name     = juju_application.pgbouncer.name
     endpoint = "database"
   }
 }

@@ -15,7 +15,8 @@
 
 MAAS_REGION_CHANNEL = "latest/edge"
 MAAS_AGENT_CHANNEL = "latest/edge"
-POSTGRESQL_CHANNEL = "14/stable"
+POSTGRESQL_CHANNEL = "14/candidate"
+PGBOUNCER_CHANNEL = "1/candidate"
 HAPROXY_CHANNEL = "latest/stable"
 KEEPALIVED_CHANNEL = "latest/stable"
 
@@ -24,6 +25,7 @@ MACHINE_CHARMS = {
     "maas-agent": MAAS_AGENT_CHANNEL,
     "haproxy": HAPROXY_CHANNEL,
     "postgresql": POSTGRESQL_CHANNEL,
+    "pgbouncer": PGBOUNCER_CHANNEL,
     "keepalived": KEEPALIVED_CHANNEL,
 }
 K8S_CHARMS: dict[str, str] = {}
@@ -45,7 +47,12 @@ DEPLOY_MAAS_REGION_TFVAR_MAP = {
             "channel": "charm_maas_region_channel",
             "revision": "charm_maas_region_revision",
             "config": "charm_maas_region_config",
-        }
+        },
+        "pgbouncer": {
+            "channel": "charm_pgbouncer_channel",
+            "revision": "charm_pgbouncer_revision",
+            "config": "charm_pgbouncer_config",
+        },
     }
 }
 

@@ -45,7 +45,7 @@ resource "juju_application" "maas-agent" {
   config = var.charm_maas_agent_config
 }
 
-resource "juju_integration" "maas-region-postgresql" {
+resource "juju_integration" "maas-agent-region" {
   model = data.juju_model.machine_model.name
 
   application {
