@@ -54,9 +54,7 @@ CONF_VAR = dict[str, dict[str, Any]]
 
 
 def keepalived_questions() -> dict[str, Any]:
-    return {
-        "virtual_ip": "",
-    }
+    return {"virtual_ip": "", "vip_hostname": "", "port": 443}
 
 
 class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
@@ -96,6 +94,8 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         self.variables = load_answers(self.client, KEEPALIVED_CONFIG_KEY)
         self.variables.setdefault("keepalived_config", {})
         self.variables["keepalived_config"].setdefault("virtual_ip", "")
+        self.variables["keepalived_config"].setdefault("vip_hostname", "")
+        self.variables["keepalived_config"].setdefault("port", 443)
 
         keepalive_bank = QuestionBank(
             questions={
@@ -103,7 +103,15 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
                     "Virtual IP to use for the Cluster in HA",
                     default_value=keepalived_questions().get("virtual_ip"),
                     validation_function=validate_ip_address,
-                )
+                ),
+                "vip_hostname": PromptQuestion(
+                    "Virtual IP hostname for the Cluster in HA",
+                    default_value=keepalived_questions().get("vip_hostname"),
+                ),
+                "port": PromptQuestion(
+                    "Virtual IP port to use for the Cluster in HA",
+                    default_value=keepalived_questions().get("port"),
+                ),
             },
             console=console,
             previous_answers=self.variables,
@@ -113,6 +121,10 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         self.variables["keepalived_config"]["virtual_ip"] = (
             keepalive_bank.virtual_ip.ask()
         )
+        self.variables["keepalived_config"]["vip_hostname"] = (
+            keepalive_bank.vip_hostname.ask()
+        )
+        self.variables["keepalived_config"]["port"] = keepalive_bank.port.ask()
 
         LOG.debug(self.variables)
         write_answers(self.client, CONFIG_KEY, self.variables)

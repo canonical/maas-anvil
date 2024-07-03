@@ -61,6 +61,8 @@ resource "juju_application" "keepalived" {
     var.charm_keepalived_config,
     {
       "virtual_ip": var.virtual_ip,
+      "vip_hostname": var.vip_hostname,
+      "port": var.port,
     }
   )
 }

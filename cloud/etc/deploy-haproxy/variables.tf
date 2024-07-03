@@ -60,6 +60,18 @@ variable "virtual_ip" {
   default     = ""
 }
 
+variable "vip_hostname" {
+  description = "Virtual IP hostname for keepalived"
+  type        = string
+  default     = ""
+}
+
+variable "port" {
+  description = "Virtual IP port for keepalived clients"
+  type        = string
+  default     = ""
+}
+
 variable "charm_keepalived_config" {
   description = "Operator config for Keepalived deployment"
   type        = map(string)
