@@ -83,6 +83,7 @@ from anvil.commands.maas_region import (
     maas_region_install_steps,
 )
 from anvil.commands.postgresql import (
+    ReapplyPostgreSQLTerraformPlanStep,
     RemovePostgreSQLUnitStep,
     postgresql_install_steps,
 )
@@ -264,7 +265,13 @@ def bootstrap(
     jhelper = JujuHelper(deployment.get_connected_controller())
 
     plan4 = postgresql_install_steps(
-        client, manifest_obj, jhelper, deployment, fqdn
+        client,
+        manifest_obj,
+        jhelper,
+        deployment.infrastructure_model,
+        fqdn,
+        accept_defaults,
+        preseed,
     )
     if is_haproxy_node:
         plan4.extend(
@@ -281,13 +288,21 @@ def bootstrap(
     if is_region_node:
         plan4.extend(
             maas_region_install_steps(
-                client, manifest_obj, jhelper, deployment, fqdn
+                client,
+                manifest_obj,
+                jhelper,
+                deployment.infrastructure_model,
+                fqdn,
             )
         )
     if is_agent_node:
         plan4.extend(
             maas_agent_install_steps(
-                client, manifest_obj, jhelper, deployment, fqdn
+                client,
+                manifest_obj,
+                jhelper,
+                deployment.infrastructure_model,
+                fqdn,
             )
         )
     run_plan(plan4, console)
@@ -354,7 +369,9 @@ def add(ctx: click.Context, name: str, format: str) -> None:
 
 
 @click.command()
-@click.option("-a", "--accept-defaults", help="Accept all defaults.", is_flag=True)
+@click.option(
+    "-a", "--accept-defaults", help="Accept all defaults.", is_flag=True
+)
 @click.option("--token", type=str, help="Join token")
 @click.option(
     "--role",
@@ -434,7 +451,13 @@ def join(
     if is_database_node:
         plan2.extend(
             postgresql_install_steps(
-                client, manifest_obj, jhelper, deployment, name
+                client,
+                manifest_obj,
+                jhelper,
+                deployment.infrastructure_model,
+                name,
+                accept_defaults,
+                preseed,
             )
         )
     if is_haproxy_node:
@@ -452,13 +475,26 @@ def join(
     if is_region_node:
         plan2.extend(
             maas_region_install_steps(
-                client, manifest_obj, jhelper, deployment, name
+                client,
+                manifest_obj,
+                jhelper,
+                deployment.infrastructure_model,
+                name,
+            )
+        )
+        plan2.append(
+            ReapplyPostgreSQLTerraformPlanStep(
+                client, manifest_obj, jhelper, deployment.infrastructure_model
             )
         )
     if is_agent_node:
         plan2.extend(
             maas_agent_install_steps(
-                client, manifest_obj, jhelper, deployment, name
+                client,
+                manifest_obj,
+                jhelper,
+                deployment.infrastructure_model,
+                name,
             )
         )
 
@@ -528,6 +564,10 @@ def remove(ctx: click.Context, name: str) -> None:
     preflight_checks = [DaemonGroupCheck()]
     run_preflight_checks(preflight_checks, console)
 
+    manifest_obj = Manifest.load_latest_from_clusterdb(
+        deployment, include_defaults=True
+    )
+
     plan = [
         JujuLoginStep(deployment.juju_account),
         RemovePostgreSQLUnitStep(
@@ -538,6 +578,9 @@ def remove(ctx: click.Context, name: str) -> None:
         ),
         RemoveMAASRegionUnitStep(
             client, name, jhelper, deployment.infrastructure_model
+        ),
+        ReapplyPostgreSQLTerraformPlanStep(
+            client, manifest_obj, jhelper, deployment.infrastructure_model
         ),
         RemoveMAASAgentUnitStep(
             client, name, jhelper, deployment.infrastructure_model

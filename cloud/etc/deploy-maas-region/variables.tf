@@ -51,7 +51,7 @@ variable "enable_haproxy" {
 variable "charm_pgbouncer_channel" {
   description = "Operator channel for PgBouncer deployment"
   type        = string
-  default     = "1/candidate"
+  default     = "1/beta"
 }
 
 variable "charm_pgbouncer_revision" {
@@ -64,4 +64,10 @@ variable "charm_pgbouncer_config" {
   description = "Operator config for PgBouncer deployment"
   type        = map(string)
   default     = {}
+}
+
+variable "max_connections_per_region" {
+  description = "Maximum number of concurrent connections to allow to the database server per region"
+  type        = number
+  default     = 50
 }

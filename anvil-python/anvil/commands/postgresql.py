@@ -13,12 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
+import logging
+from typing import Any, List
 
+from rich.status import Status
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformInitStep
+from sunbeam.jobs import questions
+from sunbeam.jobs.common import BaseStep, Result, ResultType
 from sunbeam.jobs.juju import JujuHelper
-from sunbeam.jobs.manifest import BaseStep
 from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
     DeployMachineApplicationStep,
@@ -26,10 +29,11 @@ from sunbeam.jobs.steps import (
 )
 
 from anvil.jobs.manifest import Manifest
-from anvil.provider.local.deployment import LocalDeployment
 
+LOG = logging.getLogger(__name__)
 APPLICATION = "postgresql"
 CONFIG_KEY = "TerraformVarsPostgresqlPlan"
+POSTGRESQL_CONFIG_KEY = "TerraformVarsPostgresql"
 POSTGRESQL_APP_TIMEOUT = (
     180  # 3 minutes, managing the application should be fast
 )
@@ -38,8 +42,57 @@ POSTGRESQL_UNIT_TIMEOUT = (
 )
 
 
+def postgresql_install_steps(
+    client: Client,
+    manifest: Manifest,
+    jhelper: JujuHelper,
+    model: str,
+    fqdn: str,
+    accept_defaults: bool,
+    preseed: dict[Any, Any],
+) -> List[BaseStep]:
+    return [
+        TerraformInitStep(manifest.get_tfhelper("postgresql-plan")),
+        DeployPostgreSQLApplicationStep(
+            client,
+            manifest,
+            jhelper,
+            model,
+            accept_defaults=accept_defaults,
+            deployment_preseed=preseed,
+        ),
+        AddPostgreSQLUnitsStep(client, fqdn, jhelper, model),
+    ]
+
+
+def postgresql_questions() -> dict[str, questions.PromptQuestion]:
+    return {
+        "max_connections": questions.PromptQuestion(
+            "Maximum number of concurrent connections to allow to the database server",
+            default_value="default",
+            validation_function=validate_max_connections,
+        ),
+    }
+
+
+def validate_max_connections(value: str) -> str | ValueError:
+    if value in ["default", "dynamic"]:
+        return value
+    try:
+        if 100 <= int(value) <= 500:
+            return value
+        else:
+            raise ValueError
+    except ValueError:
+        raise ValueError(
+            "Please provide either a number between 100 and 500 or 'default' for system default or 'dynamic' for calculating max_connections relevant to maas regions"
+        )
+
+
 class DeployPostgreSQLApplicationStep(DeployMachineApplicationStep):
     """Deploy PostgreSQL application using Terraform"""
+
+    _CONFIG = POSTGRESQL_CONFIG_KEY
 
     def __init__(
         self,
@@ -47,6 +100,8 @@ class DeployPostgreSQLApplicationStep(DeployMachineApplicationStep):
         manifest: Manifest,
         jhelper: JujuHelper,
         model: str,
+        deployment_preseed: dict[Any, Any] | None = None,
+        accept_defaults: bool = False,
         refresh: bool = False,
     ):
         super().__init__(
@@ -62,8 +117,91 @@ class DeployPostgreSQLApplicationStep(DeployMachineApplicationStep):
             refresh,
         )
 
+        self.preseed = deployment_preseed or {}
+        self.accept_defaults = accept_defaults
+
     def get_application_timeout(self) -> int:
         return POSTGRESQL_APP_TIMEOUT
+
+    def prompt(self, console: questions.Console | None = None) -> None:
+        variables = questions.load_answers(self.client, self._CONFIG)
+        variables.setdefault("max_connections", "default")
+
+        # Set defaults
+        self.preseed.setdefault("max_connections", "default")
+
+        postgresql_config_bank = questions.QuestionBank(
+            questions=postgresql_questions(),
+            console=console,
+            preseed=self.preseed.get("postgres"),
+            previous_answers=variables,
+            accept_defaults=self.accept_defaults,
+        )
+        max_connections = postgresql_config_bank.max_connections.ask()
+        variables["max_connections"] = max_connections
+
+        LOG.debug(variables)
+        questions.write_answers(self.client, self._CONFIG, variables)
+
+    def extra_tfvars(self) -> dict[str, Any]:
+        variables: dict[str, Any] = questions.load_answers(
+            self.client, self._CONFIG
+        )
+        variables["maas_region_nodes"] = len(
+            self.client.cluster.list_nodes_by_role("region")
+        )
+        return variables
+
+    def has_prompts(self) -> bool:
+        return True
+
+
+class ReapplyPostgreSQLTerraformPlanStep(DeployMachineApplicationStep):
+    """Reapply PostgreSQL Terraform plan"""
+
+    _CONFIG = POSTGRESQL_CONFIG_KEY
+
+    def __init__(
+        self,
+        client: Client,
+        manifest: Manifest,
+        jhelper: JujuHelper,
+        model: str,
+    ):
+        super().__init__(
+            client,
+            manifest,
+            jhelper,
+            CONFIG_KEY,
+            APPLICATION,
+            model,
+            "postgresql-plan",
+            "Reapply PostgreSQL Terraform plan",
+            "Reapplying PostgreSQL Terraform plan",
+            True,
+        )
+
+    def get_application_timeout(self) -> int:
+        return POSTGRESQL_APP_TIMEOUT
+
+    def extra_tfvars(self) -> dict[str, Any]:
+        variables: dict[str, Any] = questions.load_answers(
+            self.client, self._CONFIG
+        )
+        variables["maas_region_nodes"] = len(
+            self.client.cluster.list_nodes_by_role("region")
+        )
+        return variables
+
+    def is_skip(self, status: Status | None = None) -> Result:
+        variables: dict[str, Any] = questions.load_answers(
+            self.client, self._CONFIG
+        )
+        variables.setdefault("max_connections", "default")
+        if variables["max_connections"] != "dynamic":
+            return Result(ResultType.SKIPPED)
+        else:
+            return super().is_skip(status)
 
 
 class AddPostgreSQLUnitsStep(AddMachineUnitsStep):
@@ -110,21 +248,3 @@ class RemovePostgreSQLUnitStep(RemoveMachineUnitStep):
 
     def get_unit_timeout(self) -> int:
         return POSTGRESQL_UNIT_TIMEOUT
-
-
-def postgresql_install_steps(
-    client: Client,
-    manifest: Manifest,
-    jhelper: JujuHelper,
-    deployment: LocalDeployment,
-    fqdn: str,
-) -> List[BaseStep]:
-    return [
-        TerraformInitStep(manifest.get_tfhelper("postgresql-plan")),
-        DeployPostgreSQLApplicationStep(
-            client, manifest, jhelper, deployment.infrastructure_model
-        ),
-        AddPostgreSQLUnitsStep(
-            client, fqdn, jhelper, deployment.infrastructure_model
-        ),
-    ]
