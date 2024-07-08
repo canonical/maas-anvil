@@ -17,7 +17,14 @@ import logging
 import sys
 
 import click
+from rich.console import Console
+from sunbeam.commands.juju import JujuLoginStep
+from sunbeam.jobs.common import run_plan, run_preflight_checks
 from sunbeam.plugins.interface.v1.base import PluginError
+
+from anvil.jobs.checks import VerifyBootstrappedCheck
+import anvil.provider
+from anvil.provider.local.deployment import LocalDeployment
 
 LOG = logging.getLogger(__name__)
 LOCAL_ACCESS = "local"
@@ -43,3 +50,19 @@ class CatchGroup(click.Group):
             LOG.warn(message)
             LOG.error("Error: %s", e)
             sys.exit(1)
+
+
+@click.command()
+@click.pass_context
+def juju_login(ctx: click.Context) -> None:
+    """Login to the anvil controller."""
+    deployment: LocalDeployment = ctx.obj()
+    client = deployment.get_client()
+    console = Console()
+
+    preflight_checks = [VerifyBootstrappedCheck(client)]
+    run_preflight_checks(preflight_checks, console)
+
+    run_plan([JujuLoginStep(deployment.juju_account)], console)
+
+    console.print("Juju login complete.")

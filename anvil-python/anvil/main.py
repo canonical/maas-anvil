@@ -27,7 +27,7 @@ from anvil.commands import (
 )
 from anvil.provider.local.commands import LocalProvider
 from anvil.provider.local.deployment import LocalDeployment
-from anvil.utils import CatchGroup
+from anvil.utils import CatchGroup, juju_login
 
 # Update the help options to allow -h in addition to --help for
 # triggering the help for various commands
@@ -70,6 +70,9 @@ def main() -> None:
     manifest.add_command(manifest_commands.list)
     manifest.add_command(manifest_commands.show)
     manifest.add_command(manifest_commands.generate)
+
+    # Miscellania
+    cli.add_command(juju_login)
 
     cli(obj=deployment)
 
