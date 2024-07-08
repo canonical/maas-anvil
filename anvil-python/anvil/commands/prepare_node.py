@@ -79,6 +79,7 @@ mkdir -p $HOME/.config/anvil
 # Juju model.
 sudo snap connect maas-anvil:juju-bin juju:juju-bin
 sudo snap connect maas-anvil:dot-local-share-juju
+sudo snap connect maas-anvil:dot-config-anvil
 """
 
 
