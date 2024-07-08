@@ -30,6 +30,10 @@ data "juju_model" "machine_model" {
   name = var.machine_model
 }
 
+locals {
+  virtual_ip = var.virtual_ip != "" ? { virtual_ip = var.virtual_ip } : {}
+}
+
 resource "juju_application" "haproxy" {
   name  = "haproxy"
   model = data.juju_model.machine_model.name
@@ -58,12 +62,9 @@ resource "juju_application" "keepalived" {
   }
 
   config = merge(
+    { port = var.haproxy_port },
+    local.virtual_ip,
     var.charm_keepalived_config,
-    {
-      "virtual_ip": var.virtual_ip,
-      "vip_hostname": var.vip_hostname,
-      "port": var.port,
-    }
   )
 }
 

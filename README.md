@@ -25,14 +25,14 @@ ubuntu@infra{1,2,3}:~$ newgrp snap_daemon
 
 ### Bootstrap the first node
 
-Note: You will be asked for a `virtual_ip` during installation of the HAProxy charm, `accept-defaults` does not modify this behaviour.
-Pass an empty value to disable it, or any valid IP to enable; the Keepalived charm will be installed to enable connecting to HA MAAS using the VIP.
-
 ```bash
 ubuntu@infra1:~$ maas-anvil cluster bootstrap \
     --role database --role region --role agent --role haproxy \
     --accept-defaults
 ```
+
+Note: You will be asked for a `virtual_ip` during installation of the HAProxy charm, if `accept-defaults` is omitted.
+Pass an empty value to disable it, or any valid IP to enable; the Keepalived charm will be installed to enable connecting to HA MAAS using the VIP.
 
 ### Add new nodes to the MAAS cluster
 

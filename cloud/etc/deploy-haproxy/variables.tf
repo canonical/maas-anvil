@@ -55,21 +55,15 @@ variable "charm_keepalived_revision" {
 }
 
 variable "virtual_ip" {
-  description = "Virtual IP Address for keepalived"
+  description = "Virtual IP Address for Keepalived"
   type        = string
   default     = ""
 }
 
-variable "vip_hostname" {
-  description = "Virtual IP hostname for keepalived"
+variable "haproxy_port" {
+  description = "The port that HAProxy listens on"
   type        = string
-  default     = ""
-}
-
-variable "port" {
-  description = "Virtual IP port for keepalived clients"
-  type        = string
-  default     = ""
+  default     = 80
 }
 
 variable "charm_keepalived_config" {

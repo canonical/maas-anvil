@@ -14,8 +14,7 @@
 # limitations under the License.
 
 import enum
-import ipaddress
-from typing import Any, Optional
+from typing import Any
 
 import click
 
@@ -79,13 +78,3 @@ def validate_roles(
         return [Role[role.upper()] for role in value]
     except KeyError as e:
         raise click.BadParameter(str(e))
-
-
-def validate_ip_address(value: str) -> str:
-    """We allow passing an empty IP for Virtual_ip"""
-    if value == "":
-        return ""
-    try:
-        return ipaddress.ip_address(value).exploded
-    except ValueError as e:
-        raise click.BadParameter(f"{value} is not a valid IP address: {e}")

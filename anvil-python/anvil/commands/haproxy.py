@@ -13,33 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import ipaddress
 import logging
 from typing import Any, List
 
 from rich.console import Console
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformInitStep
+from sunbeam.jobs import questions
+from sunbeam.jobs.common import BaseStep
 from sunbeam.jobs.juju import JujuHelper
-from sunbeam.jobs.manifest import BaseStep
-from sunbeam.jobs.questions import (
-    PromptQuestion,
-    QuestionBank,
-    load_answers,
-    write_answers,
-)
 from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
     DeployMachineApplicationStep,
     RemoveMachineUnitStep,
 )
 
-from anvil.jobs.common import (
-    validate_ip_address,
-)
 from anvil.jobs.manifest import Manifest
 
 LOG = logging.getLogger(__name__)
-from anvil.provider.local.deployment import LocalDeployment
 
 APPLICATION = "haproxy"
 CONFIG_KEY = "TerraformVarsHaproxyPlan"
@@ -50,15 +42,31 @@ HAPROXY_UNIT_TIMEOUT = (
     1200  # 15 minutes, adding / removing units can take a long time
 )
 
-CONF_VAR = dict[str, dict[str, Any]]
+
+def keepalived_questions() -> dict[str, questions.PromptQuestion]:
+    return {
+        "virtual_ip": questions.PromptQuestion(
+            "Virtual IP to use for the Cluster in HA",
+            default_value="",
+            validation_function=validate_virtual_ip,
+        ),
+    }
 
 
-def keepalived_questions() -> dict[str, Any]:
-    return {"virtual_ip": "", "vip_hostname": "", "port": 443}
+def validate_virtual_ip(value: str) -> str:
+    """We allow passing an empty IP for virtual_ip"""
+    if value == "":
+        return ""
+    try:
+        return ipaddress.ip_address(value).exploded
+    except ValueError as e:
+        raise ValueError(f"{value} is not a valid IP address: {e}")
 
 
 class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
     """Deploy HAProxy application using Terraform"""
+
+    _KEEPALIVED_CONFIG = KEEPALIVED_CONFIG_KEY
 
     def __init__(
         self,
@@ -66,8 +74,9 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         manifest: Manifest,
         jhelper: JujuHelper,
         model: str,
-        refresh: bool = False,
+        deployment_preseed: dict[Any, Any] | None = None,
         accept_defaults: bool = False,
+        refresh: bool = False,
     ):
         super().__init__(
             client,
@@ -81,7 +90,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             "Deploying HAProxy",
             refresh,
         )
-        self.variables: CONF_VAR = {}
+        self.preseed = deployment_preseed or {}
         self.accept_defaults = accept_defaults
 
     def get_application_timeout(self) -> int:
@@ -91,46 +100,35 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         return True
 
     def prompt(self, console: Console | None = None) -> None:
-        self.variables = load_answers(self.client, KEEPALIVED_CONFIG_KEY)
-        self.variables.setdefault("keepalived_config", {})
-        self.variables["keepalived_config"].setdefault("virtual_ip", "")
-        self.variables["keepalived_config"].setdefault("vip_hostname", "")
-        self.variables["keepalived_config"].setdefault("port", 443)
+        variables = questions.load_answers(
+            self.client, self._KEEPALIVED_CONFIG
+        )
+        variables.setdefault("virtual_ip", "")
 
-        keepalive_bank = QuestionBank(
-            questions={
-                "virtual_ip": PromptQuestion(
-                    "Virtual IP to use for the Cluster in HA",
-                    default_value=keepalived_questions().get("virtual_ip"),
-                    validation_function=validate_ip_address,
-                ),
-                "vip_hostname": PromptQuestion(
-                    "Virtual IP hostname for the Cluster in HA",
-                    default_value=keepalived_questions().get("vip_hostname"),
-                ),
-                "port": PromptQuestion(
-                    "Virtual IP port to use for the Cluster in HA",
-                    default_value=keepalived_questions().get("port"),
-                ),
-            },
+        # Set defaults
+        self.preseed.setdefault("virtual_ip", "")
+
+        keepalived_config_bank = questions.QuestionBank(
+            questions=keepalived_questions(),
             console=console,
-            previous_answers=self.variables,
+            preseed=self.preseed.get("haproxy"),
+            previous_answers=variables,
             accept_defaults=self.accept_defaults,
         )
 
-        self.variables["keepalived_config"]["virtual_ip"] = (
-            keepalive_bank.virtual_ip.ask()
-        )
-        self.variables["keepalived_config"]["vip_hostname"] = (
-            keepalive_bank.vip_hostname.ask()
-        )
-        self.variables["keepalived_config"]["port"] = keepalive_bank.port.ask()
+        variables["virtual_ip"] = keepalived_config_bank.virtual_ip.ask()
 
-        LOG.debug(self.variables)
-        write_answers(self.client, CONFIG_KEY, self.variables)
+        LOG.debug(variables)
+        questions.write_answers(
+            self.client, self._KEEPALIVED_CONFIG, variables
+        )
 
     def extra_tfvars(self) -> dict[str, Any]:
-        return self.variables
+        variables: dict[str, Any] = questions.load_answers(
+            self.client, self._KEEPALIVED_CONFIG
+        )
+        variables["haproxy_port"] = 80
+        return variables
 
 
 class AddHAProxyUnitsStep(AddMachineUnitsStep):
@@ -183,9 +181,10 @@ def haproxy_install_steps(
     client: Client,
     manifest: Manifest,
     jhelper: JujuHelper,
-    deployment: LocalDeployment,
+    model: str,
     fqdn: str,
-    accept_defaults: bool = False,
+    accept_defaults: bool,
+    preseed: dict[Any, Any],
 ) -> List[BaseStep]:
     return [
         TerraformInitStep(manifest.get_tfhelper("haproxy-plan")),
@@ -193,10 +192,9 @@ def haproxy_install_steps(
             client,
             manifest,
             jhelper,
-            deployment.infrastructure_model,
+            model,
             accept_defaults=accept_defaults,
+            deployment_preseed=preseed,
         ),
-        AddHAProxyUnitsStep(
-            client, fqdn, jhelper, deployment.infrastructure_model
-        ),
+        AddHAProxyUnitsStep(client, fqdn, jhelper, model),
     ]

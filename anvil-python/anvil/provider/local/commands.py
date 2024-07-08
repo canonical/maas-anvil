@@ -272,12 +272,12 @@ def bootstrap(
                 client,
                 manifest_obj,
                 jhelper,
-                deployment,
+                deployment.infrastructure_model,
                 fqdn,
                 accept_defaults,
+                preseed,
             )
         )
-
     if is_region_node:
         plan4.extend(
             maas_region_install_steps(
@@ -354,6 +354,7 @@ def add(ctx: click.Context, name: str, format: str) -> None:
 
 
 @click.command()
+@click.option("-a", "--accept-defaults", help="Accept all defaults.", is_flag=True)
 @click.option("--token", type=str, help="Join token")
 @click.option(
     "--role",
@@ -371,6 +372,7 @@ def join(
     ctx: click.Context,
     token: str,
     roles: List[Role],
+    accept_defaults: bool = False,
 ) -> None:
     """Join node to the cluster.
 
@@ -419,6 +421,7 @@ def join(
     manifest_obj = Manifest.load_latest_from_clusterdb(
         deployment, include_defaults=True
     )
+    preseed = manifest_obj.deployment_config
 
     machine_id = -1
     machine_id_result = get_step_message(plan1_results, AddJujuMachineStep)
@@ -437,7 +440,13 @@ def join(
     if is_haproxy_node:
         plan2.extend(
             haproxy_install_steps(
-                client, manifest_obj, jhelper, deployment, name
+                client,
+                manifest_obj,
+                jhelper,
+                deployment.infrastructure_model,
+                name,
+                accept_defaults,
+                preseed,
             )
         )
     if is_region_node:
