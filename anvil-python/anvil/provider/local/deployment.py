@@ -26,6 +26,8 @@ from sunbeam.provider.local.deployment import (
     LocalDeployment as SunbeamLocalDeployment,
 )
 
+from anvil.commands.haproxy import KEEPALIVED_CONFIG_KEY, keepalived_questions
+
 LOG = logging.getLogger(__name__)
 LOCAL_TYPE = "local"
 
@@ -49,6 +51,20 @@ class LocalDeployment(SunbeamLocalDeployment):
         )
         preseed_content.extend(
             show_questions(bootstrap_bank, section="bootstrap")
+        )
+
+        # HAProxy questions
+        try:
+            variables = load_answers(client, KEEPALIVED_CONFIG_KEY)
+        except ClusterServiceUnavailableException:
+            variables = {}
+        keepalived_config_bank = QuestionBank(
+            questions=keepalived_questions(),
+            console=console,
+            previous_answers=variables,
+        )
+        preseed_content.extend(
+            show_questions(keepalived_config_bank, section="haproxy")
         )
 
         preseed_content_final = "\n".join(preseed_content)

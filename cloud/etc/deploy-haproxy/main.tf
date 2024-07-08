@@ -30,6 +30,10 @@ data "juju_model" "machine_model" {
   name = var.machine_model
 }
 
+locals {
+  virtual_ip = var.virtual_ip != "" ? { virtual_ip = var.virtual_ip } : {}
+}
+
 resource "juju_application" "haproxy" {
   name  = "haproxy"
   model = data.juju_model.machine_model.name
@@ -43,4 +47,38 @@ resource "juju_application" "haproxy" {
   }
 
   config = var.charm_haproxy_config
+}
+
+resource "juju_application" "keepalived" {
+  count = min(length(var.virtual_ip), 1)
+  name  = "keepalived"
+  model = data.juju_model.machine_model.name
+
+  charm {
+    name     = "keepalived"
+    channel  = var.charm_keepalived_channel
+    revision = var.charm_keepalived_revision
+    base     = "ubuntu@22.04"
+  }
+
+  config = merge(
+    { port = var.haproxy_port },
+    local.virtual_ip,
+    var.charm_keepalived_config,
+  )
+}
+
+resource "juju_integration" "maas-region-haproxy" {
+  count = min(length(var.virtual_ip), 1)
+  model = data.juju_model.machine_model.name
+
+  application {
+    name     = juju_application.haproxy.name
+    endpoint = "juju-info"
+  }
+
+  application {
+    name     = juju_application.keepalived[0].name
+    endpoint = "juju-info"
+  }
 }
