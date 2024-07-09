@@ -46,7 +46,6 @@ from sunbeam.commands.juju import (
     RegisterJujuUserStep,
     RemoveJujuMachineStep,
     SaveJujuUserLocallyStep,
-    ScaleJujuStep,
 )
 from sunbeam.jobs.checks import (
     JujuSnapCheck,
@@ -97,7 +96,7 @@ from anvil.jobs.common import (
     roles_to_str_list,
     validate_roles,
 )
-from anvil.jobs.juju import CONTROLLER
+from anvil.jobs.juju import CONTROLLER, AnvilScaleJujuStep
 from anvil.jobs.manifest import Manifest
 from anvil.provider.local.deployment import LocalDeployment
 from anvil.utils import CatchGroup, machines_missing_juju_controllers
@@ -514,7 +513,7 @@ def join(
             f"Will enable Juju controller on machines {machines_to_join}"
         )
         plan2.append(
-            ScaleJujuStep(
+            AnvilScaleJujuStep(
                 controller,
                 n_machines,
                 ["--to", ",".join(machines_to_join)],

@@ -12,5 +12,50 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
+import subprocess
+
+from rich.status import Status
+from sunbeam.commands.juju import ScaleJujuStep
+from sunbeam.jobs.common import Result, ResultType
 
 CONTROLLER = "anvil-controller"
+LOG = logging.getLogger(__name__)
+
+
+class AnvilScaleJujuStep(ScaleJujuStep):
+    def run(self, status: Status | None = None) -> Result:
+        cmd = [
+            self._get_juju_binary(),
+            "enable-ha",
+            "-n",
+            str(self.n),
+            *self.extra_args,
+        ]
+        LOG.debug(f'Running command {" ".join(cmd)}')
+        process = subprocess.run(
+            cmd, capture_output=True, text=True, check=True
+        )
+        LOG.debug(
+            f"Command finished. stdout={process.stdout}, stderr={process.stderr}"
+        )
+        cmd = [
+            self._get_juju_binary(),
+            "wait-for",
+            "application",
+            "-m",
+            "admin/controller",
+            "controller",
+            "--timeout",
+            "15m",
+        ]
+        self.update_status(status, "scaling controller")
+        LOG.debug("Waiting for HA to be enabled")
+        LOG.debug(f'Running command {" ".join(cmd)}')
+        process = subprocess.run(
+            cmd, capture_output=True, text=True, check=True
+        )
+        LOG.debug(
+            f"Command finished. stdout={process.stdout}, stderr={process.stderr}"
+        )
+        return Result(ResultType.COMPLETED)

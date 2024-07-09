@@ -65,6 +65,9 @@ ubuntu@infra3:~$ maas-anvil cluster join \
     --token eyJuYW1lIjoibWFhcy00Lm1hYXMiLCJzZWNyZXQiOiI3MmE512342abcdEASWWxOWNlYWNkYmJjMWRmMjk4OThkYWFkYzQzMDAzZjk4NmRkZDI2MWRhYWVkZTIxIiwiZmluZ2VycHJpbnQiOiJlODU5ZmY5NjAwMDU4OGFjZmQ5ZDM0NjFhMDk5NmU1YTU3YjhjN2Q2ZjE4M2NjZDRlOTg2NGRkZjQ3NWMwZWM1Iiwiam9pbl9hZGRyZXNzZXMiOlsiMTAuMjAuMC43OjcwMDAiLCIxMC4yMC4wLjg6NzAwMCJdfQ==
 ```
 
+#### Juju Controller HA
+Starting with the third machine joining the cluster, `maas-anvil` will automatically start adding Juju controllers to machines that are missing them. This will occur at every other join (When machines 3, 5, 7, and so on join) 
+
 ### Confirm the cluster status
 
 ```bash
