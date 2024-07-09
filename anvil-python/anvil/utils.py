@@ -61,4 +61,4 @@ def machines_missing_juju_controllers() -> list[str]:
         ["juju", "machines", "--format", "json"], capture_output=True
     )
     machines = set(json.loads(machines_res.stdout)["machines"].keys())
-    return list(machines - controller_machines)
+    return list(machines.difference(controller_machines))
