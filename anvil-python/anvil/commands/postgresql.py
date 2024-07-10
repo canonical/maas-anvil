@@ -248,3 +248,22 @@ class RemovePostgreSQLUnitStep(RemoveMachineUnitStep):
 
     def get_unit_timeout(self) -> int:
         return POSTGRESQL_UNIT_TIMEOUT
+
+
+def postgresql_install_steps(
+    client: Client,
+    manifest: Manifest,
+    jhelper: JujuHelper,
+    deployment: LocalDeployment,
+    fqdn: str,
+    refresh: bool = False,
+) -> List[BaseStep]:
+    return [
+        TerraformInitStep(manifest.get_tfhelper("postgresql-plan")),
+        DeployPostgreSQLApplicationStep(
+            client, manifest, jhelper, deployment.infrastructure_model, refresh
+        ),
+        AddPostgreSQLUnitsStep(
+            client, fqdn, jhelper, deployment.infrastructure_model
+        ),
+    ]
