@@ -153,16 +153,16 @@ def refresh(
         jhelper = JujuHelper(deployment.get_connected_controller())
         upgrade_plan = [
             UpgradePostgreSQLCharm(
-                client, jhelper, manifest, deployment.infrastructure_model
+                client, jhelper, manifest_obj, deployment.infrastructure_model
             ),
             UpgradeHAProxyCharm(
-                client, jhelper, manifest, deployment.infrastructure_model
+                client, jhelper, manifest_obj, deployment.infrastructure_model
             ),
             UpgradeMAASRegionCharm(
-                client, jhelper, manifest, deployment.infrastructure_model
+                client, jhelper, manifest_obj, deployment.infrastructure_model
             ),
             UpgradeMAASAgentCharm(
-                client, jhelper, manifest, deployment.infrastructure_model
+                client, jhelper, manifest_obj, deployment.infrastructure_model
             ),
         ]
         run_plan(upgrade_plan, console)
