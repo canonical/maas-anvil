@@ -129,7 +129,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         )
         self.preseed = deployment_preseed or {}
         self.accept_defaults = accept_defaults
-        self.variables: dict[str, Any] = {"charm_haproxy_config": {}}
+        self.use_tls_termination = False
 
     def get_application_timeout(self) -> int:
         return HAPROXY_APP_TIMEOUT
