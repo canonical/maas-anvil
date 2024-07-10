@@ -41,8 +41,21 @@ console = Console()
 
 
 @click.command()
+@click.option(
+    "-a", "--accept-defaults", help="Accept all defaults.", is_flag=True
+)
+@click.option(
+    "-m",
+    "--manifest",
+    help="Manifest file.",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+)
 @click.pass_context
-def refresh(ctx: click.Context, manifest: Path | None = None) -> None:
+def refresh(
+    ctx: click.Context,
+    manifest: Path | None = None,
+    accept_defaults: bool = False,
+) -> None:
     """Refresh anvil cluster."""
 
     deployment: LocalDeployment = ctx.obj
@@ -85,7 +98,7 @@ def refresh(ctx: click.Context, manifest: Path | None = None) -> None:
                 jhelper,
                 deployment.infrastructure_model,
                 fqdn,
-                True,
+                accept_defaults,
                 preseed,
                 refresh=True,
             )
