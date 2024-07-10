@@ -25,6 +25,7 @@ from anvil.commands import (
     inspect as inspect_cmds,
     manifest as manifest_commands,
     prepare_node as prepare_node_cmds,
+    refresh as refresh_cmds,
 )
 from anvil.provider.local.commands import LocalProvider
 from anvil.provider.local.deployment import LocalDeployment
@@ -60,6 +61,7 @@ def main() -> None:
     log.setup_root_logging(logfile)
     cli.add_command(prepare_node_cmds.prepare_node_script)
     cli.add_command(inspect_cmds.inspect)
+    cli.add_command(refresh_cmds.refresh)
 
     # Cluster management
     deployment = LocalDeployment()
