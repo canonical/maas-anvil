@@ -46,7 +46,10 @@ resource "juju_application" "haproxy" {
     base     = "ubuntu@22.04"
   }
 
-  config = var.charm_haproxy_config
+  config = merge(
+    { services = var.haproxy_services_yaml },
+    var.charm_haproxy_config,
+  )
 }
 
 resource "juju_application" "keepalived" {

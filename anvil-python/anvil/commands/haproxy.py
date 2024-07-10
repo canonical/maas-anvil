@@ -108,6 +108,12 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
   server_options: maxconn 100 cookie S{"{i}"} check
   crts: [{HAPROXY_CERTS_DIR}]
 """
+    _DEFAULT_SERVICES_CONFIG: str = """- service_name: haproxy_service
+  service_host: "0.0.0.0"
+  service_port: 80
+  service_options: [balance leastconn, cookie SRVNAME insert]
+  server_options: maxconn 100 cookie S{i} check
+"""
 
     def __init__(
         self,
@@ -133,7 +139,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         )
         self.preseed = deployment_preseed or {}
         self.accept_defaults = accept_defaults
-        self.variables: dict[str, Any] = {"charm_haproxy_config": {}}
+        self.use_tls_termination = False
 
     def get_application_timeout(self) -> int:
         return HAPROXY_APP_TIMEOUT
@@ -157,11 +163,15 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
     def prompt(self, console: Console | None = None) -> None:
         variables = questions.load_answers(self.client, self._HAPROXY_CONFIG)
         variables.setdefault("virtual_ip", "")
-        variables.setdefault("charm_haproxy_config", {})
+        variables.setdefault(
+            "haproxy_services_yaml", self._DEFAULT_SERVICES_CONFIG
+        )
 
         # Set defaults
         self.preseed.setdefault("virtual_ip", "")
-        self.preseed.setdefault("charm_haproxy_config", {})
+        self.preseed.setdefault(
+            "haproxy_services_yaml", self._DEFAULT_SERVICES_CONFIG
+        )
 
         haproxy_config_bank = questions.QuestionBank(
             questions=haproxy_questions(),
@@ -186,15 +196,12 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
                 os.path.join(HAPROXY_CERTS_DIR, "haproxy.pem"), "w"
             ) as combined_file:
                 combined_file.write(key + cert)
-            variables["charm_haproxy_config"]["services"] = (
-                self._TLS_SERVICES_CONFIG
-            )
-            variables["haproxy_port"] = 443
+            variables["haproxy_services_yaml"] = self._TLS_SERVICES_CONFIG
+            self.use_tls_termination = True
         else:
             LOG.debug(
                 "No certificate/key provided, skipping TLS configuration"
             )
-            variables["haproxy_port"] = 80
 
         LOG.debug(variables)
         questions.write_answers(self.client, self._HAPROXY_CONFIG, variables)
@@ -203,6 +210,10 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         variables: dict[str, Any] = questions.load_answers(
             self.client, self._HAPROXY_CONFIG
         )
+        if self.use_tls_termination:
+            variables["haproxy_port"] = 443
+        else:
+            variables["haproxy_port"] = 80
         LOG.debug(f"extra tfvars: {variables}")
         return variables
 

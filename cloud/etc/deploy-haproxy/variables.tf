@@ -60,6 +60,12 @@ variable "virtual_ip" {
   default     = ""
 }
 
+variable "haproxy_services_yaml" {
+  description = "yaml-formatted services definition for HA proxy charm"
+  type        = string
+  default     = ""
+}
+
 variable "haproxy_port" {
   description = "The port that HAProxy listens on"
   type        = string
