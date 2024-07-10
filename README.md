@@ -84,6 +84,22 @@ ubuntu@infra1:~$ maas-anvil cluster list
 ubuntu@infra1:~$ juju run maas-region/0 create-admin username=admin password=pass email=admin@maas.io ssh-import=lp:maasadmin
 ```
 
+## Cluster updates
+
+You can refresh the cluster by running the `refresh` command:
+
+```bash
+ubuntu@infra1:~$ maas-anvil refresh
+```
+
+## Cluster updates
+
+You can refresh the cluster by running the `refresh` command:
+
+```bash
+ubuntu@infra1:~$ maas-anvil refresh
+```
+
 # Managing the cluster after initial deployment
 
 ## Juju permission denied

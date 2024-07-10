@@ -18,6 +18,7 @@ from typing import List
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformInitStep
 from sunbeam.jobs.common import BaseStep
+from sunbeam.commands.upgrades.inter_channel import UpgradeMachineCharm
 from sunbeam.jobs.juju import JujuHelper
 from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
@@ -35,6 +36,8 @@ MAASAGENT_APP_TIMEOUT = (
 MAASAGENT_UNIT_TIMEOUT = (
     1200  # 15 minutes, adding / removing units can take a long time
 )
+# TODO: Should we determine charms from the tfvars, to prevent duplication?
+CHARMS = ["maas-agent"]
 
 
 class DeployMAASAgentApplicationStep(DeployMachineApplicationStep):
@@ -109,6 +112,30 @@ class RemoveMAASAgentUnitStep(RemoveMachineUnitStep):
 
     def get_unit_timeout(self) -> int:
         return MAASAGENT_UNIT_TIMEOUT
+
+
+class UpgradeMAASAgentCharm(UpgradeMachineCharm):
+    """Upgrade MAAS Agent Unit Charms."""
+
+    def __init__(
+        self,
+        client: Client,
+        jhelper: JujuHelper,
+        manifest: Manifest,
+        model: str,
+    ):
+        super().__init__(
+            "Upgrade MAAS Agent unit charm",
+            "Upgrading MAAS Agent unit charm",
+            client,
+            jhelper,
+            manifest,
+            model,
+            CHARMS,
+            "haproxy-plan",
+            CONFIG_KEY,
+            MAASAGENT_UNIT_TIMEOUT,
+        )
 
 
 def maas_agent_install_steps(

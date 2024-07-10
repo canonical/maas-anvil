@@ -20,6 +20,7 @@ from typing import Any, List
 from rich.console import Console
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformInitStep
+from sunbeam.commands.upgrades.inter_channel import UpgradeMachineCharm
 from sunbeam.jobs import questions
 from sunbeam.jobs.common import BaseStep
 from sunbeam.jobs.juju import JujuHelper
@@ -41,6 +42,8 @@ HAPROXY_APP_TIMEOUT = 180  # 3 minutes, managing the application should be fast
 HAPROXY_UNIT_TIMEOUT = (
     1200  # 15 minutes, adding / removing units can take a long time
 )
+# TODO: Should we determine charms from the tfvars, to prevent duplication?
+CHARMS = ["haproxy", "keepalived"]
 
 
 def keepalived_questions() -> dict[str, questions.PromptQuestion]:
@@ -175,6 +178,30 @@ class RemoveHAProxyUnitStep(RemoveMachineUnitStep):
 
     def get_unit_timeout(self) -> int:
         return HAPROXY_UNIT_TIMEOUT
+
+
+class UpgradeHAProxyCharm(UpgradeMachineCharm):
+    """Upgrade HAProxy Unit Charms."""
+
+    def __init__(
+        self,
+        client: Client,
+        jhelper: JujuHelper,
+        manifest: Manifest,
+        model: str,
+    ):
+        super().__init__(
+            "Upgrade HAProxy unit charm",
+            "Upgrading HAProxy unit charm",
+            client,
+            jhelper,
+            manifest,
+            model,
+            CHARMS,
+            "haproxy-plan",
+            CONFIG_KEY,
+            HAPROXY_UNIT_TIMEOUT,
+        )
 
 
 def haproxy_install_steps(

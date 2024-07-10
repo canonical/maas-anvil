@@ -18,6 +18,7 @@ from typing import Any, List
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformInitStep
 from sunbeam.jobs.common import BaseStep
+from sunbeam.commands.upgrades.inter_channel import UpgradeMachineCharm
 from sunbeam.jobs.juju import JujuHelper
 from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
@@ -35,6 +36,8 @@ MAASREGION_APP_TIMEOUT = (
 MAASREGION_UNIT_TIMEOUT = (
     1200  # 15 minutes, adding / removing units can take a long time
 )
+# TODO: Should we determine charms from the tfvars, to prevent duplication?
+CHARMS = ["maas-region", "pgbouncer"]
 
 
 class DeployMAASRegionApplicationStep(DeployMachineApplicationStep):
@@ -117,6 +120,30 @@ class RemoveMAASRegionUnitStep(RemoveMachineUnitStep):
 
     def get_unit_timeout(self) -> int:
         return MAASREGION_UNIT_TIMEOUT
+
+
+class UpgradeMAASRegionCharm(UpgradeMachineCharm):
+    """Upgrade MAAS Region Unit Charms."""
+
+    def __init__(
+        self,
+        client: Client,
+        jhelper: JujuHelper,
+        manifest: Manifest,
+        model: str,
+    ):
+        super().__init__(
+            "Upgrade MAAS Region unit charm",
+            "Upgrading MAAS Region unit charm",
+            client,
+            jhelper,
+            manifest,
+            model,
+            CHARMS,
+            "haproxy-plan",
+            CONFIG_KEY,
+            MAASREGION_UNIT_TIMEOUT,
+        )
 
 
 def maas_region_install_steps(
