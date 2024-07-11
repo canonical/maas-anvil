@@ -125,8 +125,8 @@ class UpgradeMAASAgentCharm(UpgradeMachineCharm):
         model: str,
     ):
         super().__init__(
-            "Upgrade MAAS Agent unit charm",
-            "Upgrading MAAS Agent unit charm",
+            "Upgrade MAAS Agent unit charms",
+            "Upgrading MAAS Agent unit charms",
             client,
             jhelper,
             manifest,

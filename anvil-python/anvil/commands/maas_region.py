@@ -133,8 +133,8 @@ class UpgradeMAASRegionCharm(UpgradeMachineCharm):
         model: str,
     ):
         super().__init__(
-            "Upgrade MAAS Region unit charm",
-            "Upgrading MAAS Region unit charm",
+            "Upgrade MAAS Region unit charms",
+            "Upgrading MAAS Region unit charms",
             client,
             jhelper,
             manifest,

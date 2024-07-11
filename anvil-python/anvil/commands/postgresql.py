@@ -264,8 +264,8 @@ class UpgradePostgreSQLCharm(UpgradeMachineCharm):
         model: str,
     ):
         super().__init__(
-            "Upgrade PostgreSQL unit charm",
-            "Upgrading PostgreSQL unit charm",
+            "Upgrade PostgreSQL unit charms",
+            "Upgrading PostgreSQL unit charms",
             client,
             jhelper,
             manifest,

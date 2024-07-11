@@ -191,8 +191,8 @@ class UpgradeHAProxyCharm(UpgradeMachineCharm):
         model: str,
     ):
         super().__init__(
-            "Upgrade HAProxy unit charm",
-            "Upgrading HAProxy unit charm",
+            "Upgrade HAProxy unit charms",
+            "Upgrading HAProxy unit charms",
             client,
             jhelper,
             manifest,
