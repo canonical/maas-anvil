@@ -164,15 +164,13 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
     def prompt(self, console: Console | None = None) -> None:
         variables = questions.load_answers(self.client, self._HAPROXY_CONFIG)
         variables.setdefault("virtual_ip", "")
-        variables.setdefault(
-            "haproxy_services_yaml", self._DEFAULT_SERVICES_CONFIG
-        )
+        variables.setdefault("ssl_cert", None)
+        variables.setdefault("ssl_key", None)
 
         # Set defaults
         self.preseed.setdefault("virtual_ip", "")
-        self.preseed.setdefault(
-            "haproxy_services_yaml", self._DEFAULT_SERVICES_CONFIG
-        )
+        self.preseed.setdefault("ssl_cert", None)
+        self.preseed.setdefault("ssl_key", None)
 
         haproxy_config_bank = questions.QuestionBank(
             questions=haproxy_questions(),
@@ -184,8 +182,8 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
 
         variables["virtual_ip"] = haproxy_config_bank.virtual_ip.ask()
 
-        cert_filepath = haproxy_config_bank.ssl_cert.ask()
-        key_filepath = haproxy_config_bank.ssl_key.ask()
+        variables["ssl_cert"] = cert_filepath = haproxy_config_bank.ssl_cert.ask()
+        variables["ssl_key"] = key_filepath = haproxy_config_bank.ssl_key.ask()
         if cert_filepath is not None and key_filepath is not None:
             with open(cert_filepath) as cert_file:
                 cert = cert_file.read()
@@ -197,7 +195,6 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
                 os.path.join(HAPROXY_CERTS_DIR, "haproxy.pem"), "w"
             ) as combined_file:
                 combined_file.write(key + cert)
-            variables["haproxy_services_yaml"] = self._TLS_SERVICES_CONFIG
             self.use_tls_termination = True
         else:
             LOG.debug(
@@ -211,7 +208,12 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         variables: dict[str, Any] = questions.load_answers(
             self.client, self._HAPROXY_CONFIG
         )
+        # Terraform does not need the content of these answers
+        variables.pop("ssl_cert", None)
+        variables.pop("ssl_key", None)
+
         if self.use_tls_termination:
+            variables["haproxy_services_yaml"] = self._TLS_SERVICES_CONFIG
             variables["haproxy_port"] = 443
         else:
             variables["haproxy_port"] = 80

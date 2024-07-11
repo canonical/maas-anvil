@@ -32,6 +32,7 @@ data "juju_model" "machine_model" {
 
 locals {
   virtual_ip = var.virtual_ip != "" ? { virtual_ip = var.virtual_ip } : {}
+  services   = var.haproxy_services_yaml != "" ? { services = var.haproxy_services_yaml } : {}
 }
 
 resource "juju_application" "haproxy" {
@@ -47,7 +48,7 @@ resource "juju_application" "haproxy" {
   }
 
   config = merge(
-    { services = var.haproxy_services_yaml },
+    local.services,
     var.charm_haproxy_config,
   )
 }
