@@ -34,6 +34,13 @@ ubuntu@infra1:~$ maas-anvil cluster bootstrap \
 Note: You will be asked for a `virtual_ip` during installation of the HAProxy charm, if `accept-defaults` is omitted.
 Pass an empty value to disable it, or any valid IP to enable; the Keepalived charm will be installed to enable connecting to HA MAAS using the VIP.
 
+#### PostgreSQL max_connections
+
+You will be asked for a `max_connections` during installation of the PostgreSQL charm, if `accept-defaults` is omitted. Use `default` if you need the default values of PostgreSQL to be applied to [max_connections](https://www.postgresql.org/docs/14/runtime-config-connection.html). If you are aiming for MAAS HA though you have to do one of the following:
+
+- If number of MAAS region nodes is known beforehand, you can calculate the desired max_connections and set them, based on the formula: `max_connections = max(100, 10 + 50 * number_of_region_nodes)`.
+- If number of MAAS region nodes is not known, you can set `max_connections` to `dynamic` and let MAAS Anvil recalculate the appropriate PostgreSQL `max_connections` every time a region node is joining or leaving the Anvil cluster. **This options includes a database restart with every modification.**
+
 ### Add new nodes to the MAAS cluster
 
 ```bash

@@ -30,6 +30,16 @@ data "juju_model" "machine_model" {
   name = var.machine_model
 }
 
+locals {
+  max_connections = var.max_connections == "default" ? {} : (
+    var.max_connections == "dynamic" ? {
+      experimental_max_connections = max(100, 10 + var.max_connections_per_region * var.maas_region_nodes)
+      } : {
+      experimental_max_connections = tonumber(var.max_connections)
+    }
+  )
+}
+
 resource "juju_application" "postgresql" {
   name  = "postgresql"
   model = data.juju_model.machine_model.name
@@ -42,5 +52,5 @@ resource "juju_application" "postgresql" {
     base     = "ubuntu@22.04"
   }
 
-  config = var.charm_postgresql_config
+  config = merge(local.max_connections, var.charm_postgresql_config)
 }

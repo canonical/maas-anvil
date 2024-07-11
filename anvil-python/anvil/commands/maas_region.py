@@ -17,8 +17,8 @@ from typing import Any, List
 
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformInitStep
+from sunbeam.jobs.common import BaseStep
 from sunbeam.jobs.juju import JujuHelper
-from sunbeam.jobs.manifest import BaseStep
 from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
     DeployMachineApplicationStep,
@@ -26,7 +26,6 @@ from sunbeam.jobs.steps import (
 )
 
 from anvil.jobs.manifest import Manifest
-from anvil.provider.local.deployment import LocalDeployment
 
 APPLICATION = "maas-region"
 CONFIG_KEY = "TerraformVarsMaasregionPlan"
@@ -124,15 +123,11 @@ def maas_region_install_steps(
     client: Client,
     manifest: Manifest,
     jhelper: JujuHelper,
-    deployment: LocalDeployment,
+    model: str,
     fqdn: str,
 ) -> List[BaseStep]:
     return [
         TerraformInitStep(manifest.get_tfhelper("maas-region-plan")),
-        DeployMAASRegionApplicationStep(
-            client, manifest, jhelper, deployment.infrastructure_model
-        ),
-        AddMAASRegionUnitsStep(
-            client, fqdn, jhelper, deployment.infrastructure_model
-        ),
+        DeployMAASRegionApplicationStep(client, manifest, jhelper, model),
+        AddMAASRegionUnitsStep(client, fqdn, jhelper, model),
     ]

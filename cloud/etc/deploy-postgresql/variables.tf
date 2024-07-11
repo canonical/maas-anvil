@@ -41,3 +41,21 @@ variable "machine_model" {
   description = "Model to deploy to"
   type        = string
 }
+
+variable "max_connections" {
+  description = "Maximum number of concurrent connections to allow to the database server"
+  type        = string
+  default     = "default"
+}
+
+variable "maas_region_nodes" {
+  description = "Total number of MAAS region nodes"
+  type        = number
+  default     = 0
+}
+
+variable "max_connections_per_region" {
+  description = "Maximum number of concurrent connections to allow to the database server per region"
+  type        = number
+  default     = 50
+}

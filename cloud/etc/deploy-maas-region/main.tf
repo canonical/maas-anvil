@@ -58,8 +58,8 @@ resource "juju_application" "pgbouncer" {
   }
 
   config = merge({
-    pool_mode          = "transaction"
-    max_db_connections = floor(90 / max(length(var.machine_ids), 1))
+    pool_mode          = "session"
+    max_db_connections = var.max_connections_per_region
   }, var.charm_pgbouncer_config)
 }
 
