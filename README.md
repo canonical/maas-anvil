@@ -77,6 +77,34 @@ ubuntu@infra1:~$ maas-anvil cluster list
 ubuntu@infra1:~$ juju run maas-region/0 create-admin username=admin password=pass email=admin@maas.io ssh-import=lp:maasadmin
 ```
 
+# Managing the cluster after initial deployment
+
+## Juju permission denied
+
+If you get an error message such as:
+```bash
+please enter password for $node on anvil-controller:
+```
+
+It is because Juju oauth macaroons typically expire after 24h.
+If you need to interact with the MAAS-anvil Juju controller after this time has passed, you will need to re-authenticate your session.
+
+You can do this directly using the MAAS-anvil command:
+
+```bash
+ubuntu@$node:~$ maas-anvil juju-login
+```
+
+You can also manually fetch the login credentials from anvil with:
+
+```bash
+ubuntu@$node:~$ cat ~/snap/maas-anvil/current/account.yaml
+password: $password
+user: $user
+```
+
+And `juju login` as usual.
+
 ### Charm documentation
 
 - MAAS Region: <https://charmhub.io/maas-region>

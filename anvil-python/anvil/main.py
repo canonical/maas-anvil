@@ -19,6 +19,7 @@ from sunbeam import log
 from sunbeam.commands import (
     configure as configure_cmds,
 )
+from sunbeam.commands.utils import juju_login
 
 from anvil.commands import (
     inspect as inspect_cmds,
@@ -70,6 +71,9 @@ def main() -> None:
     manifest.add_command(manifest_commands.list)
     manifest.add_command(manifest_commands.show)
     manifest.add_command(manifest_commands.generate)
+
+    # Miscellania
+    cli.add_command(juju_login)
 
     cli(obj=deployment)
 

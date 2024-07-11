@@ -354,7 +354,9 @@ def add(ctx: click.Context, name: str, format: str) -> None:
 
 
 @click.command()
-@click.option("-a", "--accept-defaults", help="Accept all defaults.", is_flag=True)
+@click.option(
+    "-a", "--accept-defaults", help="Accept all defaults.", is_flag=True
+)
 @click.option("--token", type=str, help="Join token")
 @click.option(
     "--role",
