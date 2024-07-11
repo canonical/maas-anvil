@@ -4,7 +4,12 @@ from pathlib import Path
 import click
 from rich.console import Console
 from sunbeam.clusterd.client import Client
-from sunbeam.commands.upgrades.base import UpgradeCoordinator, UpgradePlugins #UpgradeFeatures
+from sunbeam.commands.upgrades.base import (
+    UpgradeCoordinator,
+    UpgradePlugins,
+)
+
+# UpgradeFeatures
 from sunbeam.commands.upgrades.intra_channel import (
     LatestInChannel,
 )
@@ -24,9 +29,9 @@ from anvil.commands.postgresql import postgresql_upgrade_steps
 from anvil.jobs.manifest import Manifest
 from anvil.provider.local.deployment import LocalDeployment
 
-
 LOG = logging.getLogger(__name__)
 console = Console()
+
 
 class LatestInChannelCoordinator(UpgradeCoordinator):
     """Coordinator for refreshing charms in their current channel."""
@@ -88,9 +93,7 @@ class LatestInChannelCoordinator(UpgradeCoordinator):
         # plan.extend(
         #     UpgradeFeatures(self.deployment, upgrade_release=False),
         # )
-        plan.extend(
-            UpgradePlugins(self.deployment, upgrade_release=False)
-        )
+        plan.extend(UpgradePlugins(self.deployment, upgrade_release=False))
 
         return plan
 
