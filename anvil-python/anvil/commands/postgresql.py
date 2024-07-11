@@ -19,7 +19,6 @@ from typing import Any, List
 from rich.status import Status
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformInitStep
-from sunbeam.commands.upgrades.inter_channel import UpgradeMachineCharm
 from sunbeam.jobs import questions
 from sunbeam.jobs.common import BaseStep, Result, ResultType
 from sunbeam.jobs.juju import JujuHelper
@@ -112,10 +111,6 @@ def validate_max_connections(value: str) -> str | ValueError:
         raise ValueError(
             "Please provide either a number between 100 and 500 or 'default' for system default or 'dynamic' for calculating max_connections relevant to maas regions"
         )
-
-
-# TODO: Should we determine charms from the tfvars, to prevent duplication?
-CHARMS = ["postgresql"]
 
 
 class DeployPostgreSQLApplicationStep(DeployMachineApplicationStep):

@@ -17,7 +17,6 @@ from typing import Any, List
 
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformInitStep
-from sunbeam.commands.upgrades.inter_channel import UpgradeMachineCharm
 from sunbeam.jobs.common import BaseStep
 from sunbeam.jobs.juju import JujuHelper
 from sunbeam.jobs.steps import (
@@ -36,8 +35,6 @@ MAASREGION_APP_TIMEOUT = (
 MAASREGION_UNIT_TIMEOUT = (
     1200  # 15 minutes, adding / removing units can take a long time
 )
-# TODO: Should we determine charms from the tfvars, to prevent duplication?
-CHARMS = ["maas-region", "pgbouncer"]
 
 
 class DeployMAASRegionApplicationStep(DeployMachineApplicationStep):
