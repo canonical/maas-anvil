@@ -82,5 +82,6 @@ ubuntu@infra1:~$ juju run maas-region/0 create-admin username=admin password=pas
 - MAAS Region: <https://charmhub.io/maas-region>
 - MAAS Region: <https://charmhub.io/maas-agent>
 - PostgreSQL: <https://charmhub.io/postgresql>
+- PgBouncer: <https://charmhub.io/pgbouncer>
 - HAProxy: <https://charmhub.io/haproxy>
 - Keepalived: <https://charmhub.io/keepalived>
