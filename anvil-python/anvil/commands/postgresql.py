@@ -51,6 +51,7 @@ def postgresql_install_steps(
     fqdn: str,
     accept_defaults: bool,
     preseed: dict[Any, Any],
+    refresh: bool = False,
 ) -> List[BaseStep]:
     return [
         TerraformInitStep(manifest.get_tfhelper("postgresql-plan")),
@@ -61,8 +62,31 @@ def postgresql_install_steps(
             model,
             accept_defaults=accept_defaults,
             deployment_preseed=preseed,
+            refresh=refresh,
         ),
         AddPostgreSQLUnitsStep(client, fqdn, jhelper, model),
+    ]
+
+
+def postgresql_upgrade_steps(
+    client: Client,
+    manifest: Manifest,
+    jhelper: JujuHelper,
+    model: str,
+    accept_defaults: bool,
+    preseed: dict[Any, Any],
+) -> List[BaseStep]:
+    return [
+        TerraformInitStep(manifest.get_tfhelper("postgresql-plan")),
+        DeployPostgreSQLApplicationStep(
+            client,
+            manifest,
+            jhelper,
+            model,
+            accept_defaults=accept_defaults,
+            deployment_preseed=preseed,
+            refresh=True,
+        ),
     ]
 
 
@@ -88,6 +112,8 @@ def validate_max_connections(value: str) -> str | ValueError:
         raise ValueError(
             "Please provide either a number between 100 and 500 or 'default' for system default or 'dynamic' for calculating max_connections relevant to maas regions"
         )
+
+
 # TODO: Should we determine charms from the tfvars, to prevent duplication?
 CHARMS = ["postgresql"]
 
@@ -251,46 +277,3 @@ class RemovePostgreSQLUnitStep(RemoveMachineUnitStep):
 
     def get_unit_timeout(self) -> int:
         return POSTGRESQL_UNIT_TIMEOUT
-
-
-class UpgradePostgreSQLCharm(UpgradeMachineCharm):
-    """Upgrade PostgreSQL Unit Charms."""
-
-    def __init__(
-        self,
-        client: Client,
-        jhelper: JujuHelper,
-        manifest: Manifest,
-        model: str,
-    ):
-        super().__init__(
-            "Upgrade PostgreSQL unit charms",
-            "Upgrading PostgreSQL unit charms",
-            client,
-            jhelper,
-            manifest,
-            model,
-            CHARMS,
-            "postgresql-plan",
-            CONFIG_KEY,
-            POSTGRESQL_UNIT_TIMEOUT,
-        )
-
-
-def postgresql_install_steps(
-    client: Client,
-    manifest: Manifest,
-    jhelper: JujuHelper,
-    deployment: LocalDeployment,
-    fqdn: str,
-    refresh: bool = False,
-) -> List[BaseStep]:
-    return [
-        TerraformInitStep(manifest.get_tfhelper("postgresql-plan")),
-        DeployPostgreSQLApplicationStep(
-            client, manifest, jhelper, deployment.infrastructure_model, refresh
-        ),
-        AddPostgreSQLUnitsStep(
-            client, fqdn, jhelper, deployment.infrastructure_model
-        ),
-    ]

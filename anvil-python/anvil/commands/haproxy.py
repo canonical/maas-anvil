@@ -180,30 +180,6 @@ class RemoveHAProxyUnitStep(RemoveMachineUnitStep):
         return HAPROXY_UNIT_TIMEOUT
 
 
-class UpgradeHAProxyCharm(UpgradeMachineCharm):
-    """Upgrade HAProxy Unit Charms."""
-
-    def __init__(
-        self,
-        client: Client,
-        jhelper: JujuHelper,
-        manifest: Manifest,
-        model: str,
-    ):
-        super().__init__(
-            "Upgrade HAProxy unit charms",
-            "Upgrading HAProxy unit charms",
-            client,
-            jhelper,
-            manifest,
-            model,
-            CHARMS,
-            "haproxy-plan",
-            CONFIG_KEY,
-            HAPROXY_UNIT_TIMEOUT,
-        )
-
-
 def haproxy_install_steps(
     client: Client,
     manifest: Manifest,
@@ -226,4 +202,26 @@ def haproxy_install_steps(
             refresh=refresh,
         ),
         AddHAProxyUnitsStep(client, fqdn, jhelper, model),
+    ]
+
+
+def haproxy_upgrade_steps(
+    client: Client,
+    manifest: Manifest,
+    jhelper: JujuHelper,
+    model: str,
+    accept_defaults: bool,
+    preseed: dict[Any, Any],
+) -> List[BaseStep]:
+    return [
+        TerraformInitStep(manifest.get_tfhelper("haproxy-plan")),
+        DeployHAProxyApplicationStep(
+            client,
+            manifest,
+            jhelper,
+            model,
+            accept_defaults=accept_defaults,
+            deployment_preseed=preseed,
+            refresh=True,
+        ),
     ]

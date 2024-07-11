@@ -17,8 +17,8 @@ from typing import List
 
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformInitStep
-from sunbeam.jobs.common import BaseStep
 from sunbeam.commands.upgrades.inter_channel import UpgradeMachineCharm
+from sunbeam.jobs.common import BaseStep
 from sunbeam.jobs.juju import JujuHelper
 from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
@@ -114,30 +114,6 @@ class RemoveMAASAgentUnitStep(RemoveMachineUnitStep):
         return MAASAGENT_UNIT_TIMEOUT
 
 
-class UpgradeMAASAgentCharm(UpgradeMachineCharm):
-    """Upgrade MAAS Agent Unit Charms."""
-
-    def __init__(
-        self,
-        client: Client,
-        jhelper: JujuHelper,
-        manifest: Manifest,
-        model: str,
-    ):
-        super().__init__(
-            "Upgrade MAAS Agent unit charms",
-            "Upgrading MAAS Agent unit charms",
-            client,
-            jhelper,
-            manifest,
-            model,
-            CHARMS,
-            "haproxy-plan",
-            CONFIG_KEY,
-            MAASAGENT_UNIT_TIMEOUT,
-        )
-
-
 def maas_agent_install_steps(
     client: Client,
     manifest: Manifest,
@@ -148,6 +124,22 @@ def maas_agent_install_steps(
 ) -> List[BaseStep]:
     return [
         TerraformInitStep(manifest.get_tfhelper("maas-agent-plan")),
-        DeployMAASAgentApplicationStep(client, manifest, jhelper, model, refresh=refresh),
+        DeployMAASAgentApplicationStep(
+            client, manifest, jhelper, model, refresh=refresh
+        ),
         AddMAASAgentUnitsStep(client, fqdn, jhelper, model),
+    ]
+
+
+def maas_agent_upgrade_steps(
+    client: Client,
+    manifest: Manifest,
+    jhelper: JujuHelper,
+    model: str,
+) -> List[BaseStep]:
+    return [
+        TerraformInitStep(manifest.get_tfhelper("maas-agent-plan")),
+        DeployMAASAgentApplicationStep(
+            client, manifest, jhelper, model, refresh=True
+        ),
     ]

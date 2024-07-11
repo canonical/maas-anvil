@@ -17,8 +17,8 @@ from typing import Any, List
 
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformInitStep
-from sunbeam.jobs.common import BaseStep
 from sunbeam.commands.upgrades.inter_channel import UpgradeMachineCharm
+from sunbeam.jobs.common import BaseStep
 from sunbeam.jobs.juju import JujuHelper
 from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
@@ -122,30 +122,6 @@ class RemoveMAASRegionUnitStep(RemoveMachineUnitStep):
         return MAASREGION_UNIT_TIMEOUT
 
 
-class UpgradeMAASRegionCharm(UpgradeMachineCharm):
-    """Upgrade MAAS Region Unit Charms."""
-
-    def __init__(
-        self,
-        client: Client,
-        jhelper: JujuHelper,
-        manifest: Manifest,
-        model: str,
-    ):
-        super().__init__(
-            "Upgrade MAAS Region unit charms",
-            "Upgrading MAAS Region unit charms",
-            client,
-            jhelper,
-            manifest,
-            model,
-            CHARMS,
-            "haproxy-plan",
-            CONFIG_KEY,
-            MAASREGION_UNIT_TIMEOUT,
-        )
-
-
 def maas_region_install_steps(
     client: Client,
     manifest: Manifest,
@@ -156,6 +132,22 @@ def maas_region_install_steps(
 ) -> List[BaseStep]:
     return [
         TerraformInitStep(manifest.get_tfhelper("maas-region-plan")),
-        DeployMAASRegionApplicationStep(client, manifest, jhelper, model, refresh),
+        DeployMAASRegionApplicationStep(
+            client, manifest, jhelper, model, refresh
+        ),
         AddMAASRegionUnitsStep(client, fqdn, jhelper, model),
+    ]
+
+
+def maas_region_upgrade_steps(
+    client: Client,
+    manifest: Manifest,
+    jhelper: JujuHelper,
+    model: str,
+) -> List[BaseStep]:
+    return [
+        TerraformInitStep(manifest.get_tfhelper("maas-region-plan")),
+        DeployMAASRegionApplicationStep(
+            client, manifest, jhelper, model, refresh=True
+        ),
     ]

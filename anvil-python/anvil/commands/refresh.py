@@ -4,29 +4,23 @@ from pathlib import Path
 import click
 from rich.console import Console
 from sunbeam.clusterd.client import Client
-from sunbeam.commands.clusterd import (
-    ClusterListNodeStep,
+from sunbeam.commands.upgrades.base import UpgradeCoordinator, UpgradeFeatures
+from sunbeam.commands.upgrades.intra_channel import (
+    LatestInChannel,
 )
-from sunbeam.jobs.checks import (
-    SshKeysConnectedCheck,
+from sunbeam.jobs.common import (
+    BaseStep,
+    run_plan,
 )
-from sunbeam.jobs.common import BaseStep, run_plan, run_preflight_checks
+from sunbeam.jobs.deployment import Deployment
+from sunbeam.jobs.deployments import Deployment
 from sunbeam.jobs.juju import JujuHelper
+from sunbeam.jobs.manifest import AddManifestStep, Manifest
 
-from anvil.commands.haproxy import UpgradeHAProxyCharm, haproxy_install_steps
-from anvil.commands.maas_agent import (
-    UpgradeMAASAgentCharm,
-    maas_agent_install_steps,
-)
-from anvil.commands.maas_region import (
-    UpgradeMAASRegionCharm,
-    maas_region_install_steps,
-)
-from anvil.commands.postgresql import (
-    UpgradePostgreSQLCharm,
-    postgresql_install_steps,
-)
-from anvil.jobs.checks import DaemonGroupCheck, VerifyBootstrappedCheck
+from anvil.commands.haproxy import haproxy_upgrade_steps
+from anvil.commands.maas_agent import maas_agent_upgrade_steps
+from anvil.commands.maas_region import maas_region_upgrade_steps
+from anvil.commands.postgresql import postgresql_upgrade_steps
 from anvil.jobs.manifest import Manifest
 from anvil.provider.local.deployment import LocalDeployment
 
@@ -34,135 +28,140 @@ LOG = logging.getLogger(__name__)
 console = Console()
 
 
-def refresh_node(
-    client: Client,
-    name: str,
-    manifest: Manifest,
-    deployment: LocalDeployment,
-    roles: list[str] = [],
-    accept_defaults: bool = False,
-) -> None:
-    jhelper = JujuHelper(deployment.get_connected_controller())
+class LatestInChannelCoordinator(UpgradeCoordinator):
+    """Coordinator for refreshing charms in their current channel."""
 
-    is_database_node = "database" in roles
-    is_haproxy_node = "haproxy" in roles
-    is_region_node = "region" in roles
-    is_agent_node = "agent" in roles
+    def __init__(
+        self,
+        deployment: Deployment,
+        client: Client,
+        jhelper: JujuHelper,
+        manifest: Manifest,
+        accept_defaults: bool = False,
+    ):
+        super().__init__(deployment, client, jhelper, manifest)
+        self.accept_defaults = accept_defaults
+        self.preseed = self.manifest.deployment_config
 
-    preseed = manifest.deployment_config
+    def get_plan(self) -> list[BaseStep]:
+        """Return the upgrade plan."""
+        plan: list[BaseStep] = [LatestInChannel(self.jhelper, self.manifest)]
 
-    plan: list[BaseStep] = []
-    if is_database_node:
         plan.extend(
-            postgresql_install_steps(
-                client, manifest, jhelper, deployment, name, True
+            haproxy_upgrade_steps(
+                self.client,
+                self.manifest,
+                self.jhelper,
+                self.deployment.infrastructure_model,
+                self.accept_defaults,
+                self.preseed,
             )
         )
-    if is_haproxy_node:
         plan.extend(
-            haproxy_install_steps(
-                client,
-                manifest,
-                jhelper,
-                deployment.infrastructure_model,
-                name,
-                accept_defaults,
-                preseed,
-                refresh=True,
+            postgresql_upgrade_steps(
+                self.client,
+                self.manifest,
+                self.jhelper,
+                self.deployment.infrastructure_model,
+                self.accept_defaults,
+                self.preseed,
             )
         )
-    if is_region_node:
         plan.extend(
-            maas_region_install_steps(
-                client, manifest, jhelper, deployment, name, refresh=True
+            maas_region_upgrade_steps(
+                self.client,
+                self.manifest,
+                self.jhelper,
+                self.deployment.infrastructure_model,
             )
         )
-    if is_agent_node:
         plan.extend(
-            maas_agent_install_steps(
-                client, manifest, jhelper, deployment, name, refresh=True
+            maas_agent_upgrade_steps(
+                self.client,
+                self.manifest,
+                self.jhelper,
+                self.deployment.infrastructure_model,
             )
         )
-    run_plan(plan, console)
 
-    click.echo(f"Node {name} has been refreshed")
+        plan.extend(
+            UpgradeFeatures(self.deployment, upgrade_release=False),
+        )
+
+        return plan
 
 
 @click.command()
 @click.option(
-    "-a", "--accept-defaults", help="Accept all defaults.", is_flag=True
+    "-c",
+    "--clear-manifest",
+    is_flag=True,
+    default=False,
+    help="Clear the manifest file.",
+    type=bool,
 )
 @click.option(
     "-m",
     "--manifest",
+    "manifest_path",
     help="Manifest file.",
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
 )
 @click.option(
-    "--upgrade",
+    "--upgrade-release",
     is_flag=True,
     show_default=True,
     default=False,
-    help="Upgrade release.",
+    help="Upgrade OpenStack release.",
+)
+@click.option(
+    "-a", "--accept-defaults", help="Accept all defaults.", is_flag=True
 )
 @click.pass_context
 def refresh(
     ctx: click.Context,
-    manifest: Path | None = None,
+    upgrade_release: bool,
+    manifest_path: Path | None = None,
+    clear_manifest: bool = False,
     accept_defaults: bool = False,
-    upgrade: bool = False,
 ) -> None:
-    """Refresh the anvil cluster."""
+    """Refresh deployment.
+
+    Refresh the deployment. If --upgrade-release is supplied then charms are
+    upgraded the channels aligned with this snap revision
+    """
 
     deployment: LocalDeployment = ctx.obj
     client = deployment.get_client()
-    run_preflight_checks(
-        [
-            SshKeysConnectedCheck(),
-            VerifyBootstrappedCheck(),
-            DaemonGroupCheck(),
-        ],
-        console,
-    )
 
-    manifest_obj = (
-        Manifest.load(
-            deployment, manifest_file=manifest, include_defaults=True
+    manifest = None
+    if clear_manifest:
+        raise click.ClickException(
+            "Anvil does not currently support clear-manifest."
         )
-        if manifest
-        else Manifest.get_default_manifest(deployment)
-    )
+    elif manifest_path:
+        manifest = deployment.get_manifest(manifest_path)
+        run_plan([AddManifestStep(client, manifest_path)], console)
 
-    nodes = (
-        run_plan([ClusterListNodeStep(client)], console)
-        .get("ClusterListNodeStep")
-        .message
-    )
+    if not manifest:
+        LOG.debug("Getting latest manifest from cluster db")
+        manifest = deployment.get_manifest()
 
-    for name, node in nodes.items():
-        refresh_node(
-            client,
-            name,
-            manifest_obj,
+    LOG.debug(f"Manifest used for deployment - software: {manifest.software}")
+    jhelper = JujuHelper(deployment.get_connected_controller())
+
+    if upgrade_release:
+        raise click.ClickException(
+            "Anvil does not current support upgrade-release."
+        )
+    else:
+        a = LatestInChannelCoordinator(
             deployment,
-            node.get("roles", []),
+            client,
+            jhelper,
+            manifest,
             accept_defaults=accept_defaults,
         )
+        a.run_plan()
 
-    if upgrade:
-        jhelper = JujuHelper(deployment.get_connected_controller())
-        upgrade_plan = [
-            UpgradePostgreSQLCharm(
-                client, jhelper, manifest_obj, deployment.infrastructure_model
-            ),
-            UpgradeHAProxyCharm(
-                client, jhelper, manifest_obj, deployment.infrastructure_model
-            ),
-            UpgradeMAASRegionCharm(
-                client, jhelper, manifest_obj, deployment.infrastructure_model
-            ),
-            UpgradeMAASAgentCharm(
-                client, jhelper, manifest_obj, deployment.infrastructure_model
-            ),
-        ]
-        run_plan(upgrade_plan, console)
+    click.echo("Refresh complete.")
