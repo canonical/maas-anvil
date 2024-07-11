@@ -95,7 +95,7 @@ You can do this directly using the MAAS-anvil command:
 ubuntu@$node:~$ maas-anvil juju-login
 ```
 
-You can also manually get the login credentials from anvil with:
+You can also manually fetch the login credentials from anvil with:
 
 ```bash
 ubuntu@$node:~$ cat ~/snap/maas-anvil/current/account.yaml
