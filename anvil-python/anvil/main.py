@@ -19,16 +19,16 @@ from sunbeam import log
 from sunbeam.commands import (
     configure as configure_cmds,
 )
+from sunbeam.commands.utils import juju_login
 
 from anvil.commands import (
     inspect as inspect_cmds,
     manifest as manifest_commands,
     prepare_node as prepare_node_cmds,
 )
-from sunbeam.commands.utils import juju_login
 from anvil.provider.local.commands import LocalProvider
 from anvil.provider.local.deployment import LocalDeployment
-from anvil.utils import CatchGroup, juju_login
+from anvil.utils import CatchGroup
 
 # Update the help options to allow -h in addition to --help for
 # triggering the help for various commands

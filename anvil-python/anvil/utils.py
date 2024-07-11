@@ -43,4 +43,3 @@ class CatchGroup(click.Group):
             LOG.warn(message)
             LOG.error("Error: %s", e)
             sys.exit(1)
-
