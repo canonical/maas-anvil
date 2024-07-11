@@ -110,5 +110,6 @@ And `juju login` as usual.
 - MAAS Region: <https://charmhub.io/maas-region>
 - MAAS Region: <https://charmhub.io/maas-agent>
 - PostgreSQL: <https://charmhub.io/postgresql>
+- PgBouncer: <https://charmhub.io/pgbouncer>
 - HAProxy: <https://charmhub.io/haproxy>
 - Keepalived: <https://charmhub.io/keepalived>
