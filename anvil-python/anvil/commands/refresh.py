@@ -8,8 +8,6 @@ from sunbeam.commands.upgrades.base import (
     UpgradeCoordinator,
     UpgradePlugins,
 )
-
-# UpgradeFeatures
 from sunbeam.commands.upgrades.intra_channel import (
     LatestInChannel,
 )
@@ -89,7 +87,9 @@ class LatestInChannelCoordinator(UpgradeCoordinator):
             )
         )
 
-        # TODO: Update MAAS-Anvil sunbeam tag to allow using UpgradeFeatures instead of UpgradePlugins
+        # TODO: Update MAAS-Anvil sunbeam tag to allow using
+        # sunbeam.commands.upgrades.base.UpgradeFeatures instead of
+        # sunbeam.commands.upgrades.base.UpgradePlugins
         # plan.extend(
         #     UpgradeFeatures(self.deployment, upgrade_release=False),
         # )
