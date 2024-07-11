@@ -25,6 +25,7 @@ from anvil.commands import (
     manifest as manifest_commands,
     prepare_node as prepare_node_cmds,
 )
+from sunbeam.commands.utils import juju_login
 from anvil.provider.local.commands import LocalProvider
 from anvil.provider.local.deployment import LocalDeployment
 from anvil.utils import CatchGroup, juju_login
