@@ -109,12 +109,6 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
   server_options: maxconn 100 cookie S{"{i}"} check
   crts: [{HAPROXY_CERTS_DIR}]
 """
-    _DEFAULT_SERVICES_CONFIG: str = """- service_name: haproxy_service
-  service_host: "0.0.0.0"
-  service_port: 80
-  service_options: [balance leastconn, cookie SRVNAME insert]
-  server_options: maxconn 100 cookie S{i} check
-"""
 
     def __init__(
         self,
@@ -166,6 +160,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         variables.setdefault("virtual_ip", "")
         variables.setdefault("ssl_cert", None)
         variables.setdefault("ssl_key", None)
+        variables.setdefault("haproxy_services_yaml", "")
 
         # Set defaults
         self.preseed.setdefault("virtual_ip", "")
@@ -182,24 +177,27 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
 
         variables["virtual_ip"] = haproxy_config_bank.virtual_ip.ask()
 
-        variables["ssl_cert"] = cert_filepath = haproxy_config_bank.ssl_cert.ask()
-        variables["ssl_key"] = key_filepath = haproxy_config_bank.ssl_key.ask()
-        if cert_filepath is not None and key_filepath is not None:
-            with open(cert_filepath) as cert_file:
-                cert = cert_file.read()
-            with open(key_filepath) as key_file:
-                key = key_file.read()
+        if variables["haproxy_services_yaml"] == "":
+            cert_filepath = haproxy_config_bank.ssl_cert.ask()
+            key_filepath = haproxy_config_bank.ssl_key.ask()
+            if cert_filepath is not None and key_filepath is not None:
+                with open(cert_filepath) as cert_file:
+                    variables["ssl_cert"] = cert_file.read()
+                with open(key_filepath) as key_file:
+                    variables["ssl_key"] = key_file.read()
+                variables["haproxy_services_yaml"] = self._TLS_SERVICES_CONFIG
+                self.use_tls_termination = True
+
+        if variables["ssl_cert"] is not None:
             if not os.path.isdir(HAPROXY_CERTS_DIR):
                 mkdir(HAPROXY_CERTS_DIR)
             with open(
                 os.path.join(HAPROXY_CERTS_DIR, "haproxy.pem"), "w"
             ) as combined_file:
-                combined_file.write(key + cert)
+                combined_file.write(
+                    variables["ssl_key"] + variables["ssl_cert"]
+                )
             self.use_tls_termination = True
-        else:
-            LOG.debug(
-                "No certificate/key provided, skipping TLS configuration"
-            )
 
         LOG.debug(variables)
         questions.write_answers(self.client, self._HAPROXY_CONFIG, variables)
@@ -213,7 +211,6 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         variables.pop("ssl_key", None)
 
         if self.use_tls_termination:
-            variables["haproxy_services_yaml"] = self._TLS_SERVICES_CONFIG
             variables["haproxy_port"] = 443
         else:
             variables["haproxy_port"] = 80
