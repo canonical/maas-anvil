@@ -21,6 +21,8 @@ import sys
 import click
 from sunbeam.plugins.interface.v1.base import PluginError
 
+from anvil.jobs.juju import CONTROLLER
+
 LOG = logging.getLogger(__name__)
 LOCAL_ACCESS = "local"
 REMOTE_ACCESS = "remote"
@@ -49,12 +51,12 @@ class CatchGroup(click.Group):
 
 def machines_missing_juju_controllers() -> list[str]:
     result = subprocess.run(
-        ["juju", "show-controller", "anvil-controller", "--format", "json"],
+        ["juju", "show-controller", CONTROLLER, "--format", "json"],
         capture_output=True,
     )
     controllers = json.loads(result.stdout)
     controller_machines = set(
-        controllers["anvil-controller"]["controller-machines"].keys()
+        controllers[CONTROLLER]["controller-machines"].keys()
     )
 
     machines_res = subprocess.run(
