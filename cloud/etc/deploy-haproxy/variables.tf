@@ -61,7 +61,19 @@ variable "virtual_ip" {
 }
 
 variable "haproxy_services_yaml" {
-  description = "yaml-formatted services definition for HA proxy charm"
+  description = "yaml-formatted services definition for HAProxy charm"
+  type        = string
+  default     = ""
+}
+
+variable "ssl_cert_content" {
+  description = "base64 encoded SSL Certificate content for HAProxy charm"
+  type        = string
+  default     = ""
+}
+
+variable "ssl_key_content" {
+  description = "base64 encoded SSL Key content for HAProxy charm"
   type        = string
   default     = ""
 }

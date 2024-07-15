@@ -33,6 +33,8 @@ data "juju_model" "machine_model" {
 locals {
   virtual_ip = var.virtual_ip != "" ? { virtual_ip = var.virtual_ip } : {}
   services   = var.haproxy_services_yaml != "" ? { services = var.haproxy_services_yaml } : {}
+  ssl_cert   = var.ssl_cert_content != "" ? { ssl_cert = base64encode(var.ssl_cert_content) } : {}
+  ssl_key    = var.ssl_key_content != "" ? { ssl_key = base64encode(var.ssl_key_content) } : {}
 }
 
 resource "juju_application" "haproxy" {
@@ -49,6 +51,8 @@ resource "juju_application" "haproxy" {
 
   config = merge(
     local.services,
+    local.ssl_cert,
+    local.ssl_key,
     var.charm_haproxy_config,
   )
 }
