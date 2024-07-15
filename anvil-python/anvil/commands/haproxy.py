@@ -130,7 +130,6 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         )
         self.preseed = deployment_preseed or {}
         self.accept_defaults = accept_defaults
-        self.use_tls_termination = False
 
     def get_application_timeout(self) -> int:
         return HAPROXY_APP_TIMEOUT
@@ -168,7 +167,6 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             previous_answers=variables,
             accept_defaults=self.accept_defaults,
         )
-
         cert_filepath = haproxy_config_bank.ssl_cert.ask()
         variables["ssl_cert"] = cert_filepath
         key_filepath = haproxy_config_bank.ssl_key.ask()
