@@ -147,8 +147,11 @@ def refresh(
             "Anvil does not currently support clear-manifest."
         )
     elif manifest_path:
-        manifest = deployment.get_manifest(manifest_path)
-        run_plan([AddManifestStep(client, manifest_path)], console)
+        manifest = Manifest.load(
+            deployment, manifest_file=manifest, include_defaults=True
+        )
+    else:
+        manifest = Manifest.get_default_manifest(deployment)
 
     if not manifest:
         LOG.debug("Getting latest manifest from cluster db")
