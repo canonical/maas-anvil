@@ -17,7 +17,6 @@ import json
 import logging
 import subprocess
 import sys
-from typing import Any
 
 import click
 from sunbeam.plugins.interface.v1.base import PluginError
@@ -48,12 +47,6 @@ class CatchGroup(click.Group):
             LOG.warn(message)
             LOG.error("Error: %s", e)
             sys.exit(1)
-
-def get_all_machines() -> dict[str: Any]:
-    machines_res = subprocess.run(
-            ["juju", "machines", "--format", "json"], capture_output=True
-        )
-    return json.loads(machines_res.stdout)["machines"]
 
 
 def machines_missing_juju_controllers() -> list[str]:

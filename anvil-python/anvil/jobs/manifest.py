@@ -55,7 +55,9 @@ LOG = logging.getLogger(__name__)
 @dataclass
 class JujuManifest:
     bootstrap_args: list[str] = Field(
-        default=[], description="Extra args for juju bootstrap", alias="bootstrap_args"
+        default=[],
+        description="Extra args for juju bootstrap",
+        alias="bootstrap_args",
     )
 
 

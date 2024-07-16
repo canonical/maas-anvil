@@ -64,17 +64,6 @@ class JujuAddSSHKeyStep(BaseStep):
         return Result(ResultType.COMPLETED)
 
 
-
-class ScaleDownJujuStep(BaseStep, JujuStepHelper):
-    """Remove Juju controller from the machine"""
-
-    def __init__(self, controller: str):
-        super().__init__("Scale Down Juju Controller", "Remove Juju Controller from Machine")
-    
-    def is_skip(self, status: Status | None = None) -> Result:
-        return Result(ResultType.COMPLETED)
-
-
 class ScaleUpJujuStep(BaseStep, JujuStepHelper):
     """Enable Juju HA."""
 
@@ -137,5 +126,7 @@ class ScaleUpJujuStep(BaseStep, JujuStepHelper):
                 f"Will enable Juju controller on machines {machines_to_join}"
             )
             return Result(ResultType.COMPLETED)
-        LOG.debug("Number of machines must be odd and at least 3, skipping scaling Juju controllers")
+        LOG.debug(
+            "Number of machines must be odd and at least 3, skipping scaling Juju controllers"
+        )
         return Result(ResultType.SKIPPED)
