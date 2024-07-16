@@ -54,14 +54,8 @@ LOG = logging.getLogger(__name__)
 
 @dataclass
 class JujuManifest:
-    # Setting Field alias not supported in pydantic 1.10.0
-    # Old version of pydantic is used due to dependencies
-    # with older version of paramiko from python-libjuju
-    # Newer version of pydantic can be used once the below
-    # PR is released
-    # https://github.com/juju/python-libjuju/pull/1005
     bootstrap_args: list[str] = Field(
-        default=[], description="Extra args for juju bootstrap"
+        default=[], description="Extra args for juju bootstrap", alias="bootstrap_args"
     )
 
 

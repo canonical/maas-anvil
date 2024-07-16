@@ -73,7 +73,7 @@ from anvil.commands.haproxy import (
     RemoveHAProxyUnitStep,
     haproxy_install_steps,
 )
-from anvil.commands.juju import AnvilScaleJujuStep, JujuAddSSHKeyStep
+from anvil.commands.juju import ScaleUpJujuStep, JujuAddSSHKeyStep
 from anvil.commands.maas_agent import (
     RemoveMAASAgentUnitStep,
     maas_agent_install_steps,
@@ -498,7 +498,7 @@ def join(
                 name,
             )
         )
-    plan2.append(AnvilScaleJujuStep(controller))
+    plan2.append(ScaleUpJujuStep(controller))
     run_plan(plan2, console)
 
     click.echo(f"Node joined cluster with roles: {pretty_roles}")

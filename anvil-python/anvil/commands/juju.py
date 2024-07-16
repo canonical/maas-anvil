@@ -20,7 +20,8 @@ import os.path
 import subprocess
 
 from rich.status import Status
-from sunbeam.commands.juju import ScaleJujuStep
+
+from sunbeam.commands.juju import JujuStepHelper
 from sunbeam.jobs.common import BaseStep, Result, ResultType
 
 from anvil.utils import machines_missing_juju_controllers
@@ -63,7 +64,28 @@ class JujuAddSSHKeyStep(BaseStep):
         return Result(ResultType.COMPLETED)
 
 
-class AnvilScaleJujuStep(ScaleJujuStep):
+
+class ScaleDownJujuStep(BaseStep, JujuStepHelper):
+    """Remove Juju controller from the machine"""
+
+    def __init__(self, controller: str):
+        super().__init__("Scale Down Juju Controller", "Remove Juju Controller from Machine")
+    
+    def is_skip(self, status: Status | None = None) -> Result:
+        return Result(ResultType.COMPLETED)
+
+
+class ScaleUpJujuStep(BaseStep, JujuStepHelper):
+    """Enable Juju HA."""
+
+    def __init__(
+        self, controller: str, n: int = 3, extra_args: list[str] | None = None
+    ):
+        super().__init__("Juju HA", "Enable Juju High Availability")
+        self.controller = controller
+        self.n = n
+        self.extra_args = extra_args or []
+
     def run(self, status: Status | None = None) -> Result:
         cmd = [
             self._get_juju_binary(),
@@ -115,5 +137,5 @@ class AnvilScaleJujuStep(ScaleJujuStep):
                 f"Will enable Juju controller on machines {machines_to_join}"
             )
             return Result(ResultType.COMPLETED)
-        LOG.debug("Wrong number of machines, skipping scaling Juju")
+        LOG.debug("Number of machines must be odd and at least 3, skipping scaling Juju controllers")
         return Result(ResultType.SKIPPED)
