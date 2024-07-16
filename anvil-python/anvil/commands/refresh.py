@@ -100,26 +100,11 @@ class LatestInChannelCoordinator(UpgradeCoordinator):
 
 @click.command()
 @click.option(
-    "-c",
-    "--clear-manifest",
-    is_flag=True,
-    default=False,
-    help="Clear the manifest file.",
-    type=bool,
-)
-@click.option(
     "-m",
     "--manifest",
     "manifest_path",
     help="Manifest file.",
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
-)
-@click.option(
-    "--upgrade-release",
-    is_flag=True,
-    show_default=True,
-    default=False,
-    help="Upgrade OpenStack release.",
 )
 @click.option(
     "-a", "--accept-defaults", help="Accept all defaults.", is_flag=True
@@ -129,24 +114,18 @@ def refresh(
     ctx: click.Context,
     upgrade_release: bool,
     manifest_path: Path | None = None,
-    clear_manifest: bool = False,
     accept_defaults: bool = False,
 ) -> None:
     """Refresh deployment.
 
-    Refresh the deployment. If --upgrade-release is supplied then charms are
-    upgraded the channels aligned with this snap revision
+    Refresh the deployment and allow passing new configuration options.
     """
 
     deployment: LocalDeployment = ctx.obj
     client = deployment.get_client()
 
     manifest = None
-    if clear_manifest:
-        raise click.ClickException(
-            "Anvil does not currently support clear-manifest."
-        )
-    elif manifest_path:
+    if manifest_path:
         manifest = Manifest.load(
             deployment, manifest_file=manifest, include_defaults=True
         )
@@ -160,18 +139,13 @@ def refresh(
     LOG.debug(f"Manifest used for deployment - software: {manifest.software}")
     jhelper = JujuHelper(deployment.get_connected_controller())
 
-    if upgrade_release:
-        raise click.ClickException(
-            "Anvil does not current support upgrade-release."
-        )
-    else:
-        a = LatestInChannelCoordinator(
-            deployment,
-            client,
-            jhelper,
-            manifest,
-            accept_defaults=accept_defaults,
-        )
-        a.run_plan()
+    a = LatestInChannelCoordinator(
+        deployment,
+        client,
+        jhelper,
+        manifest,
+        accept_defaults=accept_defaults,
+    )
+    a.run_plan()
 
     click.echo("Refresh complete.")
