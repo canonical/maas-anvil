@@ -3,22 +3,24 @@ from pathlib import Path
 
 import click
 from rich.console import Console
+from rich.status import Status
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.upgrades.base import (
-    UpgradeCoordinator,
     UpgradePlugins,
 )
 from sunbeam.commands.upgrades.intra_channel import (
-    LatestInChannel,
+    LatestInChannel as SunbeamLatestInChannel,
 )
 from sunbeam.jobs.common import (
     BaseStep,
+    Result,
+    ResultType,
     run_plan,
 )
 from sunbeam.jobs.deployment import Deployment
 from sunbeam.jobs.deployments import Deployment
 from sunbeam.jobs.juju import JujuHelper
-from sunbeam.jobs.manifest import AddManifestStep, Manifest
+from sunbeam.jobs.manifest import Manifest
 
 from anvil.commands.haproxy import haproxy_upgrade_steps
 from anvil.commands.maas_agent import maas_agent_upgrade_steps
@@ -31,7 +33,32 @@ LOG = logging.getLogger(__name__)
 console = Console()
 
 
-class LatestInChannelCoordinator(UpgradeCoordinator):
+# We require a small refactor as compared to sunbeam as we don't have identical charms
+class LatestInChannel(SunbeamLatestInChannel):
+    def run(self, status: Status | None = None) -> Result:
+        """Refresh all charms identified as needing a refresh.
+
+        If the manifest has charm channel and revision, terraform apply should update
+        the charms.
+        If the manifest has only charm, then juju refresh is required if channel is
+        same as deployed charm, otherwise juju upgrade charm.
+        """
+        deployed_machine_apps = self.get_charm_deployed_versions("controller")
+
+        all_deployed_apps = deployed_machine_apps.copy()
+        LOG.debug(f"All deployed apps: {all_deployed_apps}")
+        if self.is_track_changed_for_any_charm(all_deployed_apps):
+            error_msg = (
+                "Manifest has track values that require upgrades, rerun with "
+                "option --upgrade-release for release upgrades."
+            )
+            return Result(ResultType.FAILED, error_msg)
+
+        self.refresh_apps(deployed_machine_apps, "controller")
+        return Result(ResultType.COMPLETED)
+
+
+class LatestInChannelCoordinator:
     """Coordinator for refreshing charms in their current channel."""
 
     def __init__(
@@ -42,13 +69,30 @@ class LatestInChannelCoordinator(UpgradeCoordinator):
         manifest: Manifest,
         accept_defaults: bool = False,
     ):
-        super().__init__(deployment, client, jhelper, manifest)
+        """Upgrade coordinator.
+
+        Execute plan for conducting an upgrade.
+
+        :client: Helper for interacting with clusterd
+        :jhelper: Helper for interacting with pylibjuju
+        :manifest: Manifest object
+        """
+        self.deployment = deployment
+        self.client = client
+        self.jhelper = jhelper
+        self.manifest = manifest
         self.accept_defaults = accept_defaults
         self.preseed = self.manifest.deployment_config
 
+    def run_plan(self) -> None:
+        """Execute the upgrade plan."""
+        plan = self.get_plan()
+        run_plan(plan, console)
+
     def get_plan(self) -> list[BaseStep]:
         """Return the upgrade plan."""
-        plan: list[BaseStep] = [LatestInChannel(self.jhelper, self.manifest)]
+        plan: list[BaseStep] = []
+        plan.append(LatestInChannel(self.jhelper, self.manifest))
 
         plan.extend(
             haproxy_upgrade_steps(
@@ -90,10 +134,10 @@ class LatestInChannelCoordinator(UpgradeCoordinator):
         # TODO: Update MAAS-Anvil sunbeam tag to allow using
         # sunbeam.commands.upgrades.base.UpgradeFeatures instead of
         # sunbeam.commands.upgrades.base.UpgradePlugins
-        # plan.extend(
+        # plan.append(
         #     UpgradeFeatures(self.deployment, upgrade_release=False),
         # )
-        plan.extend(UpgradePlugins(self.deployment, upgrade_release=False))
+        plan.append(UpgradePlugins(self.deployment, upgrade_release=False))
 
         return plan
 
@@ -112,7 +156,6 @@ class LatestInChannelCoordinator(UpgradeCoordinator):
 @click.pass_context
 def refresh(
     ctx: click.Context,
-    upgrade_release: bool,
     manifest_path: Path | None = None,
     accept_defaults: bool = False,
 ) -> None:
@@ -125,18 +168,19 @@ def refresh(
     client = deployment.get_client()
 
     manifest = None
-    if manifest_path:
+    if manifest:
         manifest = Manifest.load(
-            deployment, manifest_file=manifest, include_defaults=True
+            deployment, manifest_file=manifest_path, include_defaults=True
         )
     else:
         manifest = Manifest.get_default_manifest(deployment)
 
-    if not manifest:
-        LOG.debug("Getting latest manifest from cluster db")
-        manifest = deployment.get_manifest()
-
-    LOG.debug(f"Manifest used for deployment - software: {manifest.software}")
+    LOG.debug(
+        f"Manifest used for refresh - preseed: {manifest.deployment_config}"
+    )
+    LOG.debug(
+        f"Manifest used for refresh - software: {manifest.software_config}"
+    )
     jhelper = JujuHelper(deployment.get_connected_controller())
 
     a = LatestInChannelCoordinator(
