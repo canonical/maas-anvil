@@ -118,7 +118,7 @@ class ScaleUpJujuStep(BaseStep, JujuStepHelper):
         )
         machines = json.loads(machines_res.stdout)["machines"]
         n_machines = len(machines)
-        if n_machines > 2 and n_machines % 2 == 1:
+        if n_machines > 2 and n_machines <= 7 and n_machines % 2 == 1:
             machines_to_join = machines_missing_juju_controllers()
             self.n = n_machines
             self.extra_args.extend(("--to", ",".join(machines_to_join)))
@@ -127,6 +127,7 @@ class ScaleUpJujuStep(BaseStep, JujuStepHelper):
             )
             return Result(ResultType.COMPLETED)
         LOG.debug(
-            "Number of machines must be odd and at least 3, skipping scaling Juju controllers"
+            "Number of machines must be odd and between 3 and 7 (inclusive), "
+            "skipping scaling Juju controllers"
         )
         return Result(ResultType.SKIPPED)
