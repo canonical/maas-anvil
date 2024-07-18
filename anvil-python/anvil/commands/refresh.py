@@ -1,15 +1,14 @@
 import logging
 from pathlib import Path
+from typing import Optional
 
 import click
 from rich.console import Console
 from rich.status import Status
 from sunbeam.clusterd.client import Client
+from sunbeam.commands.juju import JujuStepHelper
 from sunbeam.commands.upgrades.base import (
     UpgradePlugins,
-)
-from sunbeam.commands.upgrades.intra_channel import (
-    LatestInChannel as SunbeamLatestInChannel,
 )
 from sunbeam.jobs.common import (
     BaseStep,
@@ -19,7 +18,7 @@ from sunbeam.jobs.common import (
 )
 from sunbeam.jobs.deployment import Deployment
 from sunbeam.jobs.deployments import Deployment
-from sunbeam.jobs.juju import JujuHelper
+from sunbeam.jobs.juju import JujuHelper, run_sync
 from sunbeam.jobs.manifest import Manifest
 
 from anvil.commands.haproxy import haproxy_upgrade_steps
@@ -33,8 +32,71 @@ LOG = logging.getLogger(__name__)
 console = Console()
 
 
-# We require a small refactor as compared to sunbeam as we don't have identical charms
-class LatestInChannel(SunbeamLatestInChannel):
+# We reimplement from sunbeam to avoid openstack dependencies
+class LatestInChannel(BaseStep, JujuStepHelper):
+    def __init__(self, jhelper: JujuHelper, manifest: Manifest):
+        """Upgrade all charms to latest in current channel.
+
+        :jhelper: Helper for interacting with pylibjuju
+        """
+        super().__init__(
+            "In channel upgrade",
+            "Upgrade charms to latest revision in current channel",
+        )
+        self.jhelper = jhelper
+        self.manifest = manifest
+
+    def is_skip(self, status: Status | None = None) -> Result:
+        """Step can be skipped if nothing needs refreshing."""
+        return Result(ResultType.COMPLETED)
+
+    def is_track_changed_for_any_charm(
+        self, deployed_apps: dict[str, tuple[str, str, str]]
+    ) -> bool:
+        """Check if chanel track is same in manifest and deployed app."""
+        for app_name, (charm, channel, revision) in deployed_apps.items():
+            if not self.manifest.software_config.charms.get(charm):
+                LOG.debug(f"Charm not present in manifest: {charm}")
+                continue
+
+            channel_from_manifest = (
+                self.manifest.software_config.charms.get(charm).channel or ""
+            )
+            track_from_manifest = channel_from_manifest.split("/")[0]
+            track_from_deployed_app = channel.split("/")[0]
+            # Compare tracks
+            if track_from_manifest != track_from_deployed_app:
+                LOG.debug(
+                    "Channel track for app {app_name} different in manifest "
+                    "and actual deployed"
+                )
+                return True
+
+        return False
+
+    def refresh_apps(
+        self, apps: dict[str, tuple[str, str, str]], model: str
+    ) -> None:
+        """Refresh apps in the model.
+
+        If the charm has no revision in manifest and channel mentioned in manifest
+        and the deployed app is same, run juju refresh.
+        Otherwise ignore so that terraform plan apply will take care of charm upgrade.
+        """
+        for app_name, (charm, channel, revision) in apps.items():
+            manifest_charm = self.manifest.software_config.charms.get(charm)
+            if not manifest_charm:
+                continue
+
+            if (
+                not manifest_charm.revision
+                and manifest_charm.channel == channel
+            ):
+                app = run_sync(self.jhelper.get_application(app_name, model))
+                LOG.debug(f"Running refresh for app {app_name}")
+                # refresh() checks for any new revision and updates if available
+                run_sync(app.refresh())
+
     def run(self, status: Status | None = None) -> Result:
         """Refresh all charms identified as needing a refresh.
 

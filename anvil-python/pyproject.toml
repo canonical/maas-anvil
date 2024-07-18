@@ -26,7 +26,6 @@ dynamic = [
 ]
 dependencies = [
   "pydantic==1.10.14",
-  "python-openstackclient===6.6.0",
   "rich",
   "snap-helpers@ git+https://github.com/skatsaounis/snap-helpers",
   "sunbeam@ git+https://github.com/canonical/snap-openstack@anvil-0.1#subdirectory=sunbeam-python",
