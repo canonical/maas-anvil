@@ -1,6 +1,5 @@
 import logging
 from pathlib import Path
-from typing import Optional
 
 import click
 from rich.console import Console
@@ -17,9 +16,7 @@ from sunbeam.jobs.common import (
     run_plan,
 )
 from sunbeam.jobs.deployment import Deployment
-from sunbeam.jobs.deployments import Deployment
 from sunbeam.jobs.juju import JujuHelper, run_sync
-from sunbeam.jobs.manifest import Manifest
 
 from anvil.commands.haproxy import haproxy_upgrade_steps
 from anvil.commands.maas_agent import maas_agent_upgrade_steps
@@ -54,21 +51,19 @@ class LatestInChannel(BaseStep, JujuStepHelper):
         self, deployed_apps: dict[str, tuple[str, str, str]]
     ) -> bool:
         """Check if chanel track is same in manifest and deployed app."""
-        for app_name, (charm, channel, revision) in deployed_apps.items():
-            if not self.manifest.software_config.charms.get(charm):
+        for name, (charm, channel, revision) in deployed_apps.items():
+            charm_manifest = (self.manifest.software_config.charms or {}).get(
+                charm
+            )
+            if not charm_manifest:
                 LOG.debug(f"Charm not present in manifest: {charm}")
                 continue
 
-            channel_from_manifest = (
-                self.manifest.software_config.charms.get(charm).channel or ""
-            )
-            track_from_manifest = channel_from_manifest.split("/")[0]
-            track_from_deployed_app = channel.split("/")[0]
-            # Compare tracks
-            if track_from_manifest != track_from_deployed_app:
+            if (charm_manifest.channel or "").split("/")[0] != channel.split(
+                "/"
+            )[0]:
                 LOG.debug(
-                    "Channel track for app {app_name} different in manifest "
-                    "and actual deployed"
+                    f"Channel for {name} in manifest does not match deployed"
                 )
                 return True
 
@@ -83,18 +78,19 @@ class LatestInChannel(BaseStep, JujuStepHelper):
         and the deployed app is same, run juju refresh.
         Otherwise ignore so that terraform plan apply will take care of charm upgrade.
         """
-        for app_name, (charm, channel, revision) in apps.items():
-            manifest_charm = self.manifest.software_config.charms.get(charm)
-            if not manifest_charm:
+        for name, (charm, channel, revision) in apps.items():
+            charm_manifest = (self.manifest.software_config.charms or {}).get(
+                charm
+            )
+            if not charm_manifest:
                 continue
 
             if (
-                not manifest_charm.revision
-                and manifest_charm.channel == channel
+                not charm_manifest.revision
+                and charm_manifest.channel == channel
             ):
-                app = run_sync(self.jhelper.get_application(app_name, model))
-                LOG.debug(f"Running refresh for app {app_name}")
-                # refresh() checks for any new revision and updates if available
+                app = run_sync(self.jhelper.get_application(name, model))
+                LOG.debug(f"Running refresh for app {name}")
                 run_sync(app.refresh())
 
     def run(self, status: Status | None = None) -> Result:
@@ -110,10 +106,7 @@ class LatestInChannel(BaseStep, JujuStepHelper):
         all_deployed_apps = deployed_machine_apps.copy()
         LOG.debug(f"All deployed apps: {all_deployed_apps}")
         if self.is_track_changed_for_any_charm(all_deployed_apps):
-            error_msg = (
-                "Manifest has track values that require upgrades, rerun with "
-                "option --upgrade-release for release upgrades."
-            )
+            error_msg = "MAAS-Anvil cannot upgrade across tracks! Please modify refresh manifest."
             return Result(ResultType.FAILED, error_msg)
 
         self.refresh_apps(deployed_machine_apps, "controller")
@@ -230,7 +223,7 @@ def refresh(
     client = deployment.get_client()
 
     manifest = None
-    if manifest:
+    if manifest_path:
         manifest = Manifest.load(
             deployment, manifest_file=manifest_path, include_defaults=True
         )
@@ -238,7 +231,7 @@ def refresh(
         manifest = Manifest.get_default_manifest(deployment)
 
     LOG.debug(
-        f"Manifest used for refresh - preseed: {manifest.deployment_config}"
+        f"Manifest used for refresh - deployment preseed: {manifest.deployment_config}"
     )
     LOG.debug(
         f"Manifest used for refresh - software: {manifest.software_config}"
