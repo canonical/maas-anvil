@@ -62,6 +62,7 @@ select = [
   "I",   # isort
   "RUF", # ruff
   "UP",  # pyupgrade
+  "F",   # pyflakes
 ]
 ignore = [
   "UP035",
