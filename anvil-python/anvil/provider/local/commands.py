@@ -74,6 +74,7 @@ from anvil.commands.haproxy import (
     RemoveHAProxyUnitStep,
     haproxy_install_steps,
 )
+from anvil.commands.juju import JujuAddSSHKeyStep
 from anvil.commands.maas_agent import (
     RemoveMAASAgentUnitStep,
     maas_agent_install_steps,
@@ -429,6 +430,7 @@ def join(
         SaveJujuUserLocallyStep(name, data_location),
         RegisterJujuUserStep(client, name, controller, data_location),
         AddJujuMachineStep(ip),
+        JujuAddSSHKeyStep(),
     ]
     plan1_results = run_plan(plan1, console)
 
