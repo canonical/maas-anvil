@@ -6,9 +6,7 @@ from rich.console import Console
 from rich.status import Status
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.juju import JujuStepHelper
-from sunbeam.commands.upgrades.base import (
-    UpgradePlugins,
-)
+from sunbeam.commands.upgrades.base import UpgradePlugins
 from sunbeam.jobs.common import (
     BaseStep,
     Result,
@@ -18,10 +16,22 @@ from sunbeam.jobs.common import (
 from sunbeam.jobs.deployment import Deployment
 from sunbeam.jobs.juju import JujuHelper, run_sync
 
-from anvil.commands.haproxy import haproxy_upgrade_steps
-from anvil.commands.maas_agent import maas_agent_upgrade_steps
-from anvil.commands.maas_region import maas_region_upgrade_steps
-from anvil.commands.postgresql import postgresql_upgrade_steps
+from anvil.commands.haproxy import (
+    UpgradeHAProxyUnitCharms,
+    haproxy_upgrade_steps,
+)
+from anvil.commands.maas_agent import (
+    UpgradeMAASAgentUnitCharms,
+    maas_agent_upgrade_steps,
+)
+from anvil.commands.maas_region import (
+    UpgradeMAASRegionUnitCharms,
+    maas_region_upgrade_steps,
+)
+from anvil.commands.postgresql import (
+    UpgradePostgreSQLUnitCharms,
+    postgresql_upgrade_steps,
+)
 from anvil.jobs.manifest import Manifest
 from anvil.provider.local.deployment import LocalDeployment
 
@@ -32,10 +42,7 @@ console = Console()
 # We reimplement from sunbeam to avoid openstack dependencies
 class LatestInChannel(BaseStep, JujuStepHelper):
     def __init__(self, jhelper: JujuHelper, manifest: Manifest):
-        """Upgrade all charms to latest in current channel.
-
-        :jhelper: Helper for interacting with pylibjuju
-        """
+        """Upgrade all charms to latest in current channel."""
         super().__init__(
             "In channel upgrade",
             "Upgrade charms to latest revision in current channel",
@@ -106,7 +113,7 @@ class LatestInChannel(BaseStep, JujuStepHelper):
         all_deployed_apps = deployed_machine_apps.copy()
         LOG.debug(f"All deployed apps: {all_deployed_apps}")
         if self.is_track_changed_for_any_charm(all_deployed_apps):
-            error_msg = "MAAS-Anvil cannot upgrade across tracks! Please modify refresh manifest."
+            error_msg = "Manifest contains cross track upgrades, please re-run with `--upgrade-release`."
             return Result(ResultType.FAILED, error_msg)
 
         self.refresh_apps(deployed_machine_apps, "controller")
@@ -138,11 +145,6 @@ class LatestInChannelCoordinator:
         self.manifest = manifest
         self.accept_defaults = accept_defaults
         self.preseed = self.manifest.deployment_config
-
-    def run_plan(self) -> None:
-        """Execute the upgrade plan."""
-        plan = self.get_plan()
-        run_plan(plan, console)
 
     def get_plan(self) -> list[BaseStep]:
         """Return the upgrade plan."""
@@ -197,6 +199,60 @@ class LatestInChannelCoordinator:
         return plan
 
 
+class ChannelUpgradeCoordinator:
+    def __init__(
+        self,
+        deployment: Deployment,
+        client: Client,
+        jhelper: JujuHelper,
+        manifest: Manifest,
+    ):
+        self.deployment = deployment
+        self.client = client
+        self.jhelper = jhelper
+        self.manifest = manifest
+
+    def get_plan(self) -> list[BaseStep]:
+        """Return the plan for this upgrade.
+
+        Return the steps to complete this upgrade.
+        """
+        plan = [
+            UpgradeHAProxyUnitCharms(
+                self.client,
+                self.jhelper,
+                self.manifest,
+                self.deployment.infrastructure_model,
+            ),
+            UpgradePostgreSQLUnitCharms(
+                self.client,
+                self.jhelper,
+                self.manifest,
+                self.deployment.infrastructure_model,
+            ),
+            UpgradeMAASRegionUnitCharms(
+                self.client,
+                self.jhelper,
+                self.manifest,
+                self.deployment.infrastructure_model,
+            ),
+            UpgradeMAASAgentUnitCharms(
+                self.client,
+                self.jhelper,
+                self.manifest,
+                self.deployment.infrastructure_model,
+            ),
+            # TODO: Update MAAS-Anvil sunbeam tag to allow using
+            # sunbeam.commands.upgrades.base.UpgradeFeatures instead of
+            # sunbeam.commands.upgrades.base.UpgradePlugins
+            # plan.append(
+            #     UpgradeFeatures(self.deployment, upgrade_release=False),
+            # )
+            UpgradePlugins(self.deployment, upgrade_release=True),
+        ]
+        return plan
+
+
 @click.command()
 @click.option(
     "-m",
@@ -206,12 +262,21 @@ class LatestInChannelCoordinator:
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
 )
 @click.option(
+    "-u",
+    "--upgrade-release",
+    is_flag=True,
+    show_default=True,
+    default=False,
+    help="Upgrade MAAS-Anvil release.",
+)
+@click.option(
     "-a", "--accept-defaults", help="Accept all defaults.", is_flag=True
 )
 @click.pass_context
 def refresh(
     ctx: click.Context,
     manifest_path: Path | None = None,
+    upgrade_release: bool = False,
     accept_defaults: bool = False,
 ) -> None:
     """Refresh deployment.
@@ -238,13 +303,23 @@ def refresh(
     )
     jhelper = JujuHelper(deployment.get_connected_controller())
 
-    a = LatestInChannelCoordinator(
-        deployment,
-        client,
-        jhelper,
-        manifest,
-        accept_defaults=accept_defaults,
+    coordinator = (
+        ChannelUpgradeCoordinator(
+            deployment,
+            client,
+            jhelper,
+            manifest,
+        )
+        if upgrade_release
+        else LatestInChannelCoordinator(
+            deployment,
+            client,
+            jhelper,
+            manifest,
+            accept_defaults=accept_defaults,
+        )
     )
-    a.run_plan()
+    upgrade_plan = coordinator.get_plan()  # type:ignore [attr-defined]
+    run_plan(upgrade_plan, console)
 
     click.echo("Refresh complete.")

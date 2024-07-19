@@ -30,6 +30,7 @@ from sunbeam.jobs.steps import (
 )
 
 from anvil.jobs.manifest import Manifest
+from anvil.utils import UpgradeCharm
 
 LOG = logging.getLogger(__name__)
 
@@ -175,6 +176,28 @@ class RemoveHAProxyUnitStep(RemoveMachineUnitStep):
 
     def get_unit_timeout(self) -> int:
         return HAPROXY_UNIT_TIMEOUT
+
+
+class UpgradeHAProxyUnitCharms(UpgradeCharm):
+    def __init__(
+        self,
+        client: Client,
+        jhelper: JujuHelper,
+        manifest: Manifest,
+        model: str,
+    ):
+        super().__init__(
+            "Upgrade HAProxy unit charms",
+            "Upgrading HAProxy unit charms.",
+            client,
+            jhelper,
+            manifest,
+            model,
+            ["haproxy", "keepalived"],
+            "haproxy-plan",
+            HAPROXY_CONFIG_KEY,
+            HAPROXY_UNIT_TIMEOUT,
+        )
 
 
 def haproxy_install_steps(

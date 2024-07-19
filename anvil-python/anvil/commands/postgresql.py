@@ -29,6 +29,7 @@ from sunbeam.jobs.steps import (
 )
 
 from anvil.jobs.manifest import Manifest
+from anvil.utils import UpgradeCharm
 
 LOG = logging.getLogger(__name__)
 APPLICATION = "postgresql"
@@ -272,3 +273,25 @@ class RemovePostgreSQLUnitStep(RemoveMachineUnitStep):
 
     def get_unit_timeout(self) -> int:
         return POSTGRESQL_UNIT_TIMEOUT
+
+
+class UpgradePostgreSQLUnitCharms(UpgradeCharm):
+    def __init__(
+        self,
+        client: Client,
+        jhelper: JujuHelper,
+        manifest: Manifest,
+        model: str,
+    ):
+        super().__init__(
+            "Upgrade PostgreSQL unit charms",
+            "Upgrading PostgreSQL unit charms.",
+            client,
+            jhelper,
+            manifest,
+            model,
+            ["postgresql"],
+            "postgresql-plan",
+            CONFIG_KEY,
+            POSTGRESQL_UNIT_TIMEOUT,
+        )
