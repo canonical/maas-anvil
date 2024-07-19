@@ -498,7 +498,7 @@ def join(
                 name,
             )
         )
-    plan2.append(ScaleUpJujuStep(controller))
+    plan2.append(ScaleUpJujuStep(controller, True))
     run_plan(plan2, console)
 
     click.echo(f"Node joined cluster with roles: {pretty_roles}")
@@ -590,6 +590,7 @@ def remove(ctx: click.Context, name: str) -> None:
         # Cannot remove user as the same user name cannot be reused,
         # so commenting the RemoveJujuUserStep
         # RemoveJujuUserStep(name),
+        ScaleUpJujuStep(CONTROLLER, False),
         ClusterRemoveNodeStep(client, name),
     ]
     run_plan(plan, console)

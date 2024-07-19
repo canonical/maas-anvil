@@ -27,6 +27,7 @@ from sunbeam.jobs.common import BaseStep, Result, ResultType
 from anvil.utils import machines_missing_juju_controllers
 
 LOG = logging.getLogger(__name__)
+MAX_JUJU_CONTROLLERS = 3
 
 
 class JujuAddSSHKeyStep(BaseStep):
@@ -68,10 +69,15 @@ class ScaleUpJujuStep(BaseStep, JujuStepHelper):
     """Enable Juju HA."""
 
     def __init__(
-        self, controller: str, n: int = 3, extra_args: list[str] | None = None
+        self,
+        controller: str,
+        joining: bool,
+        n: int = MAX_JUJU_CONTROLLERS,
+        extra_args: list[str] | None = None,
     ):
         super().__init__("Juju HA", "Enable Juju High Availability")
         self.controller = controller
+        self.joining = joining
         self.n = n
         self.extra_args = extra_args or []
 
@@ -118,16 +124,32 @@ class ScaleUpJujuStep(BaseStep, JujuStepHelper):
         )
         machines = json.loads(machines_res.stdout)["machines"]
         n_machines = len(machines)
-        if n_machines > 2 and n_machines <= 7 and n_machines % 2 == 1:
-            machines_to_join = machines_missing_juju_controllers()
-            self.n = n_machines
+        machines_to_join = machines_missing_juju_controllers()
+        n_machines_no_controller = len(machines_to_join)
+        n_controller_machines = n_machines - n_machines_no_controller
+        if (
+            self.joining
+            and n_controller_machines < MAX_JUJU_CONTROLLERS
+            and n_machines == 3
+        ):
             self.extra_args.extend(("--to", ",".join(machines_to_join)))
             LOG.debug(
                 f"Will enable Juju controller on machines {machines_to_join}"
             )
             return Result(ResultType.COMPLETED)
+        elif (
+            not self.joining
+            and n_controller_machines < MAX_JUJU_CONTROLLERS
+            and n_machines >= MAX_JUJU_CONTROLLERS
+        ):
+            # a controller machine has been removed, need to pick a new one
+            machines_to_join = machines_to_join[
+                : (MAX_JUJU_CONTROLLERS - n_controller_machines)
+            ]
+            self.extra_args.extend(("--to", ",".join(machines_to_join)))
+            return Result(ResultType.COMPLETED)
         LOG.debug(
-            "Number of machines must be odd and between 3 and 7 (inclusive), "
-            "skipping scaling Juju controllers"
+            "Number of machines with controllers must not be greater than "
+            f"{MAX_JUJU_CONTROLLERS}, skipping scaling Juju controllers"
         )
         return Result(ResultType.SKIPPED)
