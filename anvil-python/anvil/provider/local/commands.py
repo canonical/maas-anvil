@@ -73,7 +73,7 @@ from anvil.commands.haproxy import (
     RemoveHAProxyUnitStep,
     haproxy_install_steps,
 )
-from anvil.commands.juju import ScaleUpJujuStep, JujuAddSSHKeyStep
+from anvil.commands.juju import JujuAddSSHKeyStep, ScaleJujuStep
 from anvil.commands.maas_agent import (
     RemoveMAASAgentUnitStep,
     maas_agent_install_steps,
@@ -498,7 +498,7 @@ def join(
                 name,
             )
         )
-    plan2.append(ScaleUpJujuStep(controller, True))
+    plan2.append(ScaleJujuStep(jhelper, deployment.infrastructure_model))
     run_plan(plan2, console)
 
     click.echo(f"Node joined cluster with roles: {pretty_roles}")
@@ -590,7 +590,7 @@ def remove(ctx: click.Context, name: str) -> None:
         # Cannot remove user as the same user name cannot be reused,
         # so commenting the RemoveJujuUserStep
         # RemoveJujuUserStep(name),
-        ScaleUpJujuStep(CONTROLLER, False),
+        ScaleJujuStep(jhelper, deployment.infrastructure_model),
         ClusterRemoveNodeStep(client, name),
     ]
     run_plan(plan, console)
