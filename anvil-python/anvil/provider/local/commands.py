@@ -42,7 +42,6 @@ from sunbeam.commands.juju import (
     CreateJujuUserStep,
     JujuLoginStep,
     RegisterJujuUserStep,
-    RemoveJujuMachineStep,
     SaveJujuUserLocallyStep,
 )
 from sunbeam.jobs.checks import (
@@ -74,7 +73,7 @@ from anvil.commands.haproxy import (
     RemoveHAProxyUnitStep,
     haproxy_install_steps,
 )
-from anvil.commands.juju import JujuAddSSHKeyStep
+from anvil.commands.juju import JujuAddSSHKeyStep, RemoveJujuMachineStep
 from anvil.commands.maas_agent import (
     RemoveMAASAgentUnitStep,
     maas_agent_install_steps,
@@ -572,10 +571,7 @@ def remove(ctx: click.Context, name: str) -> None:
 
     plan = [
         JujuLoginStep(deployment.juju_account),
-        RemovePostgreSQLUnitStep(
-            client, name, jhelper, deployment.infrastructure_model
-        ),
-        RemoveHAProxyUnitStep(
+        RemoveMAASAgentUnitStep(
             client, name, jhelper, deployment.infrastructure_model
         ),
         RemoveMAASRegionUnitStep(
@@ -584,7 +580,10 @@ def remove(ctx: click.Context, name: str) -> None:
         ReapplyPostgreSQLTerraformPlanStep(
             client, manifest_obj, jhelper, deployment.infrastructure_model
         ),
-        RemoveMAASAgentUnitStep(
+        RemoveHAProxyUnitStep(
+            client, name, jhelper, deployment.infrastructure_model
+        ),
+        RemovePostgreSQLUnitStep(
             client, name, jhelper, deployment.infrastructure_model
         ),
         RemoveJujuMachineStep(client, name),
