@@ -78,8 +78,8 @@ class ScaleJujuStep(BaseStep, JujuStepHelper):
         self.jhelper = jhelper
         self.model = model
 
-        self.controller_machines = None
-        self.machines = None
+        self.controller_machines: set[str] = set()
+        self.machines: set[str] = set()
 
     def run(self, status: Status | None = None) -> Result:
         """Run the step to completion."""
@@ -132,10 +132,12 @@ class ScaleJujuStep(BaseStep, JujuStepHelper):
     def is_skip(self, status: Status | None = None) -> Result:
         """Determines if the step should be skipped or not."""
 
-        self.controller_machines = self.get_controller(CONTROLLER)[
-            "controller-machines"
-        ].keys()
-        self.machines = run_sync(self.jhelper.get_machines(self.model)).keys()
+        self.controller_machines = set(
+            self.get_controller(CONTROLLER)["controller-machines"].keys()
+        )
+        self.machines = set(
+            run_sync(self.jhelper.get_machines(self.model)).keys()
+        )
         available_machines = self.machines ^ self.controller_machines
 
         if len(self.controller_machines) == MAX_JUJU_CONTROLLERS:
@@ -152,6 +154,5 @@ class ScaleJujuStep(BaseStep, JujuStepHelper):
         if len(self.machines) < 3:
             LOG.debug("Number of machines must be at least 3")
             return Result(ResultType.SKIPPED)
-
 
         return Result(ResultType.COMPLETED)
