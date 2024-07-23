@@ -12,7 +12,6 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import logging
 from pathlib import Path
 from typing import List
@@ -74,7 +73,7 @@ from anvil.commands.haproxy import (
     RemoveHAProxyUnitStep,
     haproxy_install_steps,
 )
-from anvil.commands.juju import JujuAddSSHKeyStep
+from anvil.commands.juju import JujuAddSSHKeyStep, ScaleJujuStep
 from anvil.commands.maas_agent import (
     RemoveMAASAgentUnitStep,
     maas_agent_install_steps,
@@ -499,7 +498,7 @@ def join(
                 name,
             )
         )
-
+    plan2.append(ScaleJujuStep(jhelper, deployment.infrastructure_model))
     run_plan(plan2, console)
 
     click.echo(f"Node joined cluster with roles: {pretty_roles}")
@@ -591,6 +590,7 @@ def remove(ctx: click.Context, name: str) -> None:
         # Cannot remove user as the same user name cannot be reused,
         # so commenting the RemoveJujuUserStep
         # RemoveJujuUserStep(name),
+        ScaleJujuStep(jhelper, deployment.infrastructure_model),
         ClusterRemoveNodeStep(client, name),
     ]
     run_plan(plan, console)
