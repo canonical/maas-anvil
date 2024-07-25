@@ -50,7 +50,6 @@ def postgresql_install_steps(
     fqdn: str,
     accept_defaults: bool,
     preseed: dict[Any, Any],
-    refresh: bool = False,
 ) -> List[BaseStep]:
     return [
         TerraformInitStep(manifest.get_tfhelper("postgresql-plan")),
@@ -61,7 +60,6 @@ def postgresql_install_steps(
             model,
             accept_defaults=accept_defaults,
             deployment_preseed=preseed,
-            refresh=refresh,
         ),
         AddPostgreSQLUnitsStep(client, fqdn, jhelper, model),
     ]
@@ -72,7 +70,6 @@ def postgresql_upgrade_steps(
     manifest: Manifest,
     jhelper: JujuHelper,
     model: str,
-    accept_defaults: bool,
     preseed: dict[Any, Any],
 ) -> List[BaseStep]:
     return [
@@ -82,7 +79,6 @@ def postgresql_upgrade_steps(
             manifest,
             jhelper,
             model,
-            accept_defaults=accept_defaults,
             deployment_preseed=preseed,
             refresh=True,
         ),
@@ -175,9 +171,6 @@ class DeployPostgreSQLApplicationStep(DeployMachineApplicationStep):
             self.client.cluster.list_nodes_by_role("region")
         )
         return variables
-
-    def has_prompts(self) -> bool:
-        return True
 
 
 class ReapplyPostgreSQLTerraformPlanStep(DeployMachineApplicationStep):
