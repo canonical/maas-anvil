@@ -25,10 +25,10 @@ from sunbeam.jobs.juju import JujuHelper
 from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
     DeployMachineApplicationStep,
-    RemoveMachineUnitStep,
 )
 
 from anvil.jobs.manifest import Manifest
+from anvil.jobs.steps import RemoveMachineUnitStep
 from anvil.utils import UpgradeCharm
 
 LOG = logging.getLogger(__name__)
@@ -73,7 +73,6 @@ def postgresql_upgrade_steps(
     manifest: Manifest,
     jhelper: JujuHelper,
     model: str,
-    accept_defaults: bool,
     preseed: dict[Any, Any],
 ) -> List[BaseStep]:
     return [
@@ -83,7 +82,6 @@ def postgresql_upgrade_steps(
             manifest,
             jhelper,
             model,
-            accept_defaults=accept_defaults,
             deployment_preseed=preseed,
             refresh=True,
         ),
@@ -178,6 +176,15 @@ class DeployPostgreSQLApplicationStep(DeployMachineApplicationStep):
         return variables
 
     def has_prompts(self) -> bool:
+        """Returns true if the step has prompts that it can ask the user.
+
+        :return: True if the step can ask the user for prompts,
+                 False otherwise
+        """
+        # No need to prompt for questions in case of refresh
+        if self.refresh:
+            return False
+
         return True
 
 

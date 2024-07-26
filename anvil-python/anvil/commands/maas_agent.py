@@ -22,10 +22,10 @@ from sunbeam.jobs.juju import JujuHelper
 from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
     DeployMachineApplicationStep,
-    RemoveMachineUnitStep,
 )
 
 from anvil.jobs.manifest import Manifest
+from anvil.jobs.steps import RemoveMachineUnitStep
 from anvil.utils import UpgradeCharm
 
 APPLICATION = "maas-agent"
