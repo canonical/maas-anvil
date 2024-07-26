@@ -53,6 +53,7 @@ resource "juju_application" "keepalived" {
   count = min(length(var.virtual_ip), 1)
   name  = "keepalived"
   model = data.juju_model.machine_model.name
+  units = 0 # subordinate charm
 
   charm {
     name     = "keepalived"

@@ -86,6 +86,17 @@ ubuntu@infra1:~$ juju run maas-region/0 create-admin username=admin password=pas
 
 # Managing the cluster after initial deployment
 
+
+## Cluster updates
+
+You can refresh the cluster by running the `refresh` command:
+
+```bash
+ubuntu@infra1:~$ maas-anvil refresh
+```
+
+This allows passing a new manifest file with `--manifest` for updating configuration options.
+
 ## Juju permission denied
 
 If you get an error message such as:

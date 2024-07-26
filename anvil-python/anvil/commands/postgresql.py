@@ -65,6 +65,26 @@ def postgresql_install_steps(
     ]
 
 
+def postgresql_upgrade_steps(
+    client: Client,
+    manifest: Manifest,
+    jhelper: JujuHelper,
+    model: str,
+    preseed: dict[Any, Any],
+) -> List[BaseStep]:
+    return [
+        TerraformInitStep(manifest.get_tfhelper("postgresql-plan")),
+        DeployPostgreSQLApplicationStep(
+            client,
+            manifest,
+            jhelper,
+            model,
+            deployment_preseed=preseed,
+            refresh=True,
+        ),
+    ]
+
+
 def postgresql_questions() -> dict[str, questions.PromptQuestion]:
     return {
         "max_connections": questions.PromptQuestion(
@@ -153,6 +173,15 @@ class DeployPostgreSQLApplicationStep(DeployMachineApplicationStep):
         return variables
 
     def has_prompts(self) -> bool:
+        """Returns true if the step has prompts that it can ask the user.
+
+        :return: True if the step can ask the user for prompts,
+                 False otherwise
+        """
+        # No need to prompt for questions in case of refresh
+        if self.refresh:
+            return False
+
         return True
 
 

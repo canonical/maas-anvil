@@ -97,6 +97,15 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         return HAPROXY_APP_TIMEOUT
 
     def has_prompts(self) -> bool:
+        """Returns true if the step has prompts that it can ask the user.
+
+        :return: True if the step can ask the user for prompts,
+                 False otherwise
+        """
+        # No need to prompt for questions in case of refresh
+        if self.refresh:
+            return False
+
         return True
 
     def prompt(self, console: Console | None = None) -> None:
@@ -197,4 +206,24 @@ def haproxy_install_steps(
             deployment_preseed=preseed,
         ),
         AddHAProxyUnitsStep(client, fqdn, jhelper, model),
+    ]
+
+
+def haproxy_upgrade_steps(
+    client: Client,
+    manifest: Manifest,
+    jhelper: JujuHelper,
+    model: str,
+    preseed: dict[Any, Any],
+) -> List[BaseStep]:
+    return [
+        TerraformInitStep(manifest.get_tfhelper("haproxy-plan")),
+        DeployHAProxyApplicationStep(
+            client,
+            manifest,
+            jhelper,
+            model,
+            deployment_preseed=preseed,
+            refresh=True,
+        ),
     ]
