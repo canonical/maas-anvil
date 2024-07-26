@@ -1,12 +1,24 @@
+# Copyright (c) 2024 Canonical Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import logging
 
 from rich.console import Console
 from rich.status import Status
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.juju import JujuStepHelper
-from sunbeam.commands.upgrades.base import (
-    UpgradePlugins,
-)
 from sunbeam.jobs.common import (
     BaseStep,
     Result,
@@ -20,13 +32,15 @@ from anvil.commands.haproxy import haproxy_upgrade_steps
 from anvil.commands.maas_agent import maas_agent_upgrade_steps
 from anvil.commands.maas_region import maas_region_upgrade_steps
 from anvil.commands.postgresql import postgresql_upgrade_steps
+from anvil.commands.upgrades.base import (
+    UpgradePlugins,
+)
 from anvil.jobs.manifest import Manifest
 
 LOG = logging.getLogger(__name__)
 console = Console()
 
 
-# We reimplement from sunbeam to avoid openstack dependencies
 class LatestInChannel(BaseStep, JujuStepHelper):
     def __init__(self, jhelper: JujuHelper, manifest: Manifest):
         """Upgrade all charms to latest in current channel.
@@ -103,7 +117,7 @@ class LatestInChannel(BaseStep, JujuStepHelper):
         all_deployed_apps = deployed_machine_apps.copy()
         LOG.debug(f"All deployed apps: {all_deployed_apps}")
         if self.is_track_changed_for_any_charm(all_deployed_apps):
-            error_msg = "MAAS-Anvil cannot upgrade across tracks! Please modify refresh manifest."
+            error_msg = "MAAS Anvil cannot upgrade across tracks! Please modify refresh manifest."
             return Result(ResultType.FAILED, error_msg)
 
         self.refresh_apps(deployed_machine_apps, "controller")
@@ -179,12 +193,6 @@ class LatestInChannelCoordinator:
             )
         )
 
-        # TODO: Update MAAS-Anvil sunbeam tag to allow using
-        # sunbeam.commands.upgrades.base.UpgradeFeatures instead of
-        # sunbeam.commands.upgrades.base.UpgradePlugins
-        # plan.append(
-        #     UpgradeFeatures(self.deployment, upgrade_release=False),
-        # )
         plan.append(UpgradePlugins(self.deployment, upgrade_release=False))
 
         return plan
