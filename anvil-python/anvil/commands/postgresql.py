@@ -172,6 +172,18 @@ class DeployPostgreSQLApplicationStep(DeployMachineApplicationStep):
         )
         return variables
 
+    def has_prompts(self) -> bool:
+        """Returns true if the step has prompts that it can ask the user.
+
+        :return: True if the step can ask the user for prompts,
+                 False otherwise
+        """
+        # No need to prompt for questions in case of refresh
+        if self.refresh:
+            return False
+
+        return True
+
 
 class ReapplyPostgreSQLTerraformPlanStep(DeployMachineApplicationStep):
     """Reapply PostgreSQL Terraform plan"""
