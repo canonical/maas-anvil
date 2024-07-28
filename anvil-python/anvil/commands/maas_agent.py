@@ -144,7 +144,10 @@ def maas_agent_install_steps(
     return [
         TerraformInitStep(manifest.get_tfhelper("maas-agent-plan")),
         DeployMAASAgentApplicationStep(
-            client, manifest, jhelper, model,
+            client,
+            manifest,
+            jhelper,
+            model,
         ),
         AddMAASAgentUnitsStep(client, fqdn, jhelper, model),
     ]
