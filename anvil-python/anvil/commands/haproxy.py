@@ -217,7 +217,6 @@ def haproxy_install_steps(
     fqdn: str,
     accept_defaults: bool,
     preseed: dict[Any, Any],
-    refresh: bool = False,
 ) -> List[BaseStep]:
     return [
         TerraformInitStep(manifest.get_tfhelper("haproxy-plan")),
@@ -228,7 +227,6 @@ def haproxy_install_steps(
             model,
             accept_defaults=accept_defaults,
             deployment_preseed=preseed,
-            refresh=refresh,
         ),
         AddHAProxyUnitsStep(client, fqdn, jhelper, model),
     ]

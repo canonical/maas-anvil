@@ -51,7 +51,6 @@ def postgresql_install_steps(
     fqdn: str,
     accept_defaults: bool,
     preseed: dict[Any, Any],
-    refresh: bool = False,
 ) -> List[BaseStep]:
     return [
         TerraformInitStep(manifest.get_tfhelper("postgresql-plan")),
@@ -62,7 +61,6 @@ def postgresql_install_steps(
             model,
             accept_defaults=accept_defaults,
             deployment_preseed=preseed,
-            refresh=refresh,
         ),
         AddPostgreSQLUnitsStep(client, fqdn, jhelper, model),
     ]
