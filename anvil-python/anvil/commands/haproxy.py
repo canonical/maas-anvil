@@ -98,15 +98,6 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
     """Deploy HAProxy application using Terraform"""
 
     _HAPROXY_CONFIG = HAPROXY_CONFIG_KEY
-    _TLS_SERVICES_CONFIG: str = """- service_name: haproxy_service
-  service_host: "0.0.0.0"
-  service_port: 443
-  service_options:
-    - balance leastconn
-    - cookie SRVNAME insert
-  server_options: maxconn 100 cookie S{i} check
-  crts: [DEFAULT]
-"""
 
     def __init__(
         self,
@@ -192,7 +183,9 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             with open(key_filepath) as key_file:
                 variables["ssl_key_content"] = key_file.read()
             variables["haproxy_port"] = 443
-            variables["haproxy_services_yaml"] = self._TLS_SERVICES_CONFIG
+            variables["haproxy_services_yaml"] = self.get_tls_services_yaml(
+                variables["virtual_ip"]
+            )
         else:
             variables["haproxy_port"] = 80
 
@@ -202,6 +195,32 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
 
         LOG.debug(f"extra tfvars: {variables}")
         return variables
+
+    def get_tls_services_yaml(self, vip: str) -> str:
+        """Get the HAProxy services.yaml for TLS, inserting the VIP for the frontend bind"""
+        services = (
+            """- service_name: incoming
+  service_host: """
+            ""
+            + vip
+            + """""
+  service_port: 443
+  service_options:
+    - balance leastconn
+    - cookie SRVNAME insert
+    - use_backend haproxy_service
+  server_options: maxconn 100 cookie S{i} check
+  crts: [DEFAULT]
+- service_name: haproxy_service
+  service_host: "0.0.0.0"
+  service_port: 80
+  service_options:
+    - balance leastconn
+    - cookie SRVNAME insert
+  server_options: maxconn 100 cookie S{i} check
+"""
+        )
+        return services
 
 
 class AddHAProxyUnitsStep(AddMachineUnitsStep):
