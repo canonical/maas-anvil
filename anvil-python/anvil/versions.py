@@ -15,8 +15,8 @@
 
 MAAS_REGION_CHANNEL = "latest/edge"
 MAAS_AGENT_CHANNEL = "latest/edge"
-POSTGRESQL_CHANNEL = "14/candidate"
-PGBOUNCER_CHANNEL = "1/beta"
+POSTGRESQL_CHANNEL = "14/stable"
+PGBOUNCER_CHANNEL = "1/stable"
 HAPROXY_CHANNEL = "latest/stable"
 KEEPALIVED_CHANNEL = "latest/stable"
 

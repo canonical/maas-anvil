@@ -51,7 +51,7 @@ variable "enable_haproxy" {
 variable "charm_pgbouncer_channel" {
   description = "Operator channel for PgBouncer deployment"
   type        = string
-  default     = "1/beta"
+  default     = "1/stable"
 }
 
 variable "charm_pgbouncer_revision" {
