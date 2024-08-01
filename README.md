@@ -41,6 +41,12 @@ You will be asked for a `max_connections` during installation of the PostgreSQL 
 - If number of MAAS region nodes is known beforehand, you can calculate the desired max_connections and set them, based on the formula: `max_connections = max(100, 10 + 50 * number_of_region_nodes)`.
 - If number of MAAS region nodes is not known, you can set `max_connections` to `dynamic` and let MAAS Anvil recalculate the appropriate PostgreSQL `max_connections` every time a region node is joining or leaving the Anvil cluster. **This options includes a database restart with every modification.**
 
+#### TLS Termination at HAProxy
+
+While deploying HAProxy, MAAS Anvil will ask you for filepaths pointing to an SSL certificate and private key. If passed, HAProxy will be configured to use the given certificate and key for TLS termination. To skip TLS configuration, enter nothing when prompted for the certificate and key files (this is the behavior if `--accept-defaults` is passed).
+
+Note that the certificate and key must be accessible by the `maas-anvil` snap; please make sure these files are in a directory that can be accessed, such as `$HOME/.config/anvil`.
+
 ### Add new nodes to the MAAS cluster
 
 ```bash
@@ -100,6 +106,7 @@ This allows passing a new manifest file with `--manifest` for updating configura
 ## Juju permission denied
 
 If you get an error message such as:
+
 ```bash
 please enter password for $node on anvil-controller:
 ```
