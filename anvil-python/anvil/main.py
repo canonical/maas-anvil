@@ -19,7 +19,6 @@ from sunbeam import log
 from sunbeam.commands import (
     configure as configure_cmds,
 )
-from sunbeam.commands.utils import juju_login
 
 from anvil.commands import (
     inspect as inspect_cmds,
@@ -27,6 +26,7 @@ from anvil.commands import (
     prepare_node as prepare_node_cmds,
     refresh as refresh_cmds,
 )
+from anvil.commands.utils import juju_login
 from anvil.provider.local.commands import LocalProvider
 from anvil.provider.local.deployment import LocalDeployment
 from anvil.utils import CatchGroup
