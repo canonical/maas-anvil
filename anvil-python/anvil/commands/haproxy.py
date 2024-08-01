@@ -28,6 +28,7 @@ from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
     DeployMachineApplicationStep,
 )
+from sunbeam.utils import get_local_ip_by_default_route
 
 from anvil.jobs.manifest import Manifest
 from anvil.jobs.steps import RemoveMachineUnitStep
@@ -206,25 +207,29 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
 
     def get_tls_services_yaml(self, vip: str) -> str:
         """Get the HAProxy services.yaml for TLS, inserting the VIP for the frontend bind"""
-        services = (
-            """- service_name: incoming
+        services: str = (
+            """- service_name: haproxy_service
   service_host: """
             ""
             + vip
-            + """""
+            + """
   service_port: 443
   service_options:
     - balance leastconn
     - cookie SRVNAME insert
-    - use_backend haproxy_service
+    - http-request redirect scheme https unless { ssl_fc }
   server_options: maxconn 100 cookie S{i} check
   crts: [DEFAULT]
-- service_name: haproxy_service
-  service_host: "0.0.0.0"
+- service_name: agent-service
+  service_host: """
+            + get_local_ip_by_default_route()
+            + """
   service_port: 80
   service_options:
     - balance leastconn
     - cookie SRVNAME insert
+    - acl is-internal src 10.30.0.0/24
+    - use_backend haproxy_service if is-internal
   server_options: maxconn 100 cookie S{i} check
 """
         )
