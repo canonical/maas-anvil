@@ -117,7 +117,7 @@ class LatestInChannel(BaseStep, JujuStepHelper):
         all_deployed_apps = deployed_machine_apps.copy()
         LOG.debug(f"All deployed apps: {all_deployed_apps}")
         if self.is_track_changed_for_any_charm(all_deployed_apps):
-            error_msg = "MAAS Anvil cannot upgrade across tracks! Please modify refresh manifest."
+            error_msg = "Manifest contains cross track upgrades, please re-run with `--upgrade-release`."
             return Result(ResultType.FAILED, error_msg)
 
         self.refresh_apps(deployed_machine_apps, "controller")

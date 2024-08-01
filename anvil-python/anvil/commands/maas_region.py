@@ -26,6 +26,7 @@ from sunbeam.jobs.steps import (
 
 from anvil.jobs.manifest import Manifest
 from anvil.jobs.steps import RemoveMachineUnitStep
+from anvil.utils import UpgradeCharm
 
 APPLICATION = "maas-region"
 CONFIG_KEY = "TerraformVarsMaasregionPlan"
@@ -119,6 +120,28 @@ class RemoveMAASRegionUnitStep(RemoveMachineUnitStep):
         return MAASREGION_UNIT_TIMEOUT
 
 
+class UpgradeMAASRegionUnitCharms(UpgradeCharm):
+    def __init__(
+        self,
+        client: Client,
+        jhelper: JujuHelper,
+        manifest: Manifest,
+        model: str,
+    ):
+        super().__init__(
+            "Upgrade MAAS Region unit charms",
+            "Upgrading MAAS Region unit charms.",
+            client,
+            jhelper,
+            manifest,
+            model,
+            ["maas-region", "pgbouncer"],
+            "maas-region-plan",
+            CONFIG_KEY,
+            MAASREGION_UNIT_TIMEOUT,
+        )
+
+
 def maas_region_install_steps(
     client: Client,
     manifest: Manifest,
@@ -128,7 +151,12 @@ def maas_region_install_steps(
 ) -> List[BaseStep]:
     return [
         TerraformInitStep(manifest.get_tfhelper("maas-region-plan")),
-        DeployMAASRegionApplicationStep(client, manifest, jhelper, model),
+        DeployMAASRegionApplicationStep(
+            client,
+            manifest,
+            jhelper,
+            model,
+        ),
         AddMAASRegionUnitsStep(client, fqdn, jhelper, model),
     ]
 
