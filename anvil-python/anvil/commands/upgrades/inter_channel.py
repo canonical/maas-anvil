@@ -26,12 +26,6 @@ from sunbeam.jobs.juju import JujuHelper
 from anvil.commands.haproxy import (
     UpgradeHAProxyUnitCharms,
 )
-from anvil.commands.maas_agent import (
-    UpgradeMAASAgentUnitCharms,
-)
-from anvil.commands.maas_region import (
-    UpgradeMAASRegionUnitCharms,
-)
 from anvil.commands.postgresql import (
     UpgradePostgreSQLUnitCharms,
 )
