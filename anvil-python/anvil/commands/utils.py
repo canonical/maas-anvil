@@ -32,13 +32,9 @@ console = Console()
 def juju_login(ctx: click.Context) -> None:
     """Login to the controller with current host user."""
     deployment: LocalDeployment = ctx.obj
-    client = deployment.get_client()
-    preflight_checks = [VerifyBootstrappedCheck(client)]
-    run_preflight_checks(preflight_checks, console)
-
-    plan = []
-    plan.append(JujuLoginStep(deployment.juju_account))
-
-    run_plan(plan, console)
+    run_preflight_checks(
+        [VerifyBootstrappedCheck(deployment.get_client())], console
+    )
+    run_plan([JujuLoginStep(deployment.juju_account)], console)
 
     console.print("Juju re-login complete.")
