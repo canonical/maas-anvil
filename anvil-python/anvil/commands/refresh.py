@@ -68,7 +68,7 @@ def refresh(
         manifest = Manifest.load(
             deployment, manifest_file=manifest_path, include_defaults=True
         )
-        run_plan([AddManifestStep(client, manifest)], console)
+        run_plan([AddManifestStep(client, manifest_path)], console)
 
     if not manifest:
         LOG.debug("Getting latest manifest from cluster db")

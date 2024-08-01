@@ -75,18 +75,19 @@ class ChannelUpgradeCoordinator:
                 self.manifest,
                 self.deployment.infrastructure_model,
             ),
-            UpgradeMAASRegionUnitCharms(
-                self.client,
-                self.jhelper,
-                self.manifest,
-                self.deployment.infrastructure_model,
-            ),
-            UpgradeMAASAgentUnitCharms(
-                self.client,
-                self.jhelper,
-                self.manifest,
-                self.deployment.infrastructure_model,
-            ),
+            # MAAS charms only have latest/stable. uncomment when more are available
+            # UpgradeMAASRegionUnitCharms(
+            #     self.client,
+            #     self.jhelper,
+            #     self.manifest,
+            #     self.deployment.infrastructure_model,
+            # ),
+            # UpgradeMAASAgentUnitCharms(
+            #     self.client,
+            #     self.jhelper,
+            #     self.manifest,
+            #     self.deployment.infrastructure_model,
+            # ),
             UpgradePlugins(self.deployment, upgrade_release=True),
         ]
         return plan
