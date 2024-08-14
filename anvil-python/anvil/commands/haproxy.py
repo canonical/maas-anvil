@@ -71,7 +71,6 @@ def validate_key_file(filepath: str) -> None:
     except PermissionError:
         raise ValueError(f"Permission denied when trying to read {filepath}")
 
-
 def validate_virtual_ip(value: str) -> None:
     """We allow passing an empty IP for virtual_ip"""
     if value == "":
