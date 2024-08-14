@@ -20,6 +20,7 @@ from typing import Any, List
 
 from rich.console import Console
 from sunbeam.clusterd.client import Client
+from sunbeam.commands.juju import BOOTSTRAP_CONFIG_KEY
 from sunbeam.commands.terraform import TerraformInitStep
 from sunbeam.jobs import questions
 from sunbeam.jobs.common import BaseStep, ResultType
@@ -50,9 +51,12 @@ def validate_cert_file(filepath: str | None) -> None:
         return
     if not os.path.isfile(filepath):
         raise ValueError(f"{filepath} does not exist")
-    with open(filepath) as f:
-        if "BEGIN CERTIFICATE" not in f.read():
-            raise ValueError("Invalid certificate file")
+    try:
+        with open(filepath) as f:
+            if "BEGIN CERTIFICATE" not in f.read():
+                raise ValueError("Invalid certificate file")
+    except PermissionError:
+        raise ValueError(f"Permission denied when trying to read {filepath}")
 
 
 def validate_key_file(filepath: str | None) -> None:
@@ -60,10 +64,12 @@ def validate_key_file(filepath: str | None) -> None:
         return
     if not os.path.isfile(filepath):
         raise ValueError(f"{filepath} does not exist")
-    with open(filepath) as f:
-        if "BEGIN PRIVATE KEY" not in f.read():
-            raise ValueError("Invalid key file")
-
+    try:
+        with open(filepath) as f:
+            if "BEGIN PRIVATE KEY" not in f.read():
+                raise ValueError("Invalid key file")
+    except PermissionError:
+        raise ValueError(f"Permission denied when trying to read {filepath}")
 
 def validate_virtual_ip(value: str) -> str:
     """We allow passing an empty IP for virtual_ip"""
@@ -205,8 +211,16 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         LOG.debug(f"extra tfvars: {variables}")
         return variables
 
+    def get_management_cidrs(self) -> list[str]:
+        """Retrieve the Management CIDRs shared by hosts"""
+        answers: dict[str, dict[str, str]] = questions.load_answers(
+            self.client, BOOTSTRAP_CONFIG_KEY
+        )
+        return answers["bootstrap"]["management_cidr"].split(",")
+
     def get_tls_services_yaml(self, vip: str) -> str:
         """Get the HAProxy services.yaml for TLS, inserting the VIP for the frontend bind"""
+        cidrs = self.get_management_cidrs()
         services: str = (
             """- service_name: haproxy_service
   service_host: """
@@ -228,8 +242,10 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
   service_options:
     - balance leastconn
     - cookie SRVNAME insert
-    - acl is-internal src 10.30.0.0/24
-    - use_backend haproxy_service if is-internal
+    - acl is-internal src """
+            + " ".join(cidrs)
+            + """
+    - http-request deny if !is-internal
   server_options: maxconn 100 cookie S{i} check
 """
         )
