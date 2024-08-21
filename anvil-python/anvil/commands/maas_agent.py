@@ -26,7 +26,6 @@ from sunbeam.jobs.steps import (
 
 from anvil.jobs.manifest import Manifest
 from anvil.jobs.steps import RemoveMachineUnitStep
-from anvil.utils import UpgradeCharm
 
 APPLICATION = "maas-agent"
 CONFIG_KEY = "TerraformVarsMaasagentPlan"
@@ -110,28 +109,6 @@ class RemoveMAASAgentUnitStep(RemoveMachineUnitStep):
 
     def get_unit_timeout(self) -> int:
         return MAASAGENT_UNIT_TIMEOUT
-
-
-class UpgradeMAASAgentUnitCharms(UpgradeCharm):
-    def __init__(
-        self,
-        client: Client,
-        jhelper: JujuHelper,
-        manifest: Manifest,
-        model: str,
-    ):
-        super().__init__(
-            "Upgrade MAAS Agent unit charms",
-            "Upgrading MAAS Agent unit charms.",
-            client,
-            jhelper,
-            manifest,
-            model,
-            ["maas-agent"],
-            "maas-agent-plan",
-            CONFIG_KEY,
-            MAASAGENT_UNIT_TIMEOUT,
-        )
 
 
 def maas_agent_install_steps(

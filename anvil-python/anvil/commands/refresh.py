@@ -47,7 +47,7 @@ console = Console()
     is_flag=True,
     show_default=True,
     default=False,
-    help="Upgrade MAAS-Anvil release.",
+    help="Upgrade MAAS Anvil release.",
 )
 @click.pass_context
 def refresh(
