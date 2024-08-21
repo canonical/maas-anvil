@@ -63,7 +63,6 @@ from sunbeam.provider.base import ProviderBase
 from sunbeam.provider.local.deployment import LOCAL_TYPE
 import yaml
 
-# from sunbeam.commands import refresh as refresh_cmds
 from anvil.commands.clusterd import (
     ClusterInitStep,
     ClusterJoinNodeStep,
