@@ -45,7 +45,7 @@ class ClusterJoinNodeStep(SunbeamClusterJoinNodeStep):
         super().__init__(client=client, token=token, role=role)
 
         self.name = "Join node to Cluster"
-        self.description = "Adding node to anvil cluster"
+        self.description = "Adding node to Anvil cluster"
 
 
 class ClusterListNodeStep(SunbeamClusterListNodeStep):
