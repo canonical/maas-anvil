@@ -22,15 +22,9 @@ from rich.console import Console
 from rich.table import Table
 from snaphelpers import Snap
 from sunbeam import utils
-
-# from sunbeam.commands import refresh as refresh_cmds
 from sunbeam.commands.clusterd import (
     ClusterAddJujuUserStep,
     ClusterAddNodeStep,
-    ClusterInitStep,
-    ClusterJoinNodeStep,
-    ClusterListNodeStep,
-    ClusterRemoveNodeStep,
     ClusterUpdateJujuControllerStep,
     ClusterUpdateNodeStep,
 )
@@ -69,6 +63,12 @@ from sunbeam.provider.base import ProviderBase
 from sunbeam.provider.local.deployment import LOCAL_TYPE
 import yaml
 
+from anvil.commands.clusterd import (
+    ClusterInitStep,
+    ClusterJoinNodeStep,
+    ClusterListNodeStep,
+    ClusterRemoveNodeStep,
+)
 from anvil.commands.haproxy import (
     RemoveHAProxyUnitStep,
     haproxy_install_steps,
