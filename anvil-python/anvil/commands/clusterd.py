@@ -29,7 +29,7 @@ from sunbeam.commands.clusterd import (
 
 
 class ClusterInitStep(SunbeamClusterInitStep):
-    """Bootstrap clustering on anvil clusterd."""
+    """Bootstrap clustering on Anvil clusterd."""
 
     def __init__(self, client: Client, role: List[str], machineid: int):
         super().__init__(client=client, role=role, machineid=machineid)
@@ -39,7 +39,7 @@ class ClusterInitStep(SunbeamClusterInitStep):
 
 
 class ClusterJoinNodeStep(SunbeamClusterJoinNodeStep):
-    """Join node to the anvil cluster."""
+    """Join node to the Anvil cluster."""
 
     def __init__(self, client: Client, token: str, role: List[str]):
         super().__init__(client=client, token=token, role=role)
@@ -49,20 +49,20 @@ class ClusterJoinNodeStep(SunbeamClusterJoinNodeStep):
 
 
 class ClusterListNodeStep(SunbeamClusterListNodeStep):
-    """List nodes in the anvil cluster."""
+    """List nodes in the Anvil cluster."""
 
     def __init__(self, client: Client):
         super().__init__(client=client)
 
         self.name = "List nodes of Cluster"
-        self.description = "Listing nodes in anvil cluster"
+        self.description = "Listing nodes in Anvil cluster"
 
 
 class ClusterRemoveNodeStep(SunbeamClusterRemoveNodeStep):
-    """Remove node from the anvil cluster."""
+    """Remove node from the Anvil cluster."""
 
     def __init__(self, client: Client, name: str):
         super().__init__(client=client, name=name)
 
         self.name = "Remove node from Cluster"
-        self.description = "Removing node from anvil cluster"
+        self.description = "Removing node from Anvil cluster"
