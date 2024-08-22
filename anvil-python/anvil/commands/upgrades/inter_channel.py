@@ -139,7 +139,7 @@ class UpgradeCharm(BaseStep, JujuStepHelper):
         return Result(ResultType.COMPLETED)
 
 
-class UpgradeHAProxyCharms(UpgradeCharm):
+class UpgradeHAProxyCharm(UpgradeCharm):
     def __init__(
         self,
         client: Client,
@@ -148,8 +148,8 @@ class UpgradeHAProxyCharms(UpgradeCharm):
         model: str,
     ):
         super().__init__(
-            "Upgrade HAProxy charms",
-            "Upgrading HAProxy charms.",
+            "Upgrade HAProxy charm",
+            "Upgrading HAProxy charm.",
             client,
             jhelper,
             manifest,
@@ -161,7 +161,7 @@ class UpgradeHAProxyCharms(UpgradeCharm):
         )
 
 
-class UpgradeMAASAgentCharms(UpgradeCharm):
+class UpgradeMAASAgentCharm(UpgradeCharm):
     def __init__(
         self,
         client: Client,
@@ -170,8 +170,8 @@ class UpgradeMAASAgentCharms(UpgradeCharm):
         model: str,
     ):
         super().__init__(
-            "Upgrade MAAS Agent charms",
-            "Upgrading MAAS Agent charms.",
+            "Upgrade MAAS Agent charm",
+            "Upgrading MAAS Agent charm.",
             client,
             jhelper,
             manifest,
@@ -183,7 +183,7 @@ class UpgradeMAASAgentCharms(UpgradeCharm):
         )
 
 
-class UpgradeMAASRegionCharms(UpgradeCharm):
+class UpgradeMAASRegionCharm(UpgradeCharm):
     def __init__(
         self,
         client: Client,
@@ -192,8 +192,8 @@ class UpgradeMAASRegionCharms(UpgradeCharm):
         model: str,
     ):
         super().__init__(
-            "Upgrade MAAS Region charms",
-            "Upgrading MAAS Region charms.",
+            "Upgrade MAAS Region charm",
+            "Upgrading MAAS Region charm.",
             client,
             jhelper,
             manifest,
@@ -205,7 +205,7 @@ class UpgradeMAASRegionCharms(UpgradeCharm):
         )
 
 
-class UpgradePostgreSQLCharms(UpgradeCharm):
+class UpgradePostgreSQLCharm(UpgradeCharm):
     def __init__(
         self,
         client: Client,
@@ -214,8 +214,8 @@ class UpgradePostgreSQLCharms(UpgradeCharm):
         model: str,
     ):
         super().__init__(
-            "Upgrade PostgreSQL charms",
-            "Upgrading PostgreSQL charms.",
+            "Upgrade PostgreSQL charm",
+            "Upgrading PostgreSQL charm.",
             client,
             jhelper,
             manifest,
@@ -246,25 +246,25 @@ class ChannelUpgradeCoordinator:
         Return the steps to complete this upgrade.
         """
         plan = [
-            UpgradeHAProxyCharms(
+            UpgradeHAProxyCharm(
                 self.client,
                 self.jhelper,
                 self.manifest,
                 self.deployment.infrastructure_model,
             ),
-            UpgradePostgreSQLCharms(
+            UpgradePostgreSQLCharm(
                 self.client,
                 self.jhelper,
                 self.manifest,
                 self.deployment.infrastructure_model,
             ),
-            UpgradeMAASRegionCharms(
+            UpgradeMAASRegionCharm(
                 self.client,
                 self.jhelper,
                 self.manifest,
                 self.deployment.infrastructure_model,
             ),
-            UpgradeMAASAgentCharms(
+            UpgradeMAASAgentCharm(
                 self.client,
                 self.jhelper,
                 self.manifest,
