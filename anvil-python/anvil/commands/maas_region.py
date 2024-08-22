@@ -128,12 +128,7 @@ def maas_region_install_steps(
 ) -> List[BaseStep]:
     return [
         TerraformInitStep(manifest.get_tfhelper("maas-region-plan")),
-        DeployMAASRegionApplicationStep(
-            client,
-            manifest,
-            jhelper,
-            model,
-        ),
+        DeployMAASRegionApplicationStep(client, manifest, jhelper, model),
         AddMAASRegionUnitsStep(client, fqdn, jhelper, model),
     ]
 
