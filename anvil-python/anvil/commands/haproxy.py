@@ -198,9 +198,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             with open(key_filepath) as key_file:
                 variables["ssl_key_content"] = key_file.read()
             variables["haproxy_port"] = 443
-            variables["haproxy_services_yaml"] = self.get_tls_services_yaml(
-                variables["virtual_ip"]
-            )
+            variables["haproxy_services_yaml"] = self.get_tls_services_yaml()
         else:
             variables["haproxy_port"] = 80
 
@@ -218,15 +216,12 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         )
         return answers["bootstrap"]["management_cidr"].split(",")
 
-    def get_tls_services_yaml(self, vip: str) -> str:
+    def get_tls_services_yaml(self) -> str:
         """Get the HAProxy services.yaml for TLS, inserting the VIP for the frontend bind"""
         cidrs = self.get_management_cidrs()
         services: str = (
             """- service_name: haproxy_service
-  service_host: """
-            ""
-            + vip
-            + """
+  service_host: 0.0.0.0
   service_port: 443
   service_options:
     - balance leastconn
@@ -235,9 +230,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
   server_options: maxconn 100 cookie S{i} check
   crts: [DEFAULT]
 - service_name: agent-service
-  service_host: """
-            + get_local_ip_by_default_route()
-            + """
+  service_host: 0.0.0.0
   service_port: 80
   service_options:
     - balance leastconn
