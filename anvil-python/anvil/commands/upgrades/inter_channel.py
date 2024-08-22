@@ -258,13 +258,13 @@ class ChannelUpgradeCoordinator:
                 self.manifest,
                 self.deployment.infrastructure_model,
             ),
-            UpgradeMAASRegionCharm(
+            UpgradeMAASAgentCharm(
                 self.client,
                 self.jhelper,
                 self.manifest,
                 self.deployment.infrastructure_model,
             ),
-            UpgradeMAASAgentCharm(
+            UpgradeMAASRegionCharm(
                 self.client,
                 self.jhelper,
                 self.manifest,
