@@ -13,10 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-MAAS_REGION_CHANNEL = "3.4/edge"
-MAAS_AGENT_CHANNEL = "3.4/edge"
+MAAS_REGION_CHANNEL = "3.5/edge"
+MAAS_AGENT_CHANNEL = "3.5/edge"
 POSTGRESQL_CHANNEL = "14/stable"
-PGBOUNCER_CHANNEL = "1/stable"
 HAPROXY_CHANNEL = "latest/stable"
 KEEPALIVED_CHANNEL = "latest/stable"
 
@@ -25,7 +24,6 @@ MACHINE_CHARMS = {
     "maas-agent": MAAS_AGENT_CHANNEL,
     "haproxy": HAPROXY_CHANNEL,
     "postgresql": POSTGRESQL_CHANNEL,
-    "pgbouncer": PGBOUNCER_CHANNEL,
     "keepalived": KEEPALIVED_CHANNEL,
 }
 K8S_CHARMS: dict[str, str] = {}
@@ -47,11 +45,6 @@ DEPLOY_MAAS_REGION_TFVAR_MAP = {
             "channel": "charm_maas_region_channel",
             "revision": "charm_maas_region_revision",
             "config": "charm_maas_region_config",
-        },
-        "pgbouncer": {
-            "channel": "charm_pgbouncer_channel",
-            "revision": "charm_pgbouncer_revision",
-            "config": "charm_pgbouncer_config",
         },
     }
 }

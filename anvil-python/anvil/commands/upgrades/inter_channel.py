@@ -198,7 +198,7 @@ class UpgradeMAASRegionCharm(UpgradeCharm):
             jhelper,
             manifest,
             model,
-            ["maas-region", "pgbouncer"],
+            ["maas-region"],
             "maas-region-plan",
             MAASREGION_CONFIG_KEY,
             MAASREGION_UNIT_TIMEOUT,
