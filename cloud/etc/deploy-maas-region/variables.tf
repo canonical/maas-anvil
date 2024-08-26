@@ -71,3 +71,9 @@ variable "max_connections_per_region" {
   type        = number
   default     = 50
 }
+
+variable "tls_mode" {
+  description = "TLS Mode for MAAS Region charm ('', 'termination', or 'passthrough')"
+  type        = string
+  default     = ""
+}

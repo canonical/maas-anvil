@@ -29,7 +29,6 @@ from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
     DeployMachineApplicationStep,
 )
-from sunbeam.utils import get_local_ip_by_default_route
 
 from anvil.jobs.manifest import Manifest
 from anvil.jobs.steps import RemoveMachineUnitStep
@@ -70,6 +69,7 @@ def validate_key_file(filepath: str | None) -> None:
                 raise ValueError("Invalid key file")
     except PermissionError:
         raise ValueError(f"Permission denied when trying to read {filepath}")
+
 
 def validate_virtual_ip(value: str) -> str:
     """We allow passing an empty IP for virtual_ip"""
@@ -229,7 +229,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
     - http-request redirect scheme https unless { ssl_fc }
   server_options: maxconn 100 cookie S{i} check
   crts: [DEFAULT]
-- service_name: agent-service
+- service_name: agent_service
   service_host: 0.0.0.0
   service_port: 80
   service_options:
