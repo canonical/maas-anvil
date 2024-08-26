@@ -53,3 +53,9 @@ variable "tls_mode" {
   type        = string
   default     = ""
 }
+
+variable "tls_mode" {
+  description = "TLS Mode for MAAS Region charm ('', 'termination', or 'passthrough')"
+  type        = string
+  default     = ""
+}

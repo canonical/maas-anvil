@@ -29,7 +29,6 @@ from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
     DeployMachineApplicationStep,
 )
-from sunbeam.utils import get_local_ip_by_default_route
 
 from anvil.jobs.manifest import Manifest
 from anvil.jobs.steps import RemoveMachineUnitStep
