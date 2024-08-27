@@ -182,7 +182,11 @@ class DeployPostgreSQLApplicationStep(DeployMachineApplicationStep):
         if self.refresh:
             return False
 
-        return True
+        skip_result = self.is_skip()
+        if skip_result.result_type == ResultType.SKIPPED:
+            return False
+        else:
+            return True
 
 
 class ReapplyPostgreSQLTerraformPlanStep(DeployMachineApplicationStep):
