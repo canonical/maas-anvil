@@ -21,7 +21,7 @@ from rich.console import Console
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformInitStep
 from sunbeam.jobs import questions
-from sunbeam.jobs.common import BaseStep
+from sunbeam.jobs.common import BaseStep, ResultType
 from sunbeam.jobs.juju import JujuHelper
 from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
@@ -106,7 +106,11 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         if self.refresh:
             return False
 
-        return True
+        skip_result = self.is_skip()
+        if skip_result.result_type == ResultType.SKIPPED:
+            return False
+        else:
+            return True
 
     def prompt(self, console: Console | None = None) -> None:
         variables = questions.load_answers(
