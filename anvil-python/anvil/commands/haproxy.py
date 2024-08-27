@@ -175,13 +175,6 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         virtual_ip = haproxy_config_bank.virtual_ip.ask()
         variables["virtual_ip"] = virtual_ip
 
-        if variables["virtual_ip"] == "" and variables["ssl_cert"] is not None:
-            # VIP required for TLS configuration
-            while variables["virtual_ip"] == "":
-                if console:
-                    console.print("Virtual IP is required when using TLS.")
-                variables["virtual_ip"] = haproxy_config_bank.virtual_ip.ask()
-
         LOG.debug(variables)
         questions.write_answers(self.client, self._HAPROXY_CONFIG, variables)
 
