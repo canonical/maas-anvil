@@ -22,6 +22,7 @@ from rich.console import Console
 from rich.table import Table
 from snaphelpers import Snap
 from sunbeam import utils
+from sunbeam.commands.bootstrap_state import SetBootstrapped
 from sunbeam.commands.clusterd import (
     ClusterAddJujuUserStep,
     ClusterAddNodeStep,
@@ -305,6 +306,8 @@ def bootstrap(
                 fqdn,
             )
         )
+
+    plan4.append(SetBootstrapped(client))
     run_plan(plan4, console)
 
     click.echo(f"Node has been bootstrapped with roles: {pretty_roles}")
