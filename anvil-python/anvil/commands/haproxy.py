@@ -42,6 +42,7 @@ HAPROXY_APP_TIMEOUT = 180  # 3 minutes, managing the application should be fast
 HAPROXY_UNIT_TIMEOUT = (
     1200  # 15 minutes, adding / removing units can take a long time
 )
+VALID_TLS_MODES = ["termination", "passthrough"]
 LOG = logging.getLogger(__name__)
 
 
@@ -79,6 +80,10 @@ def validate_virtual_ip(value: str) -> None:
     except ValueError as e:
         raise ValueError(f"{value} is not a valid IP address: {e}")
 
+def validate_tls_mode(value: str) -> None:
+    if value not in VALID_TLS_MODES:
+        raise ValueError(f"TLS Mode must be one of {VALID_TLS_MODES}")
+
 
 def haproxy_questions() -> dict[str, questions.PromptQuestion]:
     return {
@@ -96,6 +101,11 @@ def haproxy_questions() -> dict[str, questions.PromptQuestion]:
             "Path to private key for the SSL certificate (enter nothing to skip TLS)",
             default_value="",
             validation_function=validate_key_file,
+        ),
+        "tls_mode": questions.PromptQuestion(
+            "TLS termination at HA Proxy (\"termination\"), or passthrough to MAAS (\"passthrough\")?",
+            default_value="termination",
+            validation_function=validate_tls_mode,
         ),
     }
 
@@ -153,11 +163,13 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         variables.setdefault("virtual_ip", "")
         variables.setdefault("ssl_cert", "")
         variables.setdefault("ssl_key", "")
+        variables.setdefault("tls_mode", "termination")
 
         # Set defaults
         self.preseed.setdefault("virtual_ip", "")
         self.preseed.setdefault("ssl_cert", "")
         self.preseed.setdefault("ssl_key", "")
+        self.preseed.setdefault("tls_mode", "termination")
 
         haproxy_config_bank = questions.QuestionBank(
             questions=haproxy_questions(),
@@ -170,6 +182,10 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         variables["ssl_cert"] = cert_filepath
         key_filepath = haproxy_config_bank.ssl_key.ask()
         variables["ssl_key"] = key_filepath
+        tls_mode = ""
+        if variables["ssl_cert"] is not None:
+            tls_mode = haproxy_config_bank.tls_mode.ask()
+        variables["tls_mode"] = tls_mode
         virtual_ip = haproxy_config_bank.virtual_ip.ask()
         variables["virtual_ip"] = virtual_ip
 
@@ -189,13 +205,14 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             with open(key_filepath) as key_file:
                 variables["ssl_key_content"] = key_file.read()
             variables["haproxy_port"] = 443
-            variables["haproxy_services_yaml"] = self.get_tls_services_yaml()
+            variables["haproxy_services_yaml"] = self.get_tls_services_yaml(variables["tls_mode"])
         else:
             variables["haproxy_port"] = 80
 
         # Terraform does not need the content of these answers
         variables.pop("ssl_cert", None)
         variables.pop("ssl_key", None)
+        variables.pop("tls_mode", None)
 
         LOG.debug(f"extra tfvars: {variables}")
         return variables
@@ -207,7 +224,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         )
         return answers["bootstrap"]["management_cidr"].split(",")
 
-    def get_tls_services_yaml(self) -> str:
+    def get_tls_services_yaml(self, tls_mode: str) -> str:
         """Get the HAProxy services.yaml for TLS, inserting the VIP for the frontend bind"""
         cidrs = self.get_management_cidrs()
         services: str = (
@@ -219,7 +236,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
     - cookie SRVNAME insert
     - http-request redirect scheme https unless { ssl_fc }
   server_options: maxconn 100 cookie S{i} check
-  crts: [DEFAULT]
+  """ + ("crts: [DEFAULT]" if tls_mode == "termination" else "") + """
 - service_name: agent_service
   service_host: 0.0.0.0
   service_port: 80
