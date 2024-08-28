@@ -59,3 +59,15 @@ variable "tls_mode" {
   type        = string
   default     = ""
 }
+
+variable "ssl_cert" {
+  description = "Path to SSL certificate for tls_mode=passthrough"
+  type        = string
+  default     = ""
+}
+
+variable "ssl_key" {
+  description = "Path to SSL private key for tls_mode=passthrough"
+  type        = string
+  default     = ""
+}
