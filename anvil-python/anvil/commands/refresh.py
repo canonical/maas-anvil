@@ -24,6 +24,7 @@ from sunbeam.jobs.common import (
 from sunbeam.jobs.juju import JujuHelper
 from sunbeam.jobs.manifest import AddManifestStep
 
+from anvil.commands.upgrades.inter_channel import ChannelUpgradeCoordinator
 from anvil.commands.upgrades.intra_channel import LatestInChannelCoordinator
 from anvil.jobs.manifest import Manifest
 from anvil.provider.local.deployment import LocalDeployment
@@ -40,10 +41,19 @@ console = Console()
     help="Manifest file.",
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
 )
+@click.option(
+    "-u",
+    "--upgrade-release",
+    is_flag=True,
+    show_default=True,
+    default=False,
+    help="Upgrade MAAS Anvil release.",
+)
 @click.pass_context
 def refresh(
     ctx: click.Context,
     manifest_path: Path | None = None,
+    upgrade_release: bool = False,
 ) -> None:
     """Refresh deployment.
 
@@ -58,7 +68,7 @@ def refresh(
         manifest = Manifest.load(
             deployment, manifest_file=manifest_path, include_defaults=True
         )
-        run_plan([AddManifestStep(client, manifest)], console)
+        run_plan([AddManifestStep(client, manifest_path)], console)
 
     if not manifest:
         LOG.debug("Getting latest manifest from cluster db")
@@ -74,12 +84,22 @@ def refresh(
     )
     jhelper = JujuHelper(deployment.get_connected_controller())
 
-    a = LatestInChannelCoordinator(
-        deployment,
-        client,
-        jhelper,
-        manifest,
+    coordinator = (
+        ChannelUpgradeCoordinator(
+            deployment,
+            client,
+            jhelper,
+            manifest,
+        )
+        if upgrade_release
+        else LatestInChannelCoordinator(
+            deployment,
+            client,
+            jhelper,
+            manifest,
+        )
     )
-    a.run_plan()
+    upgrade_plan = coordinator.get_plan()  # type:ignore [attr-defined]
+    run_plan(upgrade_plan, console)
 
     click.echo("Refresh complete.")

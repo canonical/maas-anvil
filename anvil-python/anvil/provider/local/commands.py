@@ -64,6 +64,7 @@ from sunbeam.provider.base import ProviderBase
 from sunbeam.provider.local.deployment import LOCAL_TYPE
 import yaml
 
+from anvil.commands import refresh as refresh_cmds
 from anvil.commands.clusterd import (
     ClusterInitStep,
     ClusterJoinNodeStep,
@@ -135,7 +136,7 @@ class LocalProvider(ProviderBase):
         cluster.add_command(join)
         cluster.add_command(list)
         cluster.add_command(remove)
-        # cluster.add_command(refresh_cmds.refresh)
+        cluster.add_command(refresh_cmds.refresh)
 
     def deployment_type(self) -> tuple[str, type[Deployment]]:
         return LOCAL_TYPE, LocalDeployment
