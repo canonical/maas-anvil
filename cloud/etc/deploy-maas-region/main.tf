@@ -30,6 +30,10 @@ data "juju_model" "machine_model" {
   name = var.machine_model
 }
 
+locals {
+  tls_mode = var.tls_mode != "" ? { tls_mode = var.tls_mode } : {}
+}
+
 resource "juju_application" "maas-region" {
   name  = "maas-region"
   model = data.juju_model.machine_model.name
@@ -42,7 +46,10 @@ resource "juju_application" "maas-region" {
     base     = "ubuntu@22.04"
   }
 
-  config = var.charm_maas_region_config
+  config = merge(
+    local.tls_mode,
+    var.charm_maas_region_config,
+  )
 }
 
 resource "juju_application" "pgbouncer" {

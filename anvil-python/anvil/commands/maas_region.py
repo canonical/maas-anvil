@@ -17,6 +17,7 @@ from typing import Any, List
 
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformInitStep
+from sunbeam.jobs import questions
 from sunbeam.jobs.common import BaseStep
 from sunbeam.jobs.juju import JujuHelper
 from sunbeam.jobs.steps import (
@@ -24,6 +25,7 @@ from sunbeam.jobs.steps import (
     DeployMachineApplicationStep,
 )
 
+from anvil.commands.haproxy import HAPROXY_CONFIG_KEY
 from anvil.jobs.manifest import Manifest
 from anvil.jobs.steps import RemoveMachineUnitStep
 
@@ -70,7 +72,13 @@ class DeployMAASRegionApplicationStep(DeployMachineApplicationStep):
             if self.client.cluster.list_nodes_by_role("haproxy")
             else False
         )
-        return {"enable_haproxy": enable_haproxy}
+        variables: dict[str, Any] = {"enable_haproxy": enable_haproxy}
+        haproxy_vars: dict[str, Any] = questions.load_answers(
+            self.client, HAPROXY_CONFIG_KEY
+        )
+        if enable_haproxy and "ssl_cert" in haproxy_vars:
+            variables["tls_mode"] = "termination"
+        return variables
 
 
 class AddMAASRegionUnitsStep(AddMachineUnitsStep):

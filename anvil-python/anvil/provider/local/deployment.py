@@ -26,7 +26,7 @@ from sunbeam.provider.local.deployment import (
     LocalDeployment as SunbeamLocalDeployment,
 )
 
-from anvil.commands.haproxy import KEEPALIVED_CONFIG_KEY, keepalived_questions
+from anvil.commands.haproxy import HAPROXY_CONFIG_KEY, haproxy_questions
 from anvil.commands.postgresql import (
     POSTGRESQL_CONFIG_KEY,
     postgresql_questions,
@@ -73,11 +73,11 @@ class LocalDeployment(SunbeamLocalDeployment):
 
         # HAProxy questions
         try:
-            variables = load_answers(client, KEEPALIVED_CONFIG_KEY)
+            variables = load_answers(client, HAPROXY_CONFIG_KEY)
         except ClusterServiceUnavailableException:
             variables = {}
         keepalived_config_bank = QuestionBank(
-            questions=keepalived_questions(),
+            questions=haproxy_questions(),
             console=console,
             previous_answers=variables,
         )
