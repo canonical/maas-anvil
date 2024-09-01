@@ -21,7 +21,7 @@ from sunbeam.clusterd.service import (
     ClusterServiceUnavailableException,
 )
 from sunbeam.commands.juju import BOOTSTRAP_CONFIG_KEY, bootstrap_questions
-from sunbeam.jobs.questions import QuestionBank, load_answers, show_questions
+from sunbeam.jobs.questions import QuestionBank, load_answers
 from sunbeam.provider.local.deployment import (
     LocalDeployment as SunbeamLocalDeployment,
 )
@@ -31,6 +31,7 @@ from anvil.commands.postgresql import (
     POSTGRESQL_CONFIG_KEY,
     postgresql_questions,
 )
+from anvil.jobs.questions import show_questions
 
 LOG = logging.getLogger(__name__)
 LOCAL_TYPE = "local"
@@ -76,13 +77,13 @@ class LocalDeployment(SunbeamLocalDeployment):
             variables = load_answers(client, HAPROXY_CONFIG_KEY)
         except ClusterServiceUnavailableException:
             variables = {}
-        keepalived_config_bank = QuestionBank(
+        haproxy_config_bank = QuestionBank(
             questions=haproxy_questions(),
             console=console,
             previous_answers=variables,
         )
         preseed_content.extend(
-            show_questions(keepalived_config_bank, section="haproxy")
+            show_questions(haproxy_config_bank, section="haproxy")
         )
 
         preseed_content_final = "\n".join(preseed_content)
