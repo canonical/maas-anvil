@@ -90,10 +90,9 @@ ubuntu@infra1:~$ maas-anvil cluster list
 ubuntu@infra1:~$ juju run maas-region/0 create-admin username=admin password=pass email=admin@maas.io ssh-import=lp:maasadmin
 ```
 
-# Managing the cluster after initial deployment
+### Managing the cluster after initial deployment
 
-
-## Cluster updates
+#### Cluster updates
 
 You can refresh the cluster by running the `refresh` command:
 
@@ -101,9 +100,9 @@ You can refresh the cluster by running the `refresh` command:
 ubuntu@infra1:~$ maas-anvil refresh
 ```
 
-This allows passing a new manifest file with `--manifest` for updating configuration options.
+This allows passing a new manifest file with `--manifest` for updating configuration options. If `--manifest -` is passed, then the manifest is loaded from stdin.
 
-## Juju permission denied
+#### Juju permission denied
 
 If you get an error message such as:
 
@@ -130,7 +129,7 @@ user: $user
 
 And `juju login` as usual.
 
-### Charm documentation
+## Charm documentation
 
 - MAAS Region: <https://charmhub.io/maas-region>
 - MAAS Region: <https://charmhub.io/maas-agent>

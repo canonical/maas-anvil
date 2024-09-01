@@ -25,16 +25,22 @@ from snaphelpers import Snap
 from sunbeam import utils
 from sunbeam.clusterd.client import Client
 from sunbeam.clusterd.service import (
+    ClusterServiceUnavailableException,
     ConfigItemNotFoundException,
     ManifestItemNotFoundException,
 )
 from sunbeam.commands.terraform import TerraformHelper
 from sunbeam.jobs.common import (
+    BaseStep,
+    Result,
+    ResultType,
+    Status,
     read_config,
     update_config,
 )
 from sunbeam.jobs.deployment import Deployment
 from sunbeam.jobs.manifest import (
+    EMPTY_MANIFEST,
     CharmsManifest,
     JujuManifest,
     MissingTerraformInfoException,
@@ -61,7 +67,7 @@ class SoftwareConfig:
     terraform: Dict[str, TerraformManifest] | None = None
 
     """
-    # field_validator supported only in pydantix 2.x
+    # field_validator supported only in pydantic 2.x
     @field_validator("terraform", "mode_after")
     def validate_terraform(cls, terraform):
         if terraform:
@@ -152,25 +158,23 @@ class Manifest:
     def load(
         cls,
         deployment: Deployment,
-        manifest_file: Path,
+        manifest_data: Dict[str, Any],
         include_defaults: bool = False,
     ) -> "Manifest":
         """Load the manifest with the provided file input
 
-        If include_defaults is True, load the manifest over the defaut manifest.
+        If include_defaults is True, load the manifest over the default manifest.
         """
         if include_defaults:
-            return cls.load_on_default(deployment, manifest_file)
+            return cls.load_on_default(deployment, manifest_data)
 
         plugin_manager = PluginManager()
-        with manifest_file.open() as file:
-            override = yaml.safe_load(file)
-            return Manifest(
-                deployment,
-                plugin_manager,
-                override.get("deployment", {}),
-                override.get("software", {}),
-            )
+        return Manifest(
+            deployment,
+            plugin_manager,
+            manifest_data.get("deployment", {}),
+            manifest_data.get("software", {}),
+        )
 
     @classmethod
     def load_latest_from_clusterdb(
@@ -178,7 +182,7 @@ class Manifest:
     ) -> "Manifest":
         """Load the latest manifest from clusterdb
 
-        If include_defaults is True, load the manifest over the defaut manifest.
+        If include_defaults is True, load the manifest over the default manifest.
         values.
         """
         if include_defaults:
@@ -204,24 +208,22 @@ class Manifest:
 
     @classmethod
     def load_on_default(
-        cls, deployment: Deployment, manifest_file: Path
+        cls, deployment: Deployment, manifest_data: Dict[str, Any]
     ) -> "Manifest":
         """Load manifest and override the default manifest"""
         plugin_manager = PluginManager()
-        with manifest_file.open() as file:
-            override = yaml.safe_load(file)
-            override_deployment = override.get("deployment") or {}
-            override_software = override.get("software") or {}
-            default_software = SoftwareConfig.get_default_software_as_dict(
-                deployment, plugin_manager
-            )
-            utils.merge_dict(default_software, override_software)
-            return Manifest(
-                deployment,
-                plugin_manager,
-                override_deployment,
-                default_software,
-            )
+        override_deployment = manifest_data.get("deployment") or {}
+        override_software = manifest_data.get("software") or {}
+        default_software = SoftwareConfig.get_default_software_as_dict(
+            deployment, plugin_manager
+        )
+        utils.merge_dict(default_software, override_software)
+        return Manifest(
+            deployment,
+            plugin_manager,
+            override_deployment,
+            default_software,
+        )
 
     @classmethod
     def load_latest_from_clusterdb_on_default(
@@ -453,3 +455,46 @@ class Manifest:
                 .items()
                 for charm_attribute, tfvar_name in per_charm_tfvar_map.items()
             ]
+
+
+class AddManifestStep(BaseStep):
+    """Add Manifest file to cluster database"""
+
+    def __init__(self, client: Client, manifest: Dict[str, Any] = {}):
+        super().__init__(
+            "Write Manifest to database", "Writing Manifest to database"
+        )
+        # Write EMPTY_MANIFEST if manifest not provided
+        self.manifest = manifest
+        self.client = client
+        self.manifest_content: Dict[str, Any] = {}
+
+    def is_skip(self, status: Status | None = None) -> Result:
+        """Skip if the user provided manifest and the latest from db are same."""
+        try:
+            self.manifest_content = self.manifest or EMPTY_MANIFEST
+            latest_manifest = self.client.cluster.get_latest_manifest()
+        except ManifestItemNotFoundException:
+            return Result(ResultType.COMPLETED)
+        except (ClusterServiceUnavailableException,) as e:
+            LOG.debug(e)
+            return Result(ResultType.FAILED, str(e))
+
+        if (
+            yaml.safe_load(latest_manifest.get("data"))
+            == self.manifest_content
+        ):
+            return Result(ResultType.SKIPPED)
+
+        return Result(ResultType.COMPLETED)
+
+    def run(self, status: Status | None = None) -> Result:
+        """Write manifest to cluster db"""
+        try:
+            id = self.client.cluster.add_manifest(
+                data=yaml.safe_dump(self.manifest_content)
+            )
+            return Result(ResultType.COMPLETED, id)
+        except Exception as e:
+            LOG.debug(e)
+            return Result(ResultType.FAILED, str(e))
