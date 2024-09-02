@@ -45,8 +45,8 @@ HAPROXY_UNIT_TIMEOUT = (
 LOG = logging.getLogger(__name__)
 
 
-def validate_cert_file(filepath: str | None) -> None:
-    if filepath is None:
+def validate_cert_file(filepath: str) -> None:
+    if filepath == "":
         return
     if not os.path.isfile(filepath):
         raise ValueError(f"{filepath} does not exist")
@@ -58,8 +58,8 @@ def validate_cert_file(filepath: str | None) -> None:
         raise ValueError(f"Permission denied when trying to read {filepath}")
 
 
-def validate_key_file(filepath: str | None) -> None:
-    if filepath is None:
+def validate_key_file(filepath: str) -> None:
+    if filepath == "":
         return
     if not os.path.isfile(filepath):
         raise ValueError(f"{filepath} does not exist")
@@ -71,12 +71,12 @@ def validate_key_file(filepath: str | None) -> None:
         raise ValueError(f"Permission denied when trying to read {filepath}")
 
 
-def validate_virtual_ip(value: str) -> str:
+def validate_virtual_ip(value: str) -> None:
     """We allow passing an empty IP for virtual_ip"""
     if value == "":
-        return ""
+        return
     try:
-        return ipaddress.ip_address(value).exploded
+        ipaddress.ip_address(value).exploded
     except ValueError as e:
         raise ValueError(f"{value} is not a valid IP address: {e}")
 
@@ -90,12 +90,12 @@ def haproxy_questions() -> dict[str, questions.PromptQuestion]:
         ),
         "ssl_cert": questions.PromptQuestion(
             "Path to SSL Certificate for HAProxy (enter nothing to skip TLS)",
-            default_value=None,
+            default_value="",
             validation_function=validate_cert_file,
         ),
         "ssl_key": questions.PromptQuestion(
             "Path to private key for the SSL certificate (enter nothing to skip TLS)",
-            default_value=None,
+            default_value="",
             validation_function=validate_key_file,
         ),
     }
@@ -152,13 +152,13 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
     def prompt(self, console: Console | None = None) -> None:
         variables = questions.load_answers(self.client, self._HAPROXY_CONFIG)
         variables.setdefault("virtual_ip", "")
-        variables.setdefault("ssl_cert", None)
-        variables.setdefault("ssl_key", None)
+        variables.setdefault("ssl_cert", "")
+        variables.setdefault("ssl_key", "")
 
         # Set defaults
         self.preseed.setdefault("virtual_ip", "")
-        self.preseed.setdefault("ssl_cert", None)
-        self.preseed.setdefault("ssl_key", None)
+        self.preseed.setdefault("ssl_cert", "")
+        self.preseed.setdefault("ssl_key", "")
 
         haproxy_config_bank = questions.QuestionBank(
             questions=haproxy_questions(),
@@ -185,7 +185,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
 
         cert_filepath = variables["ssl_cert"]
         key_filepath = variables["ssl_key"]
-        if cert_filepath is not None and key_filepath is not None:
+        if cert_filepath != "" and key_filepath != "":
             with open(cert_filepath) as cert_file:
                 variables["ssl_cert_content"] = cert_file.read()
             with open(key_filepath) as key_file:
