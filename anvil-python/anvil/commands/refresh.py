@@ -22,11 +22,11 @@ from sunbeam.jobs.common import (
     run_plan,
 )
 from sunbeam.jobs.juju import JujuHelper
-from sunbeam.jobs.manifest import AddManifestStep
+import yaml
 
 from anvil.commands.upgrades.inter_channel import ChannelUpgradeCoordinator
 from anvil.commands.upgrades.intra_channel import LatestInChannelCoordinator
-from anvil.jobs.manifest import Manifest
+from anvil.jobs.manifest import AddManifestStep, Manifest
 from anvil.provider.local.deployment import LocalDeployment
 
 LOG = logging.getLogger(__name__)
@@ -39,7 +39,9 @@ console = Console()
     "--manifest",
     "manifest_path",
     help="Manifest file.",
-    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    type=click.Path(
+        exists=True, dir_okay=False, path_type=Path, allow_dash=True
+    ),
 )
 @click.option(
     "-u",
@@ -65,10 +67,19 @@ def refresh(
 
     manifest = None
     if manifest_path:
+        try:
+            with click.open_file(manifest_path) as file:  # type: ignore
+                manifest_data = yaml.safe_load(file)
+        except (OSError, yaml.YAMLError) as e:
+            LOG.debug(e)
+            raise click.ClickException(f"Manifest parsing failed: {e!s}")
+
         manifest = Manifest.load(
-            deployment, manifest_file=manifest_path, include_defaults=True
+            deployment,
+            manifest_data=manifest_data or {},
+            include_defaults=True,
         )
-        run_plan([AddManifestStep(client, manifest_path)], console)
+        run_plan([AddManifestStep(client, manifest_data)], console)
 
     if not manifest:
         LOG.debug("Getting latest manifest from cluster db")

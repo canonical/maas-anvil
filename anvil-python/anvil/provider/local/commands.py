@@ -59,7 +59,6 @@ from sunbeam.jobs.common import (
 )
 from sunbeam.jobs.deployment import Deployment
 from sunbeam.jobs.juju import JujuHelper
-from sunbeam.jobs.manifest import AddManifestStep
 from sunbeam.provider.base import ProviderBase
 from sunbeam.provider.local.deployment import LOCAL_TYPE
 import yaml
@@ -96,7 +95,7 @@ from anvil.jobs.common import (
     validate_roles,
 )
 from anvil.jobs.juju import CONTROLLER
-from anvil.jobs.manifest import Manifest
+from anvil.jobs.manifest import AddManifestStep, Manifest
 from anvil.provider.local.deployment import LocalDeployment
 from anvil.utils import CatchGroup
 
@@ -150,7 +149,9 @@ class LocalProvider(ProviderBase):
     "-m",
     "--manifest",
     help="Manifest file.",
-    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    type=click.Path(
+        exists=True, dir_okay=False, path_type=Path, allow_dash=True
+    ),
 )
 @click.option(
     "--role",
@@ -182,8 +183,17 @@ def bootstrap(
     # Validate manifest file
     manifest_obj = None
     if manifest:
+        try:
+            with click.open_file(manifest) as file:  # type: ignore
+                manifest_data = yaml.safe_load(file)
+        except (OSError, yaml.YAMLError) as e:
+            LOG.debug(e)
+            raise click.ClickException(f"Manifest parsing failed: {e!s}")
+
         manifest_obj = Manifest.load(
-            deployment, manifest_file=manifest, include_defaults=True
+            deployment,
+            manifest_data=manifest_data or {},
+            include_defaults=True,
         )
     else:
         manifest_obj = Manifest.get_default_manifest(deployment)
@@ -232,7 +242,7 @@ def bootstrap(
         ClusterInitStep(
             client, roles_to_str_list(roles), 0
         ),  # bootstrapped node is always machine 0 in controller model
-        AddManifestStep(client, manifest) if manifest else None,
+        AddManifestStep(client, manifest_data) if manifest else None,
         AddCloudJujuStep(cloud_name, cloud_definition),
         BootstrapJujuStep(
             client,
