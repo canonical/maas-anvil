@@ -76,7 +76,7 @@ class DeployMAASRegionApplicationStep(DeployMachineApplicationStep):
         haproxy_vars: dict[str, Any] = questions.load_answers(
             self.client, HAPROXY_CONFIG_KEY
         )
-        if enable_haproxy and "ssl_cert" in haproxy_vars:
+        if enable_haproxy and haproxy_vars.get("ssl_cert", "") != "":
             variables["tls_mode"] = "termination"
         return variables
 

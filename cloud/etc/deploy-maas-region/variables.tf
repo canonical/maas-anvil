@@ -48,30 +48,6 @@ variable "enable_haproxy" {
   default     = false
 }
 
-variable "charm_pgbouncer_channel" {
-  description = "Operator channel for PgBouncer deployment"
-  type        = string
-  default     = "1/stable"
-}
-
-variable "charm_pgbouncer_revision" {
-  description = "Operator channel revision for PgBouncer deployment"
-  type        = number
-  default     = null
-}
-
-variable "charm_pgbouncer_config" {
-  description = "Operator config for PgBouncer deployment"
-  type        = map(string)
-  default     = {}
-}
-
-variable "max_connections_per_region" {
-  description = "Maximum number of concurrent connections to allow to the database server per region"
-  type        = number
-  default     = 50
-}
-
 variable "tls_mode" {
   description = "TLS Mode for MAAS Region charm ('', 'termination', or 'passthrough')"
   type        = string
