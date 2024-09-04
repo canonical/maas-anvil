@@ -46,9 +46,19 @@ VALID_TLS_MODES = ["termination", "passthrough"]
 LOG = logging.getLogger(__name__)
 
 
+<<<<<<< HEAD
 def validate_cert_file(filepath: str) -> None:
     if filepath == "":
         return
+=======
+def validate_cert_file(filepath: str | None) -> None:
+    if filepath is None:
+        # This question is only asked when tls_mode is "termination" or "passthrough"
+        # so not supplying a file is not an option.
+        raise ValueError(
+            "Please provide a certificate file when enabling TLS."
+        )
+>>>>>>> 9050d1912 (Pass contents of ssl key/cert to maas-region variables instead of filepath. Let maas-region handle creating the files in the proper place)
     if not os.path.isfile(filepath):
         raise ValueError(f"{filepath} does not exist")
     try:
@@ -59,9 +69,19 @@ def validate_cert_file(filepath: str) -> None:
         raise ValueError(f"Permission denied when trying to read {filepath}")
 
 
+<<<<<<< HEAD
 def validate_key_file(filepath: str) -> None:
     if filepath == "":
         return
+=======
+def validate_key_file(filepath: str | None) -> None:
+    if filepath is None:
+        # This question is only asked when tls_mode is "termination" or "passthrough"
+        # so not supplying a file is not an option.
+        raise ValueError(
+            "Please provide a certificate file when enabling TLS."
+        )
+>>>>>>> 9050d1912 (Pass contents of ssl key/cert to maas-region variables instead of filepath. Let maas-region handle creating the files in the proper place)
     if not os.path.isfile(filepath):
         raise ValueError(f"{filepath} does not exist")
     try:
@@ -79,6 +99,7 @@ def validate_virtual_ip(value: str) -> None:
         ipaddress.ip_address(value).exploded
     except ValueError as e:
         raise ValueError(f"{value} is not a valid IP address: {e}")
+
 
 def validate_tls_mode(value: str) -> None:
     if value not in VALID_TLS_MODES:
@@ -103,8 +124,8 @@ def haproxy_questions() -> dict[str, questions.PromptQuestion]:
             validation_function=validate_key_file,
         ),
         "tls_mode": questions.PromptQuestion(
-            "TLS termination at HA Proxy (\"termination\"), or passthrough to MAAS (\"passthrough\")?",
-            default_value="termination",
+            'TLS termination at HA Proxy ("termination"), passthrough to MAAS ("passthrough"), or no TLS ("")?',
+            default_value="",
             validation_function=validate_tls_mode,
         ),
     }
@@ -186,6 +207,13 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         if variables["ssl_cert"] is not None:
             tls_mode = haproxy_config_bank.tls_mode.ask()
         variables["tls_mode"] = tls_mode
+        if tls_mode:
+            cert_filepath = haproxy_config_bank.ssl_cert.ask()
+            key_filepath = haproxy_config_bank.ssl_key.ask()
+            with open(cert_filepath) as cert_file:
+                variables["ssl_cert_content"] = cert_file.read()
+            with open(key_filepath) as key_file:
+                variables["ssl_key_content"] = key_file.read()
         virtual_ip = haproxy_config_bank.virtual_ip.ask()
         variables["virtual_ip"] = virtual_ip
 
@@ -197,6 +225,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             self.client, self._HAPROXY_CONFIG
         )
 
+<<<<<<< HEAD
         cert_filepath = variables["ssl_cert"]
         key_filepath = variables["ssl_key"]
         if cert_filepath != "" and key_filepath != "":
@@ -204,14 +233,17 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
                 variables["ssl_cert_content"] = cert_file.read()
             with open(key_filepath) as key_file:
                 variables["ssl_key_content"] = key_file.read()
+=======
+        if variables["tls_mode"]:
+>>>>>>> 9050d1912 (Pass contents of ssl key/cert to maas-region variables instead of filepath. Let maas-region handle creating the files in the proper place)
             variables["haproxy_port"] = 443
-            variables["haproxy_services_yaml"] = self.get_tls_services_yaml(variables["tls_mode"])
+            variables["haproxy_services_yaml"] = self.get_tls_services_yaml(
+                variables["tls_mode"]
+            )
         else:
             variables["haproxy_port"] = 80
 
         # Terraform does not need the content of these answers
-        variables.pop("ssl_cert", None)
-        variables.pop("ssl_key", None)
         variables.pop("tls_mode", None)
 
         LOG.debug(f"extra tfvars: {variables}")
@@ -234,9 +266,12 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
   service_options:
     - balance leastconn
     - cookie SRVNAME insert
-    - http-request redirect scheme https unless { ssl_fc }
-  server_options: maxconn 100 cookie S{i} check
-  """ + ("crts: [DEFAULT]" if tls_mode == "termination" else "") + """
+    - http-request redirect scheme https unless { ssl_fc }"""
+            + ("\n    - mode tcp" if tls_mode == "passthrough" else "")
+            + """
+  server_options: maxconn 100 cookie S{i} check"""
+            + ("\n  crts: [DEFAULT]" if tls_mode == "termination" else "")
+            + """
 - service_name: agent_service
   service_host: 0.0.0.0
   service_port: 80
