@@ -54,12 +54,6 @@ variable "tls_mode" {
   default     = ""
 }
 
-variable "tls_mode" {
-  description = "TLS Mode for MAAS Region charm ('', 'termination', or 'passthrough')"
-  type        = string
-  default     = ""
-}
-
 variable "ssl_cert_content" {
   description = "SSL certificate for tls_mode=passthrough"
   type        = string
