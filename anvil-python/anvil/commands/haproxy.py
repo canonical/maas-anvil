@@ -43,7 +43,6 @@ HAPROXY_UNIT_TIMEOUT = (
     1200  # 15 minutes, adding / removing units can take a long time
 )
 VALID_TLS_MODES = ["termination", "passthrough"]
-LOG = logging.getLogger(__name__)
 
 
 <<<<<<< HEAD
