@@ -115,6 +115,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         deployment_preseed: dict[Any, Any] | None = None,
         accept_defaults: bool = False,
         refresh: bool = False,
+        verb: str = "Deploy",
     ):
         super().__init__(
             client,
@@ -124,8 +125,8 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             APPLICATION,
             model,
             "haproxy-plan",
-            "Deploy HAProxy",
-            "Deploying HAProxy",
+            f"{verb.capitalize()} HAProxy",
+            f"{verb.capitalize()}ing HAProxy",
             refresh,
         )
         self.preseed = deployment_preseed or {}
@@ -323,5 +324,6 @@ def haproxy_upgrade_steps(
             model,
             deployment_preseed=preseed,
             refresh=True,
+            verb="Refresh",
         ),
     ]
