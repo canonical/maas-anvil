@@ -158,41 +158,45 @@ class LatestInChannelCoordinator:
         plan: list[BaseStep] = []
         plan.append(LatestInChannel(self.jhelper, self.manifest))
 
-        plan.extend(
-            haproxy_upgrade_steps(
-                self.client,
-                self.manifest,
-                self.jhelper,
-                self.deployment.infrastructure_model,
-                self.preseed,
+        if self.client.cluster.list_nodes_by_role("haproxy"):
+            plan.extend(
+                haproxy_upgrade_steps(
+                    self.client,
+                    self.manifest,
+                    self.jhelper,
+                    self.deployment.infrastructure_model,
+                    self.preseed,
+                )
             )
-        )
-        plan.extend(
-            postgresql_upgrade_steps(
-                self.client,
-                self.manifest,
-                self.jhelper,
-                self.deployment.infrastructure_model,
-                self.preseed,
+        if self.client.cluster.list_nodes_by_role("database"):
+            plan.extend(
+                postgresql_upgrade_steps(
+                    self.client,
+                    self.manifest,
+                    self.jhelper,
+                    self.deployment.infrastructure_model,
+                    self.preseed,
+                )
             )
-        )
-        plan.extend(
-            maas_region_upgrade_steps(
-                self.client,
-                self.manifest,
-                self.jhelper,
-                self.deployment.infrastructure_model,
-                self.preseed,
+        if self.client.cluster.list_nodes_by_role("agent"):
+            plan.extend(
+                maas_agent_upgrade_steps(
+                    self.client,
+                    self.manifest,
+                    self.jhelper,
+                    self.deployment.infrastructure_model,
+                    self.preseed,
             )
-        )
-        plan.extend(
-            maas_agent_upgrade_steps(
-                self.client,
-                self.manifest,
-                self.jhelper,
-                self.deployment.infrastructure_model,
             )
-        )
+        if self.client.cluster.list_nodes_by_role("region"):
+            plan.extend(
+                maas_region_upgrade_steps(
+                    self.client,
+                    self.manifest,
+                    self.jhelper,
+                    self.deployment.infrastructure_model,
+                )
+            )
 
         plan.append(UpgradePlugins(self.deployment, upgrade_release=False))
 
