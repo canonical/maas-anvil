@@ -245,19 +245,17 @@ class ChannelUpgradeCoordinator:
 
         Return the steps to complete this upgrade.
         """
-        plan: list[BaseStep] = []
+        plan: list[BaseStep] = [
+            UpgradePostgreSQLCharm(
+                self.client,
+                self.jhelper,
+                self.manifest,
+                self.deployment.infrastructure_model,
+            )
+        ]
         if self.client.cluster.list_nodes_by_role("haproxy"):
             plan.append(
                 UpgradeHAProxyCharm(
-                    self.client,
-                    self.jhelper,
-                    self.manifest,
-                    self.deployment.infrastructure_model,
-                )
-            )
-        if self.client.cluster.list_nodes_by_role("database"):
-            plan.append(
-                UpgradePostgreSQLCharm(
                     self.client,
                     self.jhelper,
                     self.manifest,
