@@ -49,7 +49,7 @@ variable "enable_haproxy" {
 }
 
 variable "tls_mode" {
-  description = "TLS Mode for MAAS Region charm ('', 'termination', or 'passthrough')"
+  description = "TLS Mode for MAAS Region charm ('disabled', 'termination', or 'passthrough')"
   type        = string
   default     = ""
 }

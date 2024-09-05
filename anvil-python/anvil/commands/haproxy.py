@@ -42,22 +42,13 @@ HAPROXY_APP_TIMEOUT = 180  # 3 minutes, managing the application should be fast
 HAPROXY_UNIT_TIMEOUT = (
     1200  # 15 minutes, adding / removing units can take a long time
 )
-VALID_TLS_MODES = ["termination", "passthrough"]
+VALID_TLS_MODES = ["termination", "passthrough", "disabled"]
 
 
-<<<<<<< HEAD
+
 def validate_cert_file(filepath: str) -> None:
     if filepath == "":
         return
-=======
-def validate_cert_file(filepath: str | None) -> None:
-    if filepath is None:
-        # This question is only asked when tls_mode is "termination" or "passthrough"
-        # so not supplying a file is not an option.
-        raise ValueError(
-            "Please provide a certificate file when enabling TLS."
-        )
->>>>>>> 9050d1912 (Pass contents of ssl key/cert to maas-region variables instead of filepath. Let maas-region handle creating the files in the proper place)
     if not os.path.isfile(filepath):
         raise ValueError(f"{filepath} does not exist")
     try:
@@ -68,19 +59,9 @@ def validate_cert_file(filepath: str | None) -> None:
         raise ValueError(f"Permission denied when trying to read {filepath}")
 
 
-<<<<<<< HEAD
 def validate_key_file(filepath: str) -> None:
     if filepath == "":
         return
-=======
-def validate_key_file(filepath: str | None) -> None:
-    if filepath is None:
-        # This question is only asked when tls_mode is "termination" or "passthrough"
-        # so not supplying a file is not an option.
-        raise ValueError(
-            "Please provide a certificate file when enabling TLS."
-        )
->>>>>>> 9050d1912 (Pass contents of ssl key/cert to maas-region variables instead of filepath. Let maas-region handle creating the files in the proper place)
     if not os.path.isfile(filepath):
         raise ValueError(f"{filepath} does not exist")
     try:
@@ -183,13 +164,13 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         variables.setdefault("virtual_ip", "")
         variables.setdefault("ssl_cert", "")
         variables.setdefault("ssl_key", "")
-        variables.setdefault("tls_mode", "termination")
+        variables.setdefault("tls_mode", "disabled")
 
         # Set defaults
         self.preseed.setdefault("virtual_ip", "")
         self.preseed.setdefault("ssl_cert", "")
         self.preseed.setdefault("ssl_key", "")
-        self.preseed.setdefault("tls_mode", "termination")
+        self.preseed.setdefault("tls_mode", "disabled")
 
         haproxy_config_bank = questions.QuestionBank(
             questions=haproxy_questions(),
@@ -206,7 +187,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         if variables["ssl_cert"] is not None:
             tls_mode = haproxy_config_bank.tls_mode.ask()
         variables["tls_mode"] = tls_mode
-        if tls_mode:
+        if tls_mode != "disabled":
             cert_filepath = haproxy_config_bank.ssl_cert.ask()
             key_filepath = haproxy_config_bank.ssl_key.ask()
             with open(cert_filepath) as cert_file:
@@ -224,7 +205,6 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             self.client, self._HAPROXY_CONFIG
         )
 
-<<<<<<< HEAD
         cert_filepath = variables["ssl_cert"]
         key_filepath = variables["ssl_key"]
         if cert_filepath != "" and key_filepath != "":
@@ -232,9 +212,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
                 variables["ssl_cert_content"] = cert_file.read()
             with open(key_filepath) as key_file:
                 variables["ssl_key_content"] = key_file.read()
-=======
-        if variables["tls_mode"]:
->>>>>>> 9050d1912 (Pass contents of ssl key/cert to maas-region variables instead of filepath. Let maas-region handle creating the files in the proper place)
+        if variables["tls_mode"] != "disabled":
             variables["haproxy_port"] = 443
             variables["haproxy_services_yaml"] = self.get_tls_services_yaml(
                 variables["tls_mode"]
@@ -243,7 +221,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             variables["haproxy_port"] = 80
 
         # Terraform does not need the content of these answers
-        variables.pop("tls_mode", None)
+        variables.pop("tls_mode", "disabled")
 
         LOG.debug(f"extra tfvars: {variables}")
         return variables
