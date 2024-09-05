@@ -157,20 +157,19 @@ class LatestInChannelCoordinator:
         """Return the upgrade plan."""
         plan: list[BaseStep] = []
         plan.append(LatestInChannel(self.jhelper, self.manifest))
+        plan.extend(
+            postgresql_upgrade_steps(
+                self.client,
+                self.manifest,
+                self.jhelper,
+                self.deployment.infrastructure_model,
+                self.preseed,
+            )
+        )
 
         if self.client.cluster.list_nodes_by_role("haproxy"):
             plan.extend(
                 haproxy_upgrade_steps(
-                    self.client,
-                    self.manifest,
-                    self.jhelper,
-                    self.deployment.infrastructure_model,
-                    self.preseed,
-                )
-            )
-        if self.client.cluster.list_nodes_by_role("database"):
-            plan.extend(
-                postgresql_upgrade_steps(
                     self.client,
                     self.manifest,
                     self.jhelper,
