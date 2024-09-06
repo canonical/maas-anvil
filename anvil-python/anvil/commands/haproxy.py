@@ -21,7 +21,7 @@ from typing import Any, List
 from rich.console import Console
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.juju import BOOTSTRAP_CONFIG_KEY
-from sunbeam.commands.terraform import TerraformInitStep
+from sunbeam.commands.terraform import TerraformInitStep, TerraformException
 from sunbeam.jobs import questions
 from sunbeam.jobs.common import BaseStep, ResultType
 from sunbeam.jobs.juju import JujuHelper
@@ -104,8 +104,8 @@ def haproxy_questions() -> dict[str, questions.PromptQuestion]:
             validation_function=validate_key_file,
         ),
         "tls_mode": questions.PromptQuestion(
-            'TLS termination at HA Proxy ("termination"), passthrough to MAAS ("passthrough"), or no TLS ("")?',
-            default_value="",
+            'TLS termination at HA Proxy ("termination"), passthrough to MAAS ("passthrough"), or no TLS ("disabled")?',
+            default_value="disabled",
             validation_function=validate_tls_mode,
         ),
     }
@@ -188,12 +188,8 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             tls_mode = haproxy_config_bank.tls_mode.ask()
         variables["tls_mode"] = tls_mode
         if tls_mode != "disabled":
-            cert_filepath = haproxy_config_bank.ssl_cert.ask()
-            key_filepath = haproxy_config_bank.ssl_key.ask()
-            with open(cert_filepath) as cert_file:
-                variables["ssl_cert_content"] = cert_file.read()
-            with open(key_filepath) as key_file:
-                variables["ssl_key_content"] = key_file.read()
+            variables["ssl_cert"] = haproxy_config_bank.ssl_cert.ask()
+            variables["ssl_key"] = haproxy_config_bank.ssl_key.ask()
         virtual_ip = haproxy_config_bank.virtual_ip.ask()
         variables["virtual_ip"] = virtual_ip
 
@@ -217,11 +213,23 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             variables["haproxy_services_yaml"] = self.get_tls_services_yaml(
                 variables["tls_mode"]
             )
+            try:
+                opening = "certificate"
+                with open(variables["ssl_cert"]) as cert_file:
+                    variables["ssl_cert_content"] = cert_file.read()
+                opening = "private key"
+                with open(variables["ssl_key"]) as key_file:
+                    variables["ssl_key_content"] = key_file.read()
+                    variables.update()
+            except FileNotFoundError:
+                raise TerraformException(f"SSL {opening} not found")
         else:
             variables["haproxy_port"] = 80
 
         # Terraform does not need the content of these answers
         variables.pop("tls_mode", "disabled")
+        variables.pop("ssl_cert", "")
+        variables.pop("ssl_key", "")
 
         LOG.debug(f"extra tfvars: {variables}")
         return variables

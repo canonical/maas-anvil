@@ -16,7 +16,7 @@
 from typing import Any, List
 
 from sunbeam.clusterd.client import Client
-from sunbeam.commands.terraform import TerraformInitStep
+from sunbeam.commands.terraform import TerraformInitStep, TerraformException
 from sunbeam.jobs import questions
 from sunbeam.jobs.common import BaseStep
 from sunbeam.jobs.juju import JujuHelper
@@ -76,8 +76,18 @@ class DeployMAASRegionApplicationStep(DeployMachineApplicationStep):
         haproxy_vars: dict[str, Any] = questions.load_answers(
             self.client, HAPROXY_CONFIG_KEY
         )
-        if enable_haproxy and haproxy_vars.get("ssl_cert", "") != "":
-            variables["tls_mode"] = "termination"
+
+        variables["tls_mode"] = haproxy_vars["tls_mode"]
+        if variables["tls_mode"] == "passthrough":
+            try:
+                opening = "certificate"
+                with open(variables["ssl_cert"]) as cert_file:
+                    variables["ssl_cert_content"] = cert_file.read()
+                opening = "private key"
+                with open(variables["ssl_key"]) as key_file:
+                    variables["ssl_key_content"] = key_file.read()
+            except FileNotFoundError:
+                raise TerraformException(f"SSL {opening} not found")
         return variables
 
 
