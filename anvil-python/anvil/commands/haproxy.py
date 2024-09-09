@@ -78,10 +78,9 @@ def validate_cacert_chain(filepath: str) -> None:
     if not os.path.isfile(filepath):
         raise ValueError(f"{filepath} does not exist")
     try:
+        # just make sure we can open the file
         with open(filepath) as f:
-            # TODO: better validation
-            if "BEGIN" not in f.read():
-                raise ValueError("Invalid cacert chain file")
+            pass
     except PermissionError:
         raise ValueError(f"Permission denied when trying to read {filepath}")
 
@@ -122,7 +121,7 @@ def tls_questions(tls_modes: list[str]) -> dict[str, questions.PromptQuestion]:
             validation_function=validate_cacert_chain,
         ),
         "tls_mode": questions.PromptQuestion(
-            'TLS termination at HA Proxy ("termination"), passthrough to MAAS ("passthrough"), or no TLS ("disabled")?',
+            f"TLS mode: {tls_modes}?",
             default_value="disabled",
             validation_function=get_validate_tls_mode_fn(tls_modes),
         ),
