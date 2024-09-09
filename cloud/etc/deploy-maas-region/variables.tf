@@ -65,3 +65,9 @@ variable "ssl_key_content" {
   type        = string
   default     = ""
 }
+
+variable "ssl_cacert_content" {
+  description = "CA Cert chain for self-signed certificates, requires tls_mode=passthrough"
+  type        = string
+  default     = ""
+}

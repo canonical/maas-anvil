@@ -16,12 +16,12 @@
 import ipaddress
 import logging
 import os.path
-from typing import Any, List
+from typing import Any, Callable, List
 
 from rich.console import Console
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.juju import BOOTSTRAP_CONFIG_KEY
-from sunbeam.commands.terraform import TerraformInitStep, TerraformException
+from sunbeam.commands.terraform import TerraformException, TerraformInitStep
 from sunbeam.jobs import questions
 from sunbeam.jobs.common import BaseStep, ResultType
 from sunbeam.jobs.juju import JujuHelper
@@ -42,7 +42,7 @@ HAPROXY_APP_TIMEOUT = 180  # 3 minutes, managing the application should be fast
 HAPROXY_UNIT_TIMEOUT = (
     1200  # 15 minutes, adding / removing units can take a long time
 )
-VALID_TLS_MODES = ["termination", "passthrough", "disabled"]
+HAPROXY_VALID_TLS_MODES = ["termination", "passthrough", "disabled"]
 
 
 
@@ -71,6 +71,21 @@ def validate_key_file(filepath: str) -> None:
     except PermissionError:
         raise ValueError(f"Permission denied when trying to read {filepath}")
 
+
+def validate_cacert_chain(filepath: str) -> None:
+    if filepath == "":
+        return
+    if not os.path.isfile(filepath):
+        raise ValueError(f"{filepath} does not exist")
+    try:
+        with open(filepath) as f:
+            # TODO: better validation
+            if "BEGIN" not in f.read():
+                raise ValueError("Invalid cacert chain file")
+    except PermissionError:
+        raise ValueError(f"Permission denied when trying to read {filepath}")
+
+
 def validate_virtual_ip(value: str) -> None:
     """We allow passing an empty IP for virtual_ip"""
     if value == "":
@@ -81,9 +96,37 @@ def validate_virtual_ip(value: str) -> None:
         raise ValueError(f"{value} is not a valid IP address: {e}")
 
 
-def validate_tls_mode(value: str) -> None:
-    if value not in VALID_TLS_MODES:
-        raise ValueError(f"TLS Mode must be one of {VALID_TLS_MODES}")
+def get_validate_tls_mode_fn(valid_modes: list[str]) -> Callable[[str], None]:
+    def validate_tls_mode(value: str) -> None:
+        if value not in valid_modes:
+            raise ValueError(f"TLS Mode must be one of {valid_modes}")
+
+    return validate_tls_mode
+
+
+def tls_questions(tls_modes: list[str]) -> dict[str, questions.PromptQuestion]:
+    return {
+        "ssl_cert": questions.PromptQuestion(
+            "Path to SSL Certificate for HAProxy",
+            default_value="",
+            validation_function=validate_cert_file,
+        ),
+        "ssl_key": questions.PromptQuestion(
+            "Path to private key for the SSL certificate",
+            default_value="",
+            validation_function=validate_key_file,
+        ),
+        "ssl_cacert": questions.PromptQuestion(
+            "Path to cacert chain, for use with self-signed ssl certificates (enter nothing to skip)",
+            default_value="",
+            validation_function=validate_cacert_chain,
+        ),
+        "tls_mode": questions.PromptQuestion(
+            'TLS termination at HA Proxy ("termination"), passthrough to MAAS ("passthrough"), or no TLS ("disabled")?',
+            default_value="disabled",
+            validation_function=get_validate_tls_mode_fn(tls_modes),
+        ),
+    }
 
 
 def haproxy_questions() -> dict[str, questions.PromptQuestion]:
@@ -92,22 +135,7 @@ def haproxy_questions() -> dict[str, questions.PromptQuestion]:
             "Virtual IP to use for the Cluster in HA",
             default_value="",
             validation_function=validate_virtual_ip,
-        ),
-        "ssl_cert": questions.PromptQuestion(
-            "Path to SSL Certificate for HAProxy (enter nothing to skip TLS)",
-            default_value="",
-            validation_function=validate_cert_file,
-        ),
-        "ssl_key": questions.PromptQuestion(
-            "Path to private key for the SSL certificate (enter nothing to skip TLS)",
-            default_value="",
-            validation_function=validate_key_file,
-        ),
-        "tls_mode": questions.PromptQuestion(
-            'TLS termination at HA Proxy ("termination"), passthrough to MAAS ("passthrough"), or no TLS ("disabled")?',
-            default_value="disabled",
-            validation_function=validate_tls_mode,
-        ),
+        )
     }
 
 
@@ -164,16 +192,20 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         variables.setdefault("virtual_ip", "")
         variables.setdefault("ssl_cert", "")
         variables.setdefault("ssl_key", "")
+        variables.setdefault("ssl_cacert", "")
         variables.setdefault("tls_mode", "disabled")
 
         # Set defaults
         self.preseed.setdefault("virtual_ip", "")
         self.preseed.setdefault("ssl_cert", "")
         self.preseed.setdefault("ssl_key", "")
+        self.preseed.setdefault("ssl_cacert", "")
         self.preseed.setdefault("tls_mode", "disabled")
 
+        qs = haproxy_questions()
+        qs.update(tls_questions(HAPROXY_VALID_TLS_MODES))
         haproxy_config_bank = questions.QuestionBank(
-            questions=haproxy_questions(),
+            questions=qs,
             console=console,
             preseed=self.preseed.get("haproxy"),
             previous_answers=variables,
@@ -190,6 +222,8 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         if tls_mode != "disabled":
             variables["ssl_cert"] = haproxy_config_bank.ssl_cert.ask()
             variables["ssl_key"] = haproxy_config_bank.ssl_key.ask()
+            if tls_mode == "passthrough":
+                variables["ssl_cacert"] = haproxy_config_bank.ssl_cacert.ask()
         virtual_ip = haproxy_config_bank.virtual_ip.ask()
         variables["virtual_ip"] = virtual_ip
 
@@ -213,16 +247,17 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             variables["haproxy_services_yaml"] = self.get_tls_services_yaml(
                 variables["tls_mode"]
             )
-            try:
-                opening = "certificate"
-                with open(variables["ssl_cert"]) as cert_file:
-                    variables["ssl_cert_content"] = cert_file.read()
-                opening = "private key"
-                with open(variables["ssl_key"]) as key_file:
-                    variables["ssl_key_content"] = key_file.read()
-                    variables.update()
-            except FileNotFoundError:
-                raise TerraformException(f"SSL {opening} not found")
+            if not variables["ssl_cert"] or not variables["ssl_key"]:
+                raise TerraformException(
+                    "Both ssl_cert and ssl_key must be provided when enabling TLS"
+                )
+            with open(variables["ssl_cert"]) as cert_file:
+                variables["ssl_cert_content"] = cert_file.read()
+            with open(variables["ssl_key"]) as key_file:
+                variables["ssl_key_content"] = key_file.read()
+            if variables["ssl_cacert"]:
+                with open(variables["ssl_cacert"]) as cacert_file:
+                    variables["ssl_cacert_content"] = cacert_file.read()
         else:
             variables["haproxy_port"] = 80
 
@@ -230,6 +265,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         variables.pop("tls_mode", "disabled")
         variables.pop("ssl_cert", "")
         variables.pop("ssl_key", "")
+        variables.pop("ssl_cacert", "")
 
         LOG.debug(f"extra tfvars: {variables}")
         return variables
