@@ -79,7 +79,7 @@ def validate_cacert_chain(filepath: str) -> None:
         raise ValueError(f"{filepath} does not exist")
     try:
         # just make sure we can open the file
-        with open(filepath) as f:
+        with open(filepath):
             pass
     except PermissionError:
         raise ValueError(f"Permission denied when trying to read {filepath}")
