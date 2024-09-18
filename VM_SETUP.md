@@ -7,14 +7,13 @@ For the purpose of developing and testing MAAS Anvil, you will need (up to) thre
 First, create an LXD network as shown below. Each VM you create will be assigned an IP address in this network.
 
 ```bash
-CONTROL_IP_RANGE="10.30.0.1"
-CONTROL_NETWORK_PREFIX=${CONTROL_IP_RANGE%.*}
+CONTROL_NETWORK_PREFIX="10.30.0"
 
 lxc network create maas-anvil-ctrl
 cat << __EOF | lxc network edit maas-anvil-ctrl
 config:
   dns.domain: maas-anvil-ctrl
-  ipv4.address: ${CONTROL_IP_RANGE}/24
+  ipv4.address: ${CONTROL_NETWORK_PREFIX}.1/24
   ipv4.dhcp: "true"
   ipv4.dhcp.ranges: ${CONTROL_NETWORK_PREFIX}.16-${CONTROL_NETWORK_PREFIX}.31
   ipv4.nat: "true"
@@ -33,12 +32,12 @@ __EOF
 Next, we need to create a second network in order for our VMs to be able to communicate back with the host machine.
 
 ```bash
-MANAGEMENT_IP_RANGE="10.40.0.1"
+MANAGEMENT_NETWORK_PREFIX="10.40.0"
 
 lxc network create maas-anvil-kvm
 cat << __EOF | lxc network edit maas-anvil-kvm
 config:
-  ipv4.address: ${MANAGEMENT_IP_RANGE}/24
+  ipv4.address: ${MANAGEMENT_NETWORK_PREFIX}.1/24
   ipv4.dhcp: "false"
   ipv4.nat: "true"
   ipv6.address: none
@@ -153,7 +152,7 @@ sudo snap install ./maas-anvil.snap --dangerous
 To execute this inside the VM from a script running on your host machine, save the contents above to a file (below, `/path/to/script`), then run:
 
 ```bash
-infra1_ip=$(lxc list -c4 --format csv infra1 | grep -o "10.30.0.[0-9][0-9]")
+infra1_ip=$(lxc exec infra1 -- hostname -I | cut -d " " -f 1)
 ssh -o "StrictHostKeyChecking no" ubuntu@${infra1_ip} bash -s < /path/to/script
 ```
 
