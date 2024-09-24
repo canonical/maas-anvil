@@ -176,3 +176,7 @@ openssl req -new -x509 -nodes -subj "/C=US/ST=Colorado/L=Denver/O=MAAS/OU=Anvil/
 ```
 
 You should now have three VMs setup: `infra1`, `infra2`, and `infra3` where you can bootstrap/join the cluster.
+
+## Rebuilding
+
+To make changes to the code and rebuild the snap, you'll need to delete each VM (`lxc delete --force infra{1,2,3}`) and restart this process again. While this is cumbersome, we currently do not have a better way to achieve this until we are able to leave the `lxdbr0` interface active.
