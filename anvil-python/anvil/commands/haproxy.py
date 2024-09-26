@@ -15,7 +15,6 @@
 
 import ipaddress
 import logging
-import os.path
 from typing import Any, Callable, List
 
 from rich.console import Console
@@ -49,12 +48,12 @@ HAPROXY_VALID_TLS_MODES = ["termination", "passthrough", "disabled"]
 def validate_cert_file(filepath: str) -> None:
     if filepath == "":
         return
-    if not os.path.isfile(filepath):
-        raise ValueError(f"{filepath} does not exist")
     try:
         with open(filepath) as f:
             if "BEGIN CERTIFICATE" not in f.read():
                 raise ValueError("Invalid certificate file")
+    except FileNotFoundError:
+        raise ValueError(f"{filepath} does not exist")
     except PermissionError:
         raise ValueError(f"Permission denied when trying to read {filepath}")
 
@@ -62,12 +61,12 @@ def validate_cert_file(filepath: str) -> None:
 def validate_key_file(filepath: str) -> None:
     if filepath == "":
         return
-    if not os.path.isfile(filepath):
-        raise ValueError(f"{filepath} does not exist")
     try:
         with open(filepath) as f:
             if "BEGIN PRIVATE KEY" not in f.read():
                 raise ValueError("Invalid key file")
+    except FileNotFoundError:
+        raise ValueError(f"{filepath} does not exist")
     except PermissionError:
         raise ValueError(f"Permission denied when trying to read {filepath}")
 
@@ -75,12 +74,12 @@ def validate_key_file(filepath: str) -> None:
 def validate_cacert_chain(filepath: str) -> None:
     if filepath == "":
         return
-    if not os.path.isfile(filepath):
-        raise ValueError(f"{filepath} does not exist")
     try:
         # just make sure we can open the file
         with open(filepath):
             pass
+    except FileNotFoundError:
+        raise ValueError(f"{filepath} does not exist")
     except PermissionError:
         raise ValueError(f"Permission denied when trying to read {filepath}")
 
