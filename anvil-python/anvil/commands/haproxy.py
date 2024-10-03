@@ -75,9 +75,9 @@ def validate_cacert_chain(filepath: str) -> None:
     if filepath == "":
         return
     try:
-        # just make sure we can open the file
-        with open(filepath):
-            pass
+        with open(filepath) as f:
+            if "BEGIN CERTIFICATE" not in f.read():
+                raise ValueError("Invalid CA certificate file")
     except FileNotFoundError:
         raise ValueError(f"{filepath} does not exist")
     except PermissionError:
@@ -115,7 +115,7 @@ def tls_questions(tls_modes: list[str]) -> dict[str, questions.PromptQuestion]:
             validation_function=validate_key_file,
         ),
         "ssl_cacert": questions.PromptQuestion(
-            "Path to cacert chain, for use with self-signed ssl certificates (enter nothing to skip)",
+            "Path to CA cert chain, for use with self-signed SSL certificates (enter nothing to skip)",
             default_value="",
             validation_function=validate_cacert_chain,
         ),
@@ -253,9 +253,6 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
                 variables["ssl_cert_content"] = cert_file.read()
             with open(variables["ssl_key"]) as key_file:
                 variables["ssl_key_content"] = key_file.read()
-            if variables["ssl_cacert"]:
-                with open(variables["ssl_cacert"]) as cacert_file:
-                    variables["ssl_cacert_content"] = cacert_file.read()
         else:
             variables["haproxy_port"] = 80
 
