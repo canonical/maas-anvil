@@ -44,7 +44,6 @@ HAPROXY_UNIT_TIMEOUT = (
 HAPROXY_VALID_TLS_MODES = ["termination", "passthrough", "disabled"]
 
 
-
 def validate_cert_file(filepath: str) -> None:
     if filepath == "":
         return
@@ -209,13 +208,8 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             previous_answers=variables,
             accept_defaults=self.accept_defaults,
         )
-        cert_filepath = haproxy_config_bank.ssl_cert.ask()
-        variables["ssl_cert"] = cert_filepath
-        key_filepath = haproxy_config_bank.ssl_key.ask()
-        variables["ssl_key"] = key_filepath
-        tls_mode = ""
-        if variables["ssl_cert"] is not None:
-            tls_mode = haproxy_config_bank.tls_mode.ask()
+
+        tls_mode = haproxy_config_bank.tls_mode.ask()
         variables["tls_mode"] = tls_mode
         if tls_mode != "disabled":
             variables["ssl_cert"] = haproxy_config_bank.ssl_cert.ask()
@@ -233,13 +227,6 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             self.client, self._HAPROXY_CONFIG
         )
 
-        cert_filepath = variables["ssl_cert"]
-        key_filepath = variables["ssl_key"]
-        if cert_filepath != "" and key_filepath != "":
-            with open(cert_filepath) as cert_file:
-                variables["ssl_cert_content"] = cert_file.read()
-            with open(key_filepath) as key_file:
-                variables["ssl_key_content"] = key_file.read()
         if variables["tls_mode"] != "disabled":
             variables["haproxy_port"] = 443
             variables["haproxy_services_yaml"] = self.get_tls_services_yaml(
