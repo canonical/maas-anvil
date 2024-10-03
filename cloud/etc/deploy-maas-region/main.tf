@@ -32,6 +32,9 @@ data "juju_model" "machine_model" {
 
 locals {
   tls_mode = var.tls_mode != "" ? { tls_mode = var.tls_mode } : {}
+  ssl_cert_content = var.ssl_cert_content != "" ? { ssl_cert_content = var.ssl_cert_content } : {}
+  ssl_key_content  = var.ssl_key_content != "" ? { ssl_key_content = var.ssl_key_content } : {}
+  ssl_cacert_content  = var.ssl_cacert_content != "" ? { ssl_cacert_content = var.ssl_cacert_content } : {}
 }
 
 resource "juju_application" "maas-region" {
@@ -48,6 +51,9 @@ resource "juju_application" "maas-region" {
 
   config = merge(
     local.tls_mode,
+    local.ssl_cert_content,
+    local.ssl_key_content,
+    local.ssl_cacert_content,
     var.charm_maas_region_config,
   )
 }

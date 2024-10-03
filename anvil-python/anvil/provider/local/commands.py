@@ -305,6 +305,8 @@ def bootstrap(
                 jhelper,
                 deployment.infrastructure_model,
                 fqdn,
+                accept_defaults,
+                preseed,
             )
         )
     if is_agent_node:
@@ -495,6 +497,8 @@ def join(
                 jhelper,
                 deployment.infrastructure_model,
                 name,
+                accept_defaults,
+                preseed,
             )
         )
         plan2.append(

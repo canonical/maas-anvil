@@ -182,6 +182,7 @@ class LatestInChannelCoordinator:
                 self.manifest,
                 self.jhelper,
                 self.deployment.infrastructure_model,
+                self.preseed,
             )
         )
         plan.extend(
