@@ -49,6 +49,7 @@ class DeployMAASRegionApplicationStep(DeployMachineApplicationStep):
         jhelper: JujuHelper,
         model: str,
         refresh: bool = False,
+        verb: str = "Deploy",
     ):
         super().__init__(
             client,
@@ -58,8 +59,8 @@ class DeployMAASRegionApplicationStep(DeployMachineApplicationStep):
             APPLICATION,
             model,
             "maas-region-plan",
-            "Deploy MAAS Region",
-            "Deploying MAAS Region",
+            f"{verb.capitalize()} MAAS Region",
+            f"{verb.capitalize()} MAAS Region",
             refresh,
         )
 
@@ -150,6 +151,6 @@ def maas_region_upgrade_steps(
     return [
         TerraformInitStep(manifest.get_tfhelper("maas-region-plan")),
         DeployMAASRegionApplicationStep(
-            client, manifest, jhelper, model, refresh=True
+            client, manifest, jhelper, model, refresh=True, verb="Refresh"
         ),
     ]
