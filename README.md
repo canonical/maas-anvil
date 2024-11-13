@@ -251,6 +251,9 @@ deployment:
     ssl_cert: ""
     # Path to private key for the SSL certificate (enter nothing to skip TLS)
     ssl_key: ""
+    # Path to CA certificate, if you want to use a self-signed certificate when
+    # in passthrough mode
+    ssl_cacert: ""
 software:
   # juju:
   #   bootstrap_args: []
