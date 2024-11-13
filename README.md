@@ -792,7 +792,7 @@ Options:
   -h, --help             Show this message and exit.
 
 Example:
-  Prepare a node for usage with MAAS Anvil by generating the `prepare-node-script` and
+  Prepare a node for usage with MAAS Anvil by generating the 'prepare-node-script' and
   running it immediately by piping it to bash.  
   maas-anvil prepare-node-script | bash -x
 ```
@@ -812,5 +812,5 @@ Options:
 
 Example:
   Refresh the MAAS Anvil cluster.
-  `maas-anvil refresh`
+  maas-anvil refresh
 ```
