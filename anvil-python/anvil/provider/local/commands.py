@@ -326,7 +326,7 @@ def bootstrap(
 
 @click.command()
 @click.option(
-    "--name",
+    "--fqdn",
     type=str,
     prompt=True,
     help="Fully qualified node name",
@@ -339,33 +339,33 @@ def bootstrap(
     help="Output format.",
 )
 @click.pass_context
-def add(ctx: click.Context, name: str, format: str) -> None:
+def add(ctx: click.Context, fqdn: str, format: str) -> None:
     """Generate a token for a new node to join the cluster."""
-    preflight_checks = [DaemonGroupCheck(), VerifyFQDNCheck(name)]
+    preflight_checks = [DaemonGroupCheck(), VerifyFQDNCheck(fqdn)]
     run_preflight_checks(preflight_checks, console)
-    name = remove_trailing_dot(name)
+    fqdn = remove_trailing_dot(fqdn)
 
     deployment: LocalDeployment = ctx.obj
     client = deployment.get_client()
 
     plan1 = [
         JujuLoginStep(deployment.juju_account),
-        ClusterAddNodeStep(client, name),
-        CreateJujuUserStep(name),
+        ClusterAddNodeStep(client, fqdn),
+        CreateJujuUserStep(fqdn),
     ]
 
     plan1_results = run_plan(plan1, console)
 
     user_token = get_step_message(plan1_results, CreateJujuUserStep)
 
-    plan2 = [ClusterAddJujuUserStep(client, name, user_token)]
+    plan2 = [ClusterAddJujuUserStep(client, fqdn, user_token)]
     run_plan(plan2, console)
 
     def _print_output(token: str) -> None:
         """Helper for printing formatted output."""
         if format == FORMAT_DEFAULT:
             console.print(
-                f"Token for the Node {name}: {token}", soft_wrap=True
+                f"Token for the Node {fqdn}: {token}", soft_wrap=True
             )
         elif format == FORMAT_YAML:
             click.echo(yaml.dump({"token": token}))
@@ -567,10 +567,10 @@ def list(ctx: click.Context, format: str) -> None:
 
 @click.command()
 @click.option(
-    "--name", type=str, prompt=True, help="Fully qualified node name"
+    "--fqdn", type=str, prompt=True, help="Fully qualified node name"
 )
 @click.pass_context
-def remove(ctx: click.Context, name: str) -> None:
+def remove(ctx: click.Context, fqdn: str) -> None:
     """Remove a node from the cluster."""
     deployment: LocalDeployment = ctx.obj
     client = deployment.get_client()
@@ -586,33 +586,33 @@ def remove(ctx: click.Context, name: str) -> None:
     plan = [
         JujuLoginStep(deployment.juju_account),
         RemoveMAASAgentUnitStep(
-            client, name, jhelper, deployment.infrastructure_model
+            client, fqdn, jhelper, deployment.infrastructure_model
         ),
         RemoveMAASRegionUnitStep(
-            client, name, jhelper, deployment.infrastructure_model
+            client, fqdn, jhelper, deployment.infrastructure_model
         ),
         ReapplyPostgreSQLTerraformPlanStep(
             client, manifest_obj, jhelper, deployment.infrastructure_model
         ),
         RemoveHAProxyUnitStep(
-            client, name, jhelper, deployment.infrastructure_model
+            client, fqdn, jhelper, deployment.infrastructure_model
         ),
         RemovePostgreSQLUnitStep(
-            client, name, jhelper, deployment.infrastructure_model
+            client, fqdn, jhelper, deployment.infrastructure_model
         ),
-        RemoveJujuMachineStep(client, name),
+        RemoveJujuMachineStep(client, fqdn),
         # Cannot remove user as the same user name cannot be reused,
         # so commenting the RemoveJujuUserStep
-        # RemoveJujuUserStep(name),
-        ClusterRemoveNodeStep(client, name),
+        # RemoveJujuUserStep(fqdn),
+        ClusterRemoveNodeStep(client, fqdn),
     ]
     run_plan(plan, console)
-    click.echo(f"Removed node {name} from the cluster")
+    click.echo(f"Removed node {fqdn} from the cluster")
     # Removing machine does not clean up all deployed Juju components. This is
     # deliberate, see https://bugs.launchpad.net/juju/+bug/1851489.
     # Without the workaround mentioned in LP#1851489, it is not possible to
     # reprovision the machine back.
     click.echo(
-        f"Run command 'sudo /sbin/remove-juju-services' on node {name} "
+        f"Run command 'sudo /sbin/remove-juju-services' on node {fqdn} "
         "to reuse the machine."
     )
