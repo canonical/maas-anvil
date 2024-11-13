@@ -95,7 +95,7 @@ ubuntu@infra3:~$ maas-anvil cluster join \
 
 ### Confirm the cluster status
 
-If everything went smoothly, the MAAS-Anvil cluster should now be operational. You can check the status of your cluster with the following command. If you would like to learn more about how to monitor an ongoing MAAS Anvil deployment, you can read more about this in the section Monitor an ongoing deployment.
+If everything went smoothly, the MAAS-Anvil cluster should now be operational. You can check the status of your cluster with the following command. If you would like to learn more about how to monitor an ongoing MAAS Anvil deployment, you can read more about this in the section [Monitor an ongoing deployment](#monitor-an-ongoing-deployment).
 
 ```bash
 ubuntu@infra1:~$ maas-anvil cluster list
@@ -176,36 +176,6 @@ ubuntu@infra3:~$ maas-anvil cluster join \
     --role database --role region --role agent --role haproxy \
     --token eyJuYW1lIjoibWFhcy00Lm1hYXMiLCJzZWNyZXQiOiI3MmE512342abcdEASWWxOWNlYWNkYmJjMWRmMjk4OThkYWFkYzQzMDAzZjk4NmRkZDI2MWRhYWVkZTIxIiwiZmluZ2VycHJpbnQiOiJlODU5ZmY5NjAwMDU4OGFjZmQ5ZDM0NjFhMDk5NmU1YTU3YjhjN2Q2ZjE4M2NjZDRlOTg2NGRkZjQ3NWMwZWM1Iiwiam9pbl9hZGRyZXNzZXMiOlsiMTAuMjAuMC43OjcwMDAiLCIxMC4yMC4wLjg6NzAwMCJdfQ==
 ```
-
-## Update the MAAS Anvil cluster
-
-If you need to update charm versions or change the deployment/software configuration files of a running deployment you can use the `refresh` command. The `refresh` command needs to be run on the bootstrap node.
-
-### Update charms in their current channel
-
-By default the `refresh` command will update all charms within their current channel, i.e. you have MAAS 3.4.3 installed, but 3.4.4 is available.
-
-```bash
-ubuntu@infra1:~$ maas-anvil refresh
-```
-
-### Update charms to the next version
-
-If you use `refresh` with the `--upgrade-release` flag, the charms are upgraded to the next version, i.e. you have 3.4.X, but want to change to 3.5.Y.
-
-```bash
-ubuntu@infra1:~$ maas-anvil refresh --upgrade-release
-```
-
-### Change the deployment/software configuration files
-
-The `refresh` command allows you to change the deployment/software configuration files that were created at bootstrap by providing a manifest file with the desired new configuration.
-
-```bash
-ubuntu@infra1:~$ maas-anvil refresh --manifest "$HOME/.config/anvil/manifest.yaml"
-```
-
-If you specify an upgrade across channels and don't pass the `--upgrade-release` flag, the command will tell you to re-execute.
 
 ## Log into the Juju controller
 
