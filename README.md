@@ -182,7 +182,7 @@ ubuntu@infra3:~$ maas-anvil cluster join \
 If you receive an error message like the following:
 
 ```
-please enter password for $node on anvil-controller:
+Please enter password for $node on anvil-controller
 ```
 
 It is because Juju OAuth macaroons typically expire after 24h. If you need to interact with the MAAS Anvil Juju controller once the macaroon expires, you will need to re-authenticate your session. You can re-authenticate your session with the following command:
