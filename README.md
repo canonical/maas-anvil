@@ -212,19 +212,19 @@ The configuration options of MAAS Anvil are generally divided into two categorie
 -   Deployment
 -   Software
 
-In the Deployment category you can configure general options for deployment, in the Software category you can select versions and configuration of all charms used in MAAS Anvil and define how these charms are deployed.
+In the Deployment category you can configure general options for deployment, in the software category you can select versions and configuration of all charms used in MAAS Anvil and define how these charms are deployed.
 
 ### `--accept-defaults` flag
 
-If you set the `--accept-defaults` flag on the bootstrapped and joining nodes you will accept the default configuration that comes with MAAS. For all available configuration options you can see the default option in the [Configuration options](#configuration-options) section.
+If you set the `--accept-defaults` flag on the bootstrapped and joining nodes you will accept the default configuration that comes with MAAS Anvil. For all available configuration options you can see the default option in the [Configuration options](#configuration-options) section.
 
 ### Configuration prompting
 
-If you omit the `--accept-defaults` flag, you will be prompted to enter the Deployment configuration during deployment. However, you will not be prompted for the software configuration. The software default settings will still be selected.
+If you omit the `--accept-defaults` flag, you will be prompted to enter the deployment configuration during deployment. However, you will not be prompted for the software configuration. The software default settings will still be selected.
 
 ### Manifest file
 
-If you want to define the entire configuration of the MAAS Anvil deployment in advance, both Deployment and Software, you can do so with a manifest file. A manifest file is a yaml file that can be used to specify all configurations for a MAAS Anvil cluster deployment.
+If you want to define the entire configuration of the MAAS Anvil deployment in advance, both deployment and software, you can do so with a manifest file. A manifest file is a yaml file that can be used to specify all configurations for a MAAS Anvil cluster deployment.
 
 Run the following command to generate a manifest file for MAAS Anvil:
 
@@ -232,7 +232,7 @@ Run the following command to generate a manifest file for MAAS Anvil:
 maas-anvil manifest generate
 ```
 
-A manifest file will be created in the default location `$HOME/.config/anvil/manifest.yaml`. If you have a running MAAS Anvil installation, the manifest file will be based on the configurations of your running MAAS Anvil cluster. If no bootstrap has been performed yet, you will receive a default configuration file that looks like this:
+A manifest file will be created in the default location `$HOME/.config/anvil/manifest.yaml`. If you have a running MAAS Anvil installation, the manifest file will be based on the configurations of your running MAAS Anvil cluster. If no bootstrap has been performed yet, you will receive a default configuration file that looks something like this:
 
 ```yaml
 deployment:
@@ -287,7 +287,7 @@ software:
     #     source: /snap/maas-anvil/63/etc/deploy-postgresql
 ```
 
-As mentioned above, you can find a more detailed explanation of all available configuration options in the [References / Configuration options](#configuration-options) section.
+As mentioned above, you can find a more detailed explanation of all available configuration options in the [Configuration options](#configuration-options) section.
 
 Once you have set up a manifest file to your liking, you can deploy it when you bootstrap your deployment as follows:
 
@@ -696,7 +696,7 @@ Remove a node from the cluster. Run this command on the bootstrap node.
 
 ---
 
-### `maas-anvil inspect` {#maas-anvil-inspect}
+### `maas-anvil inspect`
 
 Inspects the MAAS Anvil cluster, will report any issues it finds and create a tarball of logs and traces. You can attach this tarball to an issue filed in the MAAS Anvil Github repository.
 
