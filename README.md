@@ -79,8 +79,7 @@ Token for the Node infra3.: eyJuYW1lIjoibWFhcy00Lm1hYXMiLCJzZWNyZXQiOiI3MmE51234
 
 ### Join new nodes to the MAAS cluster
 
-Now we have to join the cluster on the joining nodes using the `cluster join` command and the join token that was just created.  
-The roles with which a node joins the cluster can be specific to the node and do not have to match those of the bootstrap node. In this example, we opt for a configuration in which every node has every component.
+Now we have to join the cluster on the joining nodes using the `cluster join` command and the join token that was just created. The roles with which a node joins the cluster can be specific to the node and do not have to match those of the bootstrap node. In this example, we opt for a configuration in which every node has every component.
 
 ```bash
 ubuntu@infra2:~$ maas-anvil cluster join \
