@@ -593,9 +593,9 @@ Creates and manages a MAAS Anvil cluster across connected nodes.
 Commands:  
   cluster bootstrap      Initializes the cluster on the first node.  
   cluster add            Generates a token for a new node to join the cluster.  
-  cluster join           Joins the node to a MAAS Anvil cluster when given a valid join  
-token.  
-  cluster list Lists all nodes in the MAAS Anvil cluster.
+  cluster join           Joins the node to a MAAS Anvil cluster when given a valid join
+                         token.  
+  cluster list           Lists all nodes in the MAAS Anvil cluster.
 
 Options:  
   -q, --quiet  
