@@ -134,15 +134,15 @@ def show(ctx: click.Context, id: str) -> None:
 
 @click.command()
 @click.option(
-    "-f",
-    "--manifest-file",
+    "-o",
+    "--output",
     help="Output file for manifest, defaults to $HOME/.config/anvil/manifest.yaml",
     type=click.Path(dir_okay=False, path_type=Path),
 )
 @click.pass_context
 def generate(
     ctx: click.Context,
-    manifest_file: Path | None = None,
+    output: Path | None = None,
 ) -> None:
     """Generate manifest file.
 
@@ -152,14 +152,12 @@ def generate(
     """
     deployment: Deployment = ctx.obj
 
-    if not manifest_file:
+    if not output:
         home = os.environ.get("SNAP_REAL_HOME", "")
-        manifest_file = Path(home) / ".config" / "anvil" / "manifest.yaml"
+        output = Path(home) / ".config" / "anvil" / "manifest.yaml"
 
-    LOG.debug(
-        f"Creating {manifest_file} parent directory if it does not exist"
-    )
-    manifest_file.parent.mkdir(mode=0o775, parents=True, exist_ok=True)
+    LOG.debug(f"Creating {output} parent directory if it does not exist")
+    output.parent.mkdir(mode=0o775, parents=True, exist_ok=True)
 
     try:
         client = deployment.get_client()
@@ -185,7 +183,7 @@ def generate(
     software_content = generate_software_manifest(manifest_obj)
 
     try:
-        with manifest_file.open("w") as file:
+        with output.open("w") as file:
             file.write("# Generated Anvil Deployment Manifest\n\n")
             file.write(preseed_content)
             file.write("\n")
@@ -194,4 +192,4 @@ def generate(
         LOG.debug(e)
         raise click.ClickException(f"Manifest generation failed: {e!s}")
 
-    click.echo(f"Generated manifest is at {manifest_file!s}")
+    click.echo(f"Generated manifest is at {output!s}")
