@@ -571,8 +571,8 @@ Commands:
 
   Monitor and debug the cluster:  
     cluster list         Lists all nodes in the MAAS Anvil cluster.  
-    inspect              Inspects the MAAS Anvil cluster, will report any issues it finds and  
-                         create a tarball of logs and traces.
+    inspect              Inspects the MAAS Anvil cluster, will report any issues it finds
+                         and create a tarball of logs and traces.
 
   Manage a deployment:  
     juju-login           Logs into the Juju controller used by MAAS Anvil.
