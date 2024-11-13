@@ -39,7 +39,7 @@ In addition, the instructions assume that MAAS Anvil deploys all available compo
 
 ### Preparation steps for each node
 
-First, MAAS Anvil needs to be installed and some prerequisites for MAAS Anvil need to be set up. This needs to be done on every node. You can learn more about what `maas-anvil prepare-node-script` does in the CLI interface reference.
+First, MAAS Anvil needs to be installed and some prerequisites for MAAS Anvil need to be set up. This needs to be done on every node. You can learn more about what `maas-anvil prepare-node-script` does in the [CLI interface reference](#maas-anvil-prepare-node-script-options).
 
 ```bash
 ubuntu@infra{1,2,3}:~$ sudo snap install maas-anvil --edge
