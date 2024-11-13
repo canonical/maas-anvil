@@ -51,7 +51,7 @@ variable "enable_haproxy" {
 variable "tls_mode" {
   description = "TLS Mode for MAAS Region charm ('disabled', 'termination', or 'passthrough')"
   type        = string
-  default     = ""
+  default     = "disabled"
 }
 
 variable "ssl_cert_content" {
