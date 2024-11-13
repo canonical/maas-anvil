@@ -41,14 +41,14 @@ In addition, the instructions assume that MAAS Anvil deploys all available compo
 
 First, MAAS Anvil needs to be installed and some prerequisites for MAAS Anvil need to be set up. This needs to be done on every node. You can learn more about what `maas-anvil prepare-node-script` does in the CLI interface reference.
 
-```
+```bash
 ubuntu@infra{1,2,3}:~$ sudo snap install maas-anvil --edge
 ubuntu@infra{1,2,3}:~$ maas-anvil prepare-node-script | bash -x
 ```
 
 Among other things, the prepare-node-script adds the current user to the `snap_daemon` group. In order for the group changes to take effect, you must `log out` and `log in` again. If the file ownership of groups is not a major concern for you, you can also run the following command to activate the changes to the groups immediately.
 
-```
+```bash
 ubuntu@infra{1,2,3}:~$ newgrp snap_daemon
 ```
 
@@ -56,7 +56,7 @@ ubuntu@infra{1,2,3}:~$ newgrp snap_daemon
 
 To initialize the cluster you need to run the bootstrap command on the first node.
 
-```
+```bash
 ubuntu@infra1:~$ maas-anvil cluster bootstrap \
     --role database --role region --role agent --role haproxy \
     --accept-defaults
@@ -69,7 +69,7 @@ ubuntu@infra1:~$ maas-anvil cluster bootstrap \
 
 To add additional nodes to the cluster, you must first create join tokens on the initial node on which the cluster was bootstrapped. Make sure that you specify the fully qualified domain name (FQDN) of the joining node in the name flag.
 
-```
+```bash
 ubuntu@infra1:~$ maas-anvil cluster add --name infra2.
 Token for the Node infra2.: eyJuYW1lIjoibWFhcy00Lm1hYXMiLCJzZWNyZXQiOiI3MmE512342abcdEASWWxOWNlYWNkYmJjMWRmMjk4OThkYWFkYzQzMDAzZjk4NmRkZDI2MWRhYWVkZTIxIiwiZmluZ2VycHJpbnQiOiJlODU5ZmY5NjAwMDU4OGFjZmQ5ZDM0NjFhMDk5NmU1YTU3YjhjN2Q2ZjE4M2NjZDRlOTg2NGRkZjQ3NWMwZWM1Iiwiam9pbl9hZGRyZXNzZXMiOlsiMTAuMjAuMC43OjcwMDAiLCIxMC4yMC4wLjg6NzAwMCJdfQ==
 
@@ -82,13 +82,13 @@ Token for the Node infra3.: eyJuYW1lIjoibWFhcy00Lm1hYXMiLCJzZWNyZXQiOiI3MmE51234
 Now we have to join the cluster on the joining nodes using the `cluster join` command and the join token that was just created.  
 The roles with which a node joins the cluster can be specific to the node and do not have to match those of the bootstrap node. In this example, we opt for a configuration in which every node has every component.
 
-```
+```bash
 ubuntu@infra2:~$ maas-anvil cluster join \
     --role database --role region --role agent --role haproxy \
     --token eyJuYW1lIjoibWFhcy00Lm1hYXMiLCJzZWNyZXQiOiI3MmE512342abcdEASWWxOWNlYWNkYmJjMWRmMjk4OThkYWFkYzQzMDAzZjk4NmRkZDI2MWRhYWVkZTIxIiwiZmluZ2VycHJpbnQiOiJlODU5ZmY5NjAwMDU4OGFjZmQ5ZDM0NjFhMDk5NmU1YTU3YjhjN2Q2ZjE4M2NjZDRlOTg2NGRkZjQ3NWMwZWM1Iiwiam9pbl9hZGRyZXNzZXMiOlsiMTAuMjAuMC43OjcwMDAiLCIxMC4yMC4wLjg6NzAwMCJdfQ==
 ```
 
-```
+```bash
 ubuntu@infra3:~$ maas-anvil cluster join \
     --role database --role region --role agent --role haproxy \
     --token eyJuYW1lIjoibWFhcy00Lm1hYXMiLCJzZWNyZXQiOiI3MmE512342abcdEASWWxOWNlYWNkYmJjMWRmMjk4OThkYWFkYzQzMDAzZjk4NmRkZDI2MWRhYWVkZTIxIiwiZmluZ2VycHJpbnQiOiJlODU5ZmY5NjAwMDU4OGFjZmQ5ZDM0NjFhMDk5NmU1YTU3YjhjN2Q2ZjE4M2NjZDRlOTg2NGRkZjQ3NWMwZWM1Iiwiam9pbl9hZGRyZXNzZXMiOlsiMTAuMjAuMC43OjcwMDAiLCIxMC4yMC4wLjg6NzAwMCJdfQ==
@@ -98,7 +98,7 @@ ubuntu@infra3:~$ maas-anvil cluster join \
 
 If everything went smoothly, the MAAS-Anvil cluster should now be operational. You can check the status of your cluster with the following command. If you would like to learn more about how to monitor an ongoing MAAS Anvil deployment, you can read more about this in the section Monitor an ongoing deployment.
 
-```
+```bash
 ubuntu@infra1:~$ maas-anvil cluster list
 ┏━━━━━━━━┳━━━━━━━━┳━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┓
 ┃ Node   ┃ Status ┃ Region ┃ Agent ┃ Database ┃ HAProxy ┃
@@ -113,7 +113,7 @@ ubuntu@infra1:~$ maas-anvil cluster list
 
 To finish up your deployment you can create the MAAS admin user with the following command:
 
-```
+```bash
 ubuntu@infra1:~$ juju run maas-region/0 create-admin username=admin password=pass email=admin@maas.io ssh-import=lp:maasadmin
 ```
 
@@ -129,14 +129,14 @@ This is a shorter version of the [Bootstrap a maas-anvil cluster to learn the ba
 
 On each node you need to run the following commands to prepare them for usage with MAAS Anvil:
 
-```
+```bash
 ubuntu@infra{1,2,3}:~$ sudo snap install maas-anvil --edge
 ubuntu@infra{1,2,3}:~$ maas-anvil prepare-node-script | bash -x
 ```
 
 Among other things, the prepare-node-script adds the current user to the `snap_daemon` group. In order for the group changes to take effect, you must `log out` and `log in` again. If the file ownership of groups is not a major concern for you, you can also run the following command to activate the changes to the groups immediately.
 
-```
+```bash
 ubuntu@infra{1,2,3}:~$ newgrp snap_daemon
 ```
 
@@ -144,7 +144,7 @@ ubuntu@infra{1,2,3}:~$ newgrp snap_daemon
 
 To initialize the cluster you need to run the bootstrap command on the first node.
 
-```
+```bash
 ubuntu@infra1:~$ maas-anvil cluster bootstrap \
     --role database --role region --role agent --role haproxy \
     --accept-defaults
@@ -154,7 +154,7 @@ ubuntu@infra1:~$ maas-anvil cluster bootstrap \
 
 To add a new node to the cluster run the following `cluster add` on the bootstrap node and make note of the tokens.
 
-```
+```bash
 ubuntu@infra1:~$ maas-anvil cluster add --name infra2.
 Token for the Node infra2.: eyJuYW1lIjoibWFhcy00Lm1hYXMiLCJzZWNyZXQiOiI3MmE512342abcdEASWWxOWNlYWNkYmJjMWRmMjk4OThkYWFkYzQzMDAzZjk4NmRkZDI2MWRhYWVkZTIxIiwiZmluZ2VycHJpbnQiOiJlODU5ZmY5NjAwMDU4OGFjZmQ5ZDM0NjFhMDk5NmU1YTU3YjhjN2Q2ZjE4M2NjZDRlOTg2NGRkZjQ3NWMwZWM1Iiwiam9pbl9hZGRyZXNzZXMiOlsiMTAuMjAuMC43OjcwMDAiLCIxMC4yMC4wLjg6NzAwMCJdfQ==
 
@@ -166,13 +166,13 @@ Token for the Node infra3.: eyJuYW1lIjoibWFhcy00Lm1hYXMiLCJzZWNyZXQiOiI3MmE51234
 
 Join the cluster on the joining nodes using the `cluster join` command, the join token that was just created and the roles you want for the specific node.
 
-```
+```bash
 ubuntu@infra2:~$ maas-anvil cluster join \
     --role database --role region --role agent --role haproxy \
     --token eyJuYW1lIjoibWFhcy00Lm1hYXMiLCJzZWNyZXQiOiI3MmE512342abcdEASWWxOWNlYWNkYmJjMWRmMjk4OThkYWFkYzQzMDAzZjk4NmRkZDI2MWRhYWVkZTIxIiwiZmluZ2VycHJpbnQiOiJlODU5ZmY5NjAwMDU4OGFjZmQ5ZDM0NjFhMDk5NmU1YTU3YjhjN2Q2ZjE4M2NjZDRlOTg2NGRkZjQ3NWMwZWM1Iiwiam9pbl9hZGRyZXNzZXMiOlsiMTAuMjAuMC43OjcwMDAiLCIxMC4yMC4wLjg6NzAwMCJdfQ==
 ```
 
-```
+```bash
 ubuntu@infra3:~$ maas-anvil cluster join \
     --role database --role region --role agent --role haproxy \
     --token eyJuYW1lIjoibWFhcy00Lm1hYXMiLCJzZWNyZXQiOiI3MmE512342abcdEASWWxOWNlYWNkYmJjMWRmMjk4OThkYWFkYzQzMDAzZjk4NmRkZDI2MWRhYWVkZTIxIiwiZmluZ2VycHJpbnQiOiJlODU5ZmY5NjAwMDU4OGFjZmQ5ZDM0NjFhMDk5NmU1YTU3YjhjN2Q2ZjE4M2NjZDRlOTg2NGRkZjQ3NWMwZWM1Iiwiam9pbl9hZGRyZXNzZXMiOlsiMTAuMjAuMC43OjcwMDAiLCIxMC4yMC4wLjg6NzAwMCJdfQ==
@@ -186,7 +186,7 @@ If you need to update charm versions or change the deployment/software configura
 
 By default the `refresh` command will update all charms within their current channel, i.e. you have MAAS 3.4.3 installed, but 3.4.4 is available.
 
-```
+```bash
 ubuntu@infra1:~$ maas-anvil refresh
 ```
 
@@ -194,7 +194,7 @@ ubuntu@infra1:~$ maas-anvil refresh
 
 If you use `refresh` with the `--upgrade-release` flag, the charms are upgraded to the next version, i.e. you have 3.4.X, but want to change to 3.5.Y.
 
-```
+```bash
 ubuntu@infra1:~$ maas-anvil refresh --upgrade-release
 ```
 
@@ -202,7 +202,7 @@ ubuntu@infra1:~$ maas-anvil refresh --upgrade-release
 
 The `refresh` command allows you to change the deployment/software configuration files that were created at bootstrap by providing a manifest file with the desired new configuration.
 
-```
+```bash
 ubuntu@infra1:~$ maas-anvil refresh --manifest "$HOME/.config/anvil/manifest.yaml"
 ```
 
@@ -218,13 +218,13 @@ please enter password for $node on anvil-controller:
 
 It is because Juju OAuth macaroons typically expire after 24h. If you need to interact with the MAAS Anvil Juju controller once the macaroon expires, you will need to re-authenticate your session. You can re-authenticate your session with the following command:
 
-```
+```bash
 ubuntu@$node:~$ maas-anvil juju-login
 ```
 
 You can also manually fetch the login credentials from MAAS Anvil with:
 
-```
+```bash
 ubuntu@$node:~$ cat ~/snap/maas-anvil/current/account.yaml
 password: $password
 user: $user
@@ -259,70 +259,70 @@ If you want to define the entire configuration of the MAAS Anvil deployment in a
 
 Run the following command to generate a manifest file for MAAS Anvil:
 
-```
+```bash
 maas-anvil manifest generate
 ```
 
 A manifest file will be created in the default location `$HOME/.config/anvil/manifest.yaml`. If you have a running MAAS Anvil installation, the manifest file will be based on the configurations of your running MAAS Anvil cluster. If no bootstrap has been performed yet, you will receive a default configuration file that looks like this:
 
-```
+```yaml
 deployment:
-  bootstrap:
-    # Management networks shared by hosts (CIDRs, separated by comma)
-    management_cidr: ""
-  postgres:
-    # Maximum number of concurrent connections to allow to the database server
-    max_connections: "default"
-  haproxy:
-    # Virtual IP to use for the Cluster in HA
-    virtual_ip: ""
-    # The TLS mode
-    tls_mode: "disabled"
-    # Path to SSL Certificate for HAProxy (enter nothing to skip TLS)
-    ssl_cert: ""
-    # Path to private key for the SSL certificate (enter nothing to skip TLS)
-    ssl_key: ""
+    bootstrap:
+        # Management networks shared by hosts (CIDRs, separated by comma)
+        management_cidr: ""
+    postgres:
+        # Maximum number of concurrent connections to allow to the database server
+        max_connections: "default"
+    haproxy:
+        # Virtual IP to use for the Cluster in HA
+        virtual_ip: ""
+        # The TLS mode
+        tls_mode: "disabled"
+        # Path to SSL Certificate for HAProxy (enter nothing to skip TLS)
+        ssl_cert: ""
+        # Path to private key for the SSL certificate (enter nothing to skip TLS)
+        ssl_key: ""
 software:
-  # juju:
-  #   bootstrap_args: []
-  #   scale_args: []
-  # charms:
-  #   maas-region:
-  #     channel: 3.4/edge
-  #     revision: null
-  #     config: null
-  #   maas-agent:
-  #     channel: 3.4/edge
-  #     revision: null
-  #     config: null
-  #   haproxy:
-  #     channel: latest/stable
-  #     revision: null
-  #     config: null
-  #   postgresql:
-  #     channel: 14/stable
-  #     revision: null
-  #     config: null
-  #   keepalived:
-  #     channel: latest/stable
-  #     revision: null
-  #     config: null
-  # terraform:
-  #   maas-region-plan:
-  #     source: /snap/maas-anvil/63/etc/deploy-maas-region
-  #   maas-agent-plan:
-  #     source: /snap/maas-anvil/63/etc/deploy-maas-agent
-  #   haproxy-plan:
-  #     source: /snap/maas-anvil/63/etc/deploy-haproxy
-  #   postgresql-plan:
-  #     source: /snap/maas-anvil/63/etc/deploy-postgresql
+    # juju:
+    #   bootstrap_args: []
+    #   scale_args: []
+    # charms:
+    #   maas-region:
+    #     channel: 3.4/edge
+    #     revision: null
+    #     config: null
+    #   maas-agent:
+    #     channel: 3.4/edge
+    #     revision: null
+    #     config: null
+    #   haproxy:
+    #     channel: latest/stable
+    #     revision: null
+    #     config: null
+    #   postgresql:
+    #     channel: 14/stable
+    #     revision: null
+    #     config: null
+    #   keepalived:
+    #     channel: latest/stable
+    #     revision: null
+    #     config: null
+    # terraform:
+    #   maas-region-plan:
+    #     source: /snap/maas-anvil/63/etc/deploy-maas-region
+    #   maas-agent-plan:
+    #     source: /snap/maas-anvil/63/etc/deploy-maas-agent
+    #   haproxy-plan:
+    #     source: /snap/maas-anvil/63/etc/deploy-haproxy
+    #   postgresql-plan:
+    #     source: /snap/maas-anvil/63/etc/deploy-postgresql
 ```
 
 As mentioned above, you can find a more detailed explanation of all available configuration options in the [References / Configuration options](#configuration-options) section.
 
 Once you have set up a manifest file to your liking, you can deploy it when you bootstrap your deployment as follows:
 
-```
+```bash
 ubuntu@infra1:~$ maas-anvil cluster bootstrap \
     --role database --role region --role agent --role haproxy \
     --manifest "$HOME/.config/anvil/manifest.yaml"
@@ -330,7 +330,7 @@ ubuntu@infra1:~$ maas-anvil cluster bootstrap \
 
 If you have already deployed a MAAS Anvil cluster and want to update some configuration after the fact you can also use the `refresh` command to update the cluster with a (new) manifest file.
 
-```
+```bash
 ubuntu@infra1:~$ maas-anvil refresh --manifest "$HOME/.config/anvil/manifest.yaml"
 ```
 
@@ -338,7 +338,7 @@ ubuntu@infra1:~$ maas-anvil refresh --manifest "$HOME/.config/anvil/manifest.yam
 
 You can list all previously applied manifest files with the `manifest list` command. It shows you the database ID and the date it was applied to the deployment:
 
-```
+```bash
 ubuntu@infra1:~$ maas-anvil manifest list
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┓
 ┃ ID                               ┃ Applied Date        ┃
@@ -350,7 +350,7 @@ ubuntu@infra1:~$ maas-anvil manifest list
 
 If you want to inspect the contents of one of those manifest files you can show them with the `manifest show` command by providing the ID:
 
-```
+```bash
 ubuntu@infra1:~$ maas-anvil manifest show --id 0b7bbf2298c2a917dc29fb3d3268366b
 ```
 
@@ -362,7 +362,7 @@ ubuntu@infra1:~$ maas-anvil manifest show --id 0b7bbf2298c2a917dc29fb3d3268366b
 
 The simplest way to monitor an ongoing MAAS Anvil deployment is with the build in `cluster list` command.
 
-```
+```bash
 ubuntu@infra1:~$ maas-anvil cluster list
 ┏━━━━━━━━┳━━━━━━━━┳━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┓
 ┃ Node   ┃ Status ┃ Region ┃ Agent ┃ Database ┃ HAProxy ┃
@@ -378,7 +378,7 @@ ubuntu@infra1:~$ maas-anvil cluster list
 If you suspect there is something wrong with your MAAS Anvil cluster you might also want to use the `maas-anvil inspect` command. It creates an introspection report of the current state of the cluster.  
 You can read more about it in the [CLI reference section](#maas-anvil-inspect).
 
-```
+```bash
 ubuntu@infra1:~$ maas-anvil inspect
 ```
 
@@ -386,7 +386,7 @@ ubuntu@infra1:~$ maas-anvil inspect
 
 As MAAS Anvil uses Juju to deploy MAAS charms under the hood you can also use the `juju status` command to get more information about the status of an ongoing deployment. For example to monitor the juju status every 5 seconds you can run the following command on any node that is part of the MAAS Anvil cluster
 
-```
+```bash
 ubuntu@infra{1,2,3}:~$ juju status --watch 5s
 ```
 
@@ -401,7 +401,7 @@ The most reliable way to clean up a MAAS Anvil deployment at the moment is to re
 
 To get started with cleaning up a MAAS Anvil cluster you need to remove the nodes from the cluster. This command needs to be run on the bootstrap node.
 
-```
+```bash
 ubuntu@infra1:~$ maas-anvil remove --fqdn infra2.
 Removed node anvil2.lxd from the cluster
 Run command 'sudo /sbin/remove-juju-services' on node infra2. to reuse the machine.
@@ -409,7 +409,7 @@ Run command 'sudo /sbin/remove-juju-services' on node infra2. to reuse the machi
 
 This command will remove the node from the cluster and return commands you need to manually run on the removed node.
 
-```
+```bash
 ubuntu@infra2:~$ sudo /sbin/remove-juju-services
 ```
 
@@ -434,11 +434,11 @@ You can configure Management networks shared by hosts (CIDRs, separated by comma
 
 ###### Manifest example snippet
 
-```
+```yaml
 deployment:
-  bootstrap:
-    # Management networks shared by hosts (CIDRs, separated by comma)
-    management_cidr: "10.54.236.0/24"
+    bootstrap:
+        # Management networks shared by hosts (CIDRs, separated by comma)
+        management_cidr: "10.54.236.0/24"
 ```
 
 #### Postgres
@@ -469,7 +469,7 @@ If the number of MAAS region nodes is not known, you can set `max_connections` t
 
 ###### Manifest example snippet
 
-```
+```yaml
 deployment:
   postgres:
     # Maximum number of concurrent connections to allow to the database
@@ -499,20 +499,20 @@ If `passthrough` is selected, also provide `ssl_cacert` if you want to use a sel
 
 ###### Manifest example snippet
 
-```
+```yaml
 deployment:
-  haproxy:
-    # Virtual IP to use for the Cluster in HA
-    virtual_ip: ""
-    # The TLS mode
-    tls_mode: "disabled"
-    # Path to SSL Certificate for HAProxy (enter nothing to skip TLS)
-    ssl_cert: ""
-    # Path to private key for the SSL certificate (enter nothing to skip TLS)
-    ssl_key: ""
-    # Path to CA certificate, if you want to use a self-signed certificate when
-    # in passthrough mode
-    ssl_cacert: ""
+    haproxy:
+        # Virtual IP to use for the Cluster in HA
+        virtual_ip: ""
+        # The TLS mode
+        tls_mode: "disabled"
+        # Path to SSL Certificate for HAProxy (enter nothing to skip TLS)
+        ssl_cert: ""
+        # Path to private key for the SSL certificate (enter nothing to skip TLS)
+        ssl_key: ""
+        # Path to CA certificate, if you want to use a self-signed certificate when
+        # in passthrough mode
+        ssl_cacert: ""
 ```
 
 > [!NOTE]
@@ -526,7 +526,7 @@ The Juju section allows you to configure extra arguments which will be passed to
 
 ###### Manifest example snippet
 
-```
+```yaml
 juju:
 	bootstrap_args: []
 	scale_args: []
@@ -552,7 +552,7 @@ Check which configuration can be passed to a charm in their respective documenta
 
 ###### Manifest example snippet
 
-```
+```yaml
 charms
   maas-region:
     channel: 3.4/edge
@@ -566,17 +566,16 @@ You can configure the Terraform plans MAAS Anvil uses to, for example, change wh
 
 ###### Manifest example snippet
 
-```
+```yaml
 terraform:
-  maas-region-plan:
-    source: /snap/maas-anvil/63/etc/deploy-maas-region
-  maas-agent-plan:
-    source: /snap/maas-anvil/63/etc/deploy-maas-agent
-  haproxy-plan:
-    source: /snap/maas-anvil/63/etc/deploy-haproxy
-  postgresql-plan:
-    source: /snap/maas-anvil/63/etc/deploy-postgresql
-
+    maas-region-plan:
+        source: /snap/maas-anvil/63/etc/deploy-maas-region
+    maas-agent-plan:
+        source: /snap/maas-anvil/63/etc/deploy-maas-agent
+    haproxy-plan:
+        source: /snap/maas-anvil/63/etc/deploy-haproxy
+    postgresql-plan:
+        source: /snap/maas-anvil/63/etc/deploy-postgresql
 ```
 
 ## CLI interface
