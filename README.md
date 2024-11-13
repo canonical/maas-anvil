@@ -212,7 +212,7 @@ The configuration options of MAAS Anvil are generally divided into two categorie
 -   Deployment
 -   Software
 
-In the Deployment category you can configure general options for deployment, in the software category you can select versions and configuration of all charms used in MAAS Anvil and define how these charms are deployed.
+In the deployment category you can configure general options for deployment, in the software category you can select versions and configuration of all charms used in MAAS Anvil and define how these charms are deployed.
 
 ### `--accept-defaults` flag
 
