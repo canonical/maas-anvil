@@ -63,7 +63,7 @@ ubuntu@infra1:~$ maas-anvil cluster bootstrap \
 ```
 
 > [!NOTE]
-> The `--accept-defaults` flag, as the name suggests, accepts the default configuration of MAAS Anvil. The most important configurations are the virtual IP, PostgreSQL max_connections and TLS termination. If the `--accept-defaults` flag is omitted, you will be prompted for the configuration during the deployment. If you want to specify the configuration beforehand, you can create a manifest file and provide the manifest file with the `--manifest` flag. Read more about how to configure your MAAS Anvil deployment with a manifest file.
+> The `--accept-defaults` flag, as the name suggests, accepts the default configuration of MAAS Anvil. The most important configurations are the [virtual IP](#virtual-ip-vip), [PostgreSQL max_connections](#max-connections) and [TLS termination](#tsl). If the `--accept-defaults` flag is omitted, you will be prompted for the configuration during the deployment. If you want to specify the configuration beforehand, you can create a manifest file and provide the manifest file with the `--manifest` flag. [Read more about how to configure your MAAS Anvil deployment with a manifest file](#configure-your-maas-anvil-deployment).
 
 ### Add new nodes to the MAAS cluster
 
