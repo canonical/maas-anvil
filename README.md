@@ -583,241 +583,234 @@ Options:
   -h, --help             Show this message and exit.
 ```
 
----
-
 ### `maas-anvil cluster [OPTIONS] COMMAND [ARGS]...`
-
+```
 Creates and manages a MAAS Anvil cluster across connected nodes.
 
 Commands:  
-cluster bootstrap Initializes the cluster on the first node.  
-cluster add Generates a token for a new node to join the cluster.  
-cluster join Joins the node to a MAAS Anvil cluster when given a valid join  
+  cluster bootstrap      Initializes the cluster on the first node.  
+  cluster add            Generates a token for a new node to join the cluster.  
+  cluster join           Joins the node to a MAAS Anvil cluster when given a valid join  
 token.  
-cluster list Lists all nodes in the MAAS Anvil cluster.
+  cluster list Lists all nodes in the MAAS Anvil cluster.
 
 Options:  
- \-q, \--quiet  
- \-v, \--verbose  
- \-h, \--help Show this message and exit.
+  -q, --quiet  
+  -v, --verbose  
+  -h, --help             Show this message and exit.
 
-##### Example
+Example:
+  Run the cluster bootstrap command to initialize the cluster with the first node.  
+  maas-anvil cluster bootstrap --role database --role region --role agent --role haproxy
+  --accept-defaults
 
-Run the cluster bootstrap command to initialize the cluster with the first node.  
- `maas-anvil cluster bootstrap --role database --role region --role agent --role haproxy --accept-defaults`
-
-Once the cluster is bootstrapped you can join additional nodes by running  
-`maas-anvil cluster add` on the local node and  
-`maas-anvil cluster join` on the joining nodes.
-
----
+  Once the cluster is bootstrapped you can join additional nodes by running  
+  'maas-anvil cluster add' on the local node and  
+  'maas-anvil cluster join' on the joining nodes.
+```
 
 #### `maas-anvil cluster bootstrap [OPTIONS]`
-
+```
 Bootstraps the first node to initialize a MAAS Anvil cluster deployment.
 
 Options:  
- \-a, \--accept-defaults Bootstraps the cluster with default configuration. Read more about  
-defaults in the docs.  
- \-m, \--manifest If provided, the cluster is bootstrapped with the configuration  
- specified in the manifest file. Read more about the manifest file in  
- the docs.  
- \--role Specifies the roles for the bootstrap node. Defaults to the database  
- role. Use multiple \--role flags to assign more than one role.  
- \-h, \--help Show this message and exit.
+  -a, --accept-defaults  Bootstraps the cluster with default configuration. Read more
+                         about defaults in the docs.  
+  -m, --manifest         If provided, the cluster is bootstrapped with the configuration  
+                         specified in the manifest file. Read more about the manifest
+                         file in the docs.  
+  --role                 Specifies the roles for the bootstrap node. Defaults to the
+                         database role. Use multiple --role flags to assign more than one
+                         role.  
+  -h, --help             Show this message and exit.
 
-##### Example
-
-Bootstrap a new cluster with all available roles and default configurations on the first node. `maas-anvil cluster bootstrap --role database --role region --role agent --role haproxy --accept-defaults`
-
----
+Example:
+  Bootstrap a new cluster with all roles and default configurations on the first node.
+  maas-anvil cluster bootstrap --role database --role region --role agent --role haproxy
+  --accept-defaults
+```
 
 #### `maas-anvil cluster add [OPTIONS]`
-
-Generates a token for a new node to join the cluster. Needs to be run on the node where the cluster was bootstrapped.
+```
+Generates a token for a new node to join the cluster. Needs to be run on the node where 
+the cluster was bootstrapped.
 
 Options:  
- \--fqdn The fully qualified node name (FQDN) of the joining node.  
- \-f, \--format Output format of the join token.  
- \-h, \--help Show this message and exit.
+  --fqdn                 The fully qualified node name (FQDN) of the joining node.  
+  -f, --format           Output format of the join token.  
+  -h, --help             Show this message and exit.
 
-##### Example
-
-Add an additional node to the cluster (run this command on the bootstrap node)  
-`maas-anvil cluster add --fqdn infra2.`
-
----
+Example:
+  Add an additional node to the cluster (run this command on the bootstrap node)  
+  maas-anvil cluster add --fqdn infra2.
+```
 
 #### `maas-anvil cluster join [OPTIONS]`
-
-Joins the node to a MAAS Anvil cluster when given a valid join token. Needs to be run on the joining node.
+```
+Joins the node to a MAAS Anvil cluster when given a valid join token. Needs to be run on
+the joining node.
 
 Options:  
- \-a, \--accept-defaults Joins the cluster with default configuration. Read more about  
-defaults in the docs.  
- \--token The join token generated on the bootstrap node with `cluster`  
- `add`  
- \--role Specifies the roles for the joining node. Use multiple \--role flags to  
-assign more than one role  
- \-h, \--help Show this message and exit.
+  -a, --accept-defaults  Joins the cluster with default configuration. Read more about
+                         defaults in the docs.  
+  --token                The join token generated on the bootstrap node with 'cluster add'
+  --role                 Specifies the roles for the joining node. Use multiple --role 
+                         flags to assign more than one role.
+  -h, --help             Show this message and exit.
 
-##### Example
-
-Join an additional node to the MAAS Anvil cluster. Run this command on the joining node and use the token previously created with `maas-anvil cluster add` on the bootstrap node.  
-`maas-anvil cluster join --role database --role region --role agent --role haproxy --token $JOINTOKEN`
-
----
+Example:
+  Join an additional node to the MAAS Anvil cluster. Run this command on the joining node
+  and use the token previously created with 'maas-anvil cluster add' on the bootstrap node.  
+  maas-anvil cluster join --role database --role region --role agent --role haproxy
+  --token $JOINTOKEN
+```
 
 #### `maas-anvil cluster list [OPTIONS]`
-
-Lists all nodes in the MAAS Anvil cluster. Can be run on any node that is connected to an active MAAS Anvil cluster.
+```
+Lists all nodes in the MAAS Anvil cluster. Can be run on any node that is connected to an
+active MAAS Anvil cluster.
 
 Options:  
- \-f, \--format Output format of the list.  
- \-h, \--help Show this message and exit.
+  -f, --format           Output format of the list.
+  -h, --help             Show this message and exit.
 
-##### Example
-
-Verify the status of your MAAS Anvil cluster.  
-`maas-anvil cluster list`
-
----
+Example:
+  Verify the status of your MAAS Anvil cluster.  
+  maas-anvil cluster list
+```
 
 #### `maas-anvil cluster remove [OPTIONS]`
-
+```
 Removes a node from the MAAS Anvil cluster. Needs to be run on the bootstrap node.
 
 Options:  
- \--fqdn The fully qualified node name (FQDN) of the leaving node.  
- \-h, \--help Show this message and exit.
+  --fqdn                 The fully qualified node name (FQDN) of the leaving node.  
+  -h, --help             Show this message and exit.
 
-##### Example
-
+Example:
 Remove a node from the cluster. Run this command on the bootstrap node.  
-`maas-anvil cluster remove --fqdn infra2.`
-
----
+maas-anvil cluster remove --fqdn infra2.
+```
 
 ### `maas-anvil inspect`
-
-Inspects the MAAS Anvil cluster, will report any issues it finds and create a tarball of logs and traces. You can attach this tarball to an issue filed in the MAAS Anvil Github repository.
+```
+Inspects the MAAS Anvil cluster, will report any issues it finds and create a tarball of
+logs and traces. You can attach this tarball to an issue filed in the MAAS Anvil Github
+repository.
 
 Options:  
- \-h, \--help Show this message and exit.
+  -h, --help             Show this message and exit.
 
-##### Example
-
-Inspect the MAAS Anvil cluster.  
-`maas-anvil inspect`
-
----
+Example:
+  Inspect the MAAS Anvil cluster.  
+  maas-anvil inspect
+```
 
 ### `maas-anvil juju-login`
-
+```
 Logs into the Juju controller used by MAAS Anvil with the current host user.
 
 Options:  
- \-h, \--help Show this message and exit.
+  -h, --help             Show this message and exit.
 
-##### Example
-
-Log into the Juju controller to manually interact with the Juju controller created by MAAS Anvil.  
-`maas-anvil juju-login`
-
----
+Example:
+  Log into the Juju controller to manually interact with the Juju controller created
+  by MAAS Anvil.  
+  maas-anvil juju-login
+```
 
 ### `maas-anvil manifest [OPTIONS] COMMAND [ARGS]...`
-
-Generates and manages manifest files. A manifest file is a declarative YAML file with which configurations for a MAAS Anvil cluster deployment can be set. To learn more about how to use manifest files read the docs. The manifest commands are read only.
+```
+Generates and manages manifest files. A manifest file is a declarative YAML file with
+which configurations for a MAAS Anvil cluster deployment can be set. To learn more about
+how to use manifest files read the docs. The manifest commands are read only.
 
 Commands:  
-manifest generate Generates a manifest file with which a MAAS Anvil deployment can  
-be configured.  
-manifest list Lists the currently active manifest file.  
-manifest show Shows the manifest data.
+  manifest generate      Generates a manifest file with which a MAAS Anvil deployment can  
+                         be configured.  
+  manifest list          Lists the currently active manifest file.  
+  manifest show          Shows the manifest data.
 
 Options:  
- \-h, \--help Show this message and exit.
+  -h, --help             Show this message and exit.
 
-##### Example
-
-Generate a manifest file with (default) configuration to be saved in the default location of `$HOME/.config/anvil/manifest.yaml`  
-`maas-anvil manifest generate`
-
----
+Example:
+  Generate a manifest file with (default) configuration to be saved in the default
+  location of '$HOME/.config/anvil/manifest.yaml'
+  maas-anvil manifest generate
+```
 
 ### `maas-anvil manifest generate [OPTIONS]`
-
-Generates a manifest file either with the configuration of the currently deployed MAAS Anvil cluster or, if no cluster was bootstrapped yet, a default configuration.
+```
+Generates a manifest file either with the configuration of the currently deployed
+MAAS Anvil cluster or, if no cluster was bootstrapped yet, a default configuration.
 
 Options:  
- \-o, \--output Output file for the manifest, defaults to  
-$HOME/.config/anvil/manifest.yaml  
- \-h, \--help Show this message and exit.
+  -o, \--output          Output file for the manifest, defaults to  
+                         '$HOME/.config/anvil/manifest.yaml'
+  -h, \--help            Show this message and exit.
 
-##### Example
-
-Generate a manifest file with (default) configuration to be saved in the default location of `$HOME/.config/anvil/manifest.yaml`  
-`maas-anvil manifest generate`
-
----
+Example:
+  Generate a manifest file with (default) configuration to be saved in the default
+  location of '$HOME/.config/anvil/manifest.yaml'
+  maas-anvil manifest generate
+```
 
 ### `maas-anvil manifest list [OPTIONS]`
-
+```
 Lists all manifest files that were used in the past to create or refresh a cluster.
 
 Options:  
- \-f, \--format Output format of the list.  
- \-h, \--help Show this message and exit.
+  -f, --format           Output format of the list.  
+  -h, --help             Show this message and exit.
 
-##### Example
-
-List previously used manifest files.  
-`maas-anvil manifest list`
-
----
+Example:
+  List previously used manifest files.  
+  maas-anvil manifest list
+```
 
 ### `maas-anvil manifest show [OPTIONS]`
-
-Shows the contents of a manifest file given an id. Get ids using the ‘manifest list’ command. Use '--id=latest' to show the most recently committed manifest.
+```
+Shows the contents of a manifest file given an id. Get ids using the 'manifest list'
+command. Use '--id=latest' to show the most recently committed manifest.
 
 Options:  
- \--id The database id of the manifest file  
- \-h, \--help Show this message and exit.
+  --id                   The database id of the manifest file  
+  -h, --help             Show this message and exit.
 
-##### Example
-
-Show the contents of the most recently committed manifest file.  
-`maas-anvil manifest show --id=latest`
-
----
+Example:
+  Show the contents of the most recently committed manifest file.  
+  maas-anvil manifest show --id=latest
+```
 
 ### `maas-anvil prepare-node-script [OPTIONS]`
-
-Generates a script to prepare the node for use with MAAS Anvil. This must be run on every node on which you want to use MAAS Anvil.
+```
+Generates a script to prepare the node for use with MAAS Anvil. This must be run on every
+node on which you want to use MAAS Anvil.
 
 Options:  
- \-h, \--help Show this message and exit.
+  -h, --help             Show this message and exit.
 
-##### Example
-
-Prepare a node for usage with MAAS Anvil by generating the `prepare-node-script` and running it immediately by piping it to bash.  
-`maas-anvil prepare-node-script | bash -x`
-
----
+Example:
+  Prepare a node for usage with MAAS Anvil by generating the `prepare-node-script` and
+  running it immediately by piping it to bash.  
+  maas-anvil prepare-node-script | bash -x
+```
 
 ### `maas-anvil refresh [OPTIONS]`
-
-Updates all charms within their current channel. A manifest file can be passed to refresh the deployment with new configuration.
+```
+Updates all charms within their current channel. A manifest file can be passed to refresh
+the deployment with new configuration.
 
 Options:  
- \-m, \--manifest If provided, the cluster is refreshed with the configuration specified  
- in the manifest file. Read more about the manifest file in the [docs](http://a).  
- If ‘--manifest’ is passed, then the manifest is loaded from stdin.  
- \-u, \--upgrade-release Allows charm upgrades if the new manifest specifies charms in  
-channels with higher tracks than the current one.  
- \-h, \--help Show this message and exit.
+  -m, --manifest         If provided, the cluster is refreshed with the configuration specified  
+                         in the manifest file. Read more about the manifest file in the [docs](http://a).  
+                         If ‘--manifest’ is passed, then the manifest is loaded from stdin.  
+  -u, --upgrade-release  Allows charm upgrades if the new manifest specifies charms in  
+                         channels with higher tracks than the current one.  
+  -h, --help             Show this message and exit.
 
-##### Example
-
-Refresh the MAAS Anvil cluster Try: `maas-anvil refresh`
+Example:
+  Refresh the MAAS Anvil cluster.
+  `maas-anvil refresh`
+```
