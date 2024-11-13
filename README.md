@@ -372,7 +372,7 @@ To get started with cleaning up a MAAS Anvil cluster you need to remove the node
 
 ```bash
 ubuntu@infra1:~$ maas-anvil remove --fqdn infra2.
-Removed node anvil2.lxd from the cluster
+Removed node infra2. from the cluster
 Run command 'sudo /sbin/remove-juju-services' on node infra2. to reuse the machine.
 ```
 
