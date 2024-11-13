@@ -548,7 +548,7 @@ terraform:
 
 ## CLI interface
 
-### `maas-anvil [OPTIONS] COMMAND [ARGS]...`
+### maas-anvil [OPTIONS] COMMAND [ARGS]...
 ```
 MAAS Anvil is an installer that makes deploying MAAS in HA easy. To get started run the 
 prepare-node-script command and bootstrap the first node. Read more about MAAS Anvil in 
@@ -583,7 +583,7 @@ Options:
   -h, --help             Show this message and exit.
 ```
 
-### `maas-anvil cluster [OPTIONS] COMMAND [ARGS]...`
+### maas-anvil cluster [OPTIONS] COMMAND [ARGS]...
 ```
 Creates and manages a MAAS Anvil cluster across connected nodes.
 
@@ -609,7 +609,7 @@ Example:
   'maas-anvil cluster join' on the joining nodes.
 ```
 
-#### `maas-anvil cluster bootstrap [OPTIONS]`
+### maas-anvil cluster bootstrap [OPTIONS]
 ```
 Bootstraps the first node to initialize a MAAS Anvil cluster deployment.
 
