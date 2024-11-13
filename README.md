@@ -652,15 +652,15 @@ the joining node.
 
 Options:  
   -a, --accept-defaults  Joins the cluster with default configuration. Read more about
-                         defaults in the docs.  
+                         defaults in the docs.
   --token                The join token generated on the bootstrap node with 'cluster add'
-  --role                 Specifies the roles for the joining node. Use multiple --role 
+  --role                 Specifies the roles for the joining node. Use multiple --role
                          flags to assign more than one role.
   -h, --help             Show this message and exit.
 
 Example:
   Join an additional node to the MAAS Anvil cluster. Run this command on the joining node
-  and use the token previously created with 'maas-anvil cluster add' on the bootstrap node.  
+  and use the token previously created with 'maas-anvil cluster add' on the bootstrap node.
   maas-anvil cluster join --role database --role region --role agent --role haproxy
   --token $JOINTOKEN
 ```
@@ -803,9 +803,9 @@ Updates all charms within their current channel. A manifest file can be passed t
 the deployment with new configuration.
 
 Options:  
-  -m, --manifest         If provided, the cluster is refreshed with the configuration specified  
-                         in the manifest file. Read more about the manifest file in the [docs](http://a).  
-                         If ‘--manifest’ is passed, then the manifest is loaded from stdin.  
+  -m, --manifest         If provided, the cluster is refreshed with the configuration 
+                         specified in the manifest file. If ‘--manifest’ is passed, then
+                         the manifest is loaded from stdin.  
   -u, --upgrade-release  Allows charm upgrades if the new manifest specifies charms in  
                          channels with higher tracks than the current one.  
   -h, --help             Show this message and exit.
