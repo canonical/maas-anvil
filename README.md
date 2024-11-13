@@ -205,7 +205,7 @@ And use `juju login` as usual.
 
 When deploying MAAS in high availability, you may need to configure the maximum connection to the database, the virtual IP, TSL, the charms versions used or even the way a component is deployed. MAAS Anvil allows you to configure all of these things, and this section explains how to do it.
 
-If you want to know exactly what configuration options are available and what effects they have, please read the chapter References / Configuration options.
+If you want to know exactly what configuration options are available and what effects they have, please read the section on [Configuration options](#configuration-options).
 
 The configuration options of MAAS Anvil are generally divided into two categories:
 
@@ -216,7 +216,7 @@ In the Deployment category you can configure general options for deployment, in 
 
 ### `--accept-defaults` flag
 
-If you set the `--accept-defaults` flag on the bootstrapped and joining nodes you will accept the default configuration that comes with MAAS. For all available configuration options you can see the default option in the References / Configuration options section.
+If you set the `--accept-defaults` flag on the bootstrapped and joining nodes you will accept the default configuration that comes with MAAS. For all available configuration options you can see the default option in the [Configuration options](#configuration-options) section.
 
 ### Configuration prompting
 
