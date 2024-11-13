@@ -630,7 +630,7 @@ Example:
   --accept-defaults
 ```
 
-#### `maas-anvil cluster add [OPTIONS]`
+### maas-anvil cluster add [OPTIONS]
 ```
 Generates a token for a new node to join the cluster. Needs to be run on the node where 
 the cluster was bootstrapped.
@@ -645,7 +645,7 @@ Example:
   maas-anvil cluster add --fqdn infra2.
 ```
 
-#### `maas-anvil cluster join [OPTIONS]`
+### maas-anvil cluster join [OPTIONS]
 ```
 Joins the node to a MAAS Anvil cluster when given a valid join token. Needs to be run on
 the joining node.
@@ -665,7 +665,7 @@ Example:
   --token $JOINTOKEN
 ```
 
-#### `maas-anvil cluster list [OPTIONS]`
+### maas-anvil cluster list [OPTIONS]
 ```
 Lists all nodes in the MAAS Anvil cluster. Can be run on any node that is connected to an
 active MAAS Anvil cluster.
@@ -679,7 +679,7 @@ Example:
   maas-anvil cluster list
 ```
 
-#### `maas-anvil cluster remove [OPTIONS]`
+### maas-anvil cluster remove [OPTIONS]
 ```
 Removes a node from the MAAS Anvil cluster. Needs to be run on the bootstrap node.
 
@@ -692,7 +692,7 @@ Remove a node from the cluster. Run this command on the bootstrap node.
 maas-anvil cluster remove --fqdn infra2.
 ```
 
-### `maas-anvil inspect`
+### maas-anvil inspect
 ```
 Inspects the MAAS Anvil cluster, will report any issues it finds and create a tarball of
 logs and traces. You can attach this tarball to an issue filed in the MAAS Anvil Github
@@ -706,7 +706,7 @@ Example:
   maas-anvil inspect
 ```
 
-### `maas-anvil juju-login`
+### maas-anvil juju-login
 ```
 Logs into the Juju controller used by MAAS Anvil with the current host user.
 
@@ -719,7 +719,7 @@ Example:
   maas-anvil juju-login
 ```
 
-### `maas-anvil manifest [OPTIONS] COMMAND [ARGS]...`
+### maas-anvil manifest [OPTIONS] COMMAND [ARGS]...
 ```
 Generates and manages manifest files. A manifest file is a declarative YAML file with
 which configurations for a MAAS Anvil cluster deployment can be set. To learn more about
@@ -740,7 +740,7 @@ Example:
   maas-anvil manifest generate
 ```
 
-### `maas-anvil manifest generate [OPTIONS]`
+### maas-anvil manifest generate [OPTIONS]
 ```
 Generates a manifest file either with the configuration of the currently deployed
 MAAS Anvil cluster or, if no cluster was bootstrapped yet, a default configuration.
@@ -756,7 +756,7 @@ Example:
   maas-anvil manifest generate
 ```
 
-### `maas-anvil manifest list [OPTIONS]`
+### maas-anvil manifest list [OPTIONS]
 ```
 Lists all manifest files that were used in the past to create or refresh a cluster.
 
@@ -769,7 +769,7 @@ Example:
   maas-anvil manifest list
 ```
 
-### `maas-anvil manifest show [OPTIONS]`
+### maas-anvil manifest show [OPTIONS]
 ```
 Shows the contents of a manifest file given an id. Get ids using the 'manifest list'
 command. Use '--id=latest' to show the most recently committed manifest.
@@ -783,7 +783,7 @@ Example:
   maas-anvil manifest show --id=latest
 ```
 
-### `maas-anvil prepare-node-script [OPTIONS]`
+### maas-anvil prepare-node-script [OPTIONS]
 ```
 Generates a script to prepare the node for use with MAAS Anvil. This must be run on every
 node on which you want to use MAAS Anvil.
@@ -797,7 +797,7 @@ Example:
   maas-anvil prepare-node-script | bash -x
 ```
 
-### `maas-anvil refresh [OPTIONS]`
+### maas-anvil refresh [OPTIONS]
 ```
 Updates all charms within their current channel. A manifest file can be passed to refresh
 the deployment with new configuration.
