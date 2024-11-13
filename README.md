@@ -32,7 +32,7 @@ The following instructions assume that you have three nodes `infra1`, `infra2`, 
 
 In addition, the instructions assume that MAAS Anvil deploys all available components (roles) on all three nodes:
 
--   MAAS Region Controller
+-   MAAS region controller
 -   MAAS rack controller (agent)
 -   PostgreSQL
 -   HAProxy
