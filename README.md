@@ -2,7 +2,8 @@
 
 MAAS Anvil is a snap for managing a charmed (HA) MAAS deployment.
 
-## MAAS Anvil is currently in a closed beta stage, approaching production stability
+> [!IMPORTANT]
+> MAAS Anvil is currently in a closed beta stage, approaching production stability
 
 ##### MAAS Deployment Components
 
@@ -23,9 +24,9 @@ MAAS Anvil streamlines the deployment process using MAAS charms. After deploymen
 | [Tutorials](#tutorial) Hands-on introductions to MAAS Anvil features | [How-to guides](#how-to) Step-by-step guides covering key operations |
 |                                                                      | [Reference](#reference) Technical specifications                     |
 
-# Tutorial {#tutorial}
+# Tutorial
 
-## Bootstrap a maas-anvil cluster to learn the basics {#bootstrap-a-maas-anvil-cluster-to-learn-the-basics}
+## Bootstrap a maas-anvil cluster to learn the basics
 
 The following instructions assume that you have three nodes `infra1`, `infra2`, `infra3` running Ubuntu 22.04 LTS and their networking is configured correctly.
 
@@ -61,8 +62,8 @@ ubuntu@infra1:~$ maas-anvil cluster bootstrap \
     --accept-defaults
 ```
 
-\[\!NOTE\]  
-The `--accept-defaults` flag, as the name suggests, accepts the default configuration of MAAS Anvil. The most important configurations are the virtual IP, PostgreSQL max_connections and TLS termination. If the `--accept-defaults` flag is omitted, you will be prompted for the configuration during the deployment. If you want to specify the configuration beforehand, you can create a manifest file and provide the manifest file with the `--manifest` flag. Read more about how to configure your MAAS Anvil deployment with a manifest file.
+> [!NOTE]
+> The `--accept-defaults` flag, as the name suggests, accepts the default configuration of MAAS Anvil. The most important configurations are the virtual IP, PostgreSQL max_connections and TLS termination. If the `--accept-defaults` flag is omitted, you will be prompted for the configuration during the deployment. If you want to specify the configuration beforehand, you can create a manifest file and provide the manifest file with the `--manifest` flag. Read more about how to configure your MAAS Anvil deployment with a manifest file.
 
 ### Add new nodes to the MAAS cluster
 
@@ -118,7 +119,7 @@ ubuntu@infra1:~$ juju run maas-region/0 create-admin username=admin password=pas
 
 You should now have a running MAAS Anvil HA cluster with one admin user ✨.
 
-# How to {#how-to}
+# How to
 
 ## Bootstrap a cluster
 
@@ -231,7 +232,7 @@ user: $user
 
 And use `juju login` as usual.
 
-## Configure your MAAS Anvil deployment {#configure-your-maas-anvil-deployment}
+## Configure your MAAS Anvil deployment
 
 When deploying MAAS in high availability, you may need to configure the maximum connection to the database, the virtual IP, TSL, the charms versions used or even the way a component is deployed. MAAS Anvil allows you to configure all of these things, and this section explains how to do it.
 
@@ -391,7 +392,8 @@ ubuntu@infra{1,2,3}:~$ juju status --watch 5s
 
 ## Clean up a MAAS Anvil deployment
 
-\[\!IMPORTANT\] The clean-up process for MAAS Anvil is not yet fully mature. Proceed with caution and at your own risk.
+> [!IMPORTANT]
+> The clean-up process for MAAS Anvil is not yet fully mature. Proceed with caution and at your own risk.
 
 The most reliable way to clean up a MAAS Anvil deployment at the moment is to redeploy the node on which MAAS Anvil was used. However, if you need to clean up the node without redeploying, you can perform the following steps.
 
@@ -418,9 +420,9 @@ Currently, there is no officially supported method to clean up the bootstrap nod
 1. Use the `jhack nuke` command. [This tool](https://github.com/canonical/jhack?tab=readme-ov-file#nuke) can help remove Juju deployments more thoroughly. However, use it with caution and only after understanding its implications.
 2. Follow community-sourced cleanup methods. A user has shared their experience and method for cleaning up MAAS Anvil deployments. You can find more information and contribute to the discussion in this GitHub issue: [\#9 Uninstall and cleanup](https://github.com/canonical/maas-anvil/issues/9)
 
-# Reference {#reference}
+# Reference
 
-## Configuration options {#configuration-options}
+## Configuration options
 
 This is a reference for the available configuration options and their effects. If you want to generally understand how to configure your MAAS deployment, read the chapter [How to / Configure your MAAS Anvil deployment](#configure-your-maas-anvil-deployment).
 
@@ -430,7 +432,7 @@ This is a reference for the available configuration options and their effects. I
 
 You can configure Management networks shared by hosts (CIDRs, separated by comma). When deploying without a manifest this is automatically set for you.
 
-###### _Manifest example snippet_
+###### Manifest example snippet
 
 ```
 deployment:
@@ -443,28 +445,29 @@ deployment:
 
 ##### Max connections
 
-\[\!NOTE\]  
-The default value is `max_connection: "default"`
+> [!NOTE]
+> The default value is `max_connection: "default"`
 
 With this option you can configure the maximum number of concurrent connections to allow access to the database server.
 
-###### _Default_
+###### Default
 
 `default` applies the default values of PostgreSQL to [max_connections](https://www.postgresql.org/docs/14/runtime-config-connection.html). The default is typically 100 connections, but might be less if your kernel settings will not support it (as determined during initdb).
 
 If you are aiming for MAAS HA though you have to do one of the following:
 
-###### _Manually setting max_connections_
+###### Manually setting max_connections
 
 If the number of MAAS region nodes is known beforehand, you can calculate the desired max_connections and set them, based on the formula: `max_connections = max(100, 10 + 50 * number_of_region_nodes)`.
 
-###### _Dynamic_
+###### Dynamic
 
 If the number of MAAS region nodes is not known, you can set `max_connections` to `dynamic` and let MAAS Anvil recalculate the appropriate PostgreSQL `max_connections` every time a region node is joining or leaving the Anvil cluster.
 
-\[\!IMPORTANT\] With this option set the database will restart with every modification of the MAAS Anvil cluster\!
+> [!IMPORTANT]
+> With this option set the database will restart with every modification of the MAAS Anvil cluster\!
 
-###### _Manifest example snippet_
+###### Manifest example snippet
 
 ```
 deployment:
@@ -478,22 +481,23 @@ deployment:
 
 ##### Virtual IP (VIP)
 
-\[\!NOTE\]  
-The default value is `virtual_ip: ""`, so disabled.
+> [!NOTE]
+> The default value is `virtual_ip: ""`, so disabled.
 
 You can configure the VIP which should be used for the cluster in High availability (HA). The Keepalived charm will be installed to enable connecting to the MAAS Anvil HA cluster using the VIP. To enable VIP provide any valid IP, to disable it set an empty value.
 
 ##### TSL
 
-\[\!NOTE\]  
-The default values are `tls_mode:"disabled"`, `ssl_cert: ""` and `ssl_key: ""`.
+> [!NOTE]
+> The default values are `tls_mode:"disabled"`, `ssl_cert: ""` and `ssl_key: ""`.
 
 To configure TSL for HAProxy, set `tls_mode` either to `termination` or `passthrough` and configure the path to the SSL certificate and the path to the private key for the SSL certificate. To disable it, set `tls_mode` to `disabled` and provide no SSL certificate or private key.  
 If `passthrough` is selected, also provide `ssl_cacert` if you want to use a self-signed certificate.
 
-\[\!IMPORTANT\] The certificate and key must be accessible by the `maas-anvil` snap. Make sure these files are in a directory that can be accessed by `maas-anvil`, such as `$HOME/.config/anvil`.
+> [!IMPORTANT]
+> The certificate and key must be accessible by the `maas-anvil` snap. Make sure these files are in a directory that can be accessed by `maas-anvil`, such as `$HOME/.config/anvil`.
 
-###### _Manifest example snippet_
+###### Manifest example snippet
 
 ```
 deployment:
@@ -511,8 +515,8 @@ deployment:
     ssl_cacert: ""
 ```
 
-\[\!NOTE\]  
-If haproxy is not to be installed, TLS questions will be asked during the maas-region install step. In this case, `termination` is not a valid `tls_mode`.
+> [!NOTE]
+> If haproxy is not to be installed, TLS questions will be asked during the maas-region install step. In this case, `termination` is not a valid `tls_mode`.
 
 ### Software
 
@@ -520,7 +524,7 @@ If haproxy is not to be installed, TLS questions will be asked during the maas-r
 
 The Juju section allows you to configure extra arguments which will be passed to the `juju bootstrap` (`bootstrap_args`) and `juju enable-ha` (`scale_args`) command. Learn more about [bootstrap arguments](https://juju.is/docs/juju/juju-bootstrap) and [scale arguments](https://juju.is/docs/juju/juju-enable-ha) in the Juju docs.
 
-###### _Manifest example snippet_
+###### Manifest example snippet
 
 ```
 juju:
@@ -546,7 +550,7 @@ For each of those charms you manually set the
 
 Check which configuration can be passed to a charm in their respective documentation.
 
-###### _Manifest example snippet_
+###### Manifest example snippet
 
 ```
 charms
@@ -560,7 +564,7 @@ charms
 
 You can configure the Terraform plans MAAS Anvil uses to, for example, change what the final relations of the cluster look like.
 
-###### _Manifest example snippet_
+###### Manifest example snippet
 
 ```
 terraform:
