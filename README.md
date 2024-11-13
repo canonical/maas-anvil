@@ -393,7 +393,7 @@ Currently, there is no officially supported method to clean up the bootstrap nod
 
 ## Configuration options
 
-This is a reference for the available configuration options and their effects. If you want to generally understand how to configure your MAAS deployment, read the chapter [How to / Configure your MAAS Anvil deployment](#configure-your-maas-anvil-deployment).
+This is a reference for the available configuration options and their effects. If you want to generally understand how to configure your MAAS deployment, read the section [Configure your MAAS Anvil deployment](#configure-your-maas-anvil-deployment).
 
 ### Deployment
 
