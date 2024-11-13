@@ -504,11 +504,11 @@ juju:
 
 MAAS Anvil is using the following charms:
 
--   maas-region
--   maas-agent
--   haproxy
--   postgresql
--   keepalived
+-   [maas-region](https://charmhub.io/maas-region)
+-   [maas-agent](https://charmhub.io/maas-agent)
+-   [haproxy](https://charmhub.io/haproxy)
+-   [postgresql](https://charmhub.io/postgresql)
+-   [keepalived](https://charmhub.io/keepalived)
 
 For each of those charms you manually set the
 
@@ -818,11 +818,3 @@ channels with higher tracks than the current one.
 ##### Example
 
 Refresh the MAAS Anvil cluster Try: `maas-anvil refresh`
-
-## Charm documentation
-
--   MAAS Region: <https://charmhub.io/maas-region>
--   MAAS Region: <https://charmhub.io/maas-agent>
--   PostgreSQL: <https://charmhub.io/postgresql>
--   HAProxy: <https://charmhub.io/haproxy>
--   Keepalived: <https://charmhub.io/keepalived>
