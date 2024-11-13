@@ -236,55 +236,55 @@ A manifest file will be created in the default location `$HOME/.config/anvil/man
 
 ```yaml
 deployment:
-    bootstrap:
-        # Management networks shared by hosts (CIDRs, separated by comma)
-        management_cidr: ""
-    postgres:
-        # Maximum number of concurrent connections to allow to the database server
-        max_connections: "default"
-    haproxy:
-        # Virtual IP to use for the Cluster in HA
-        virtual_ip: ""
-        # The TLS mode
-        tls_mode: "disabled"
-        # Path to SSL Certificate for HAProxy (enter nothing to skip TLS)
-        ssl_cert: ""
-        # Path to private key for the SSL certificate (enter nothing to skip TLS)
-        ssl_key: ""
+  bootstrap:
+    # Management networks shared by hosts (CIDRs, separated by comma)
+    management_cidr: ""
+  postgres:
+    # Maximum number of concurrent connections to allow to the database server
+    max_connections: "default"
+  haproxy:
+    # Virtual IP to use for the Cluster in HA
+    virtual_ip: ""
+    # The TLS mode
+    tls_mode: "disabled"
+    # Path to SSL Certificate for HAProxy (enter nothing to skip TLS)
+    ssl_cert: ""
+    # Path to private key for the SSL certificate (enter nothing to skip TLS)
+    ssl_key: ""
 software:
-    # juju:
-    #   bootstrap_args: []
-    #   scale_args: []
-    # charms:
-    #   maas-region:
-    #     channel: 3.4/edge
-    #     revision: null
-    #     config: null
-    #   maas-agent:
-    #     channel: 3.4/edge
-    #     revision: null
-    #     config: null
-    #   haproxy:
-    #     channel: latest/stable
-    #     revision: null
-    #     config: null
-    #   postgresql:
-    #     channel: 14/stable
-    #     revision: null
-    #     config: null
-    #   keepalived:
-    #     channel: latest/stable
-    #     revision: null
-    #     config: null
-    # terraform:
-    #   maas-region-plan:
-    #     source: /snap/maas-anvil/63/etc/deploy-maas-region
-    #   maas-agent-plan:
-    #     source: /snap/maas-anvil/63/etc/deploy-maas-agent
-    #   haproxy-plan:
-    #     source: /snap/maas-anvil/63/etc/deploy-haproxy
-    #   postgresql-plan:
-    #     source: /snap/maas-anvil/63/etc/deploy-postgresql
+  # juju:
+  #   bootstrap_args: []
+  #   scale_args: []
+  # charms:
+  #   maas-region:
+  #     channel: 3.4/edge
+  #     revision: null
+  #     config: null
+  #   maas-agent:
+  #     channel: 3.4/edge
+  #     revision: null
+  #     config: null
+  #   haproxy:
+  #     channel: latest/stable
+  #     revision: null
+  #     config: null
+  #   postgresql:
+  #     channel: 14/stable
+  #     revision: null
+  #     config: null
+  #   keepalived:
+  #     channel: latest/stable
+  #     revision: null
+  #     config: null
+  # terraform:
+  #   maas-region-plan:
+  #     source: /snap/maas-anvil/63/etc/deploy-maas-region
+  #   maas-agent-plan:
+  #     source: /snap/maas-anvil/63/etc/deploy-maas-agent
+  #   haproxy-plan:
+  #     source: /snap/maas-anvil/63/etc/deploy-haproxy
+  #   postgresql-plan:
+  #     source: /snap/maas-anvil/63/etc/deploy-postgresql
 ```
 
 As mentioned above, you can find a more detailed explanation of all available configuration options in the [Configuration options](#configuration-options) section.
@@ -405,9 +405,9 @@ You can configure Management networks shared by hosts (CIDRs, separated by comma
 
 ```yaml
 deployment:
-    bootstrap:
-        # Management networks shared by hosts (CIDRs, separated by comma)
-        management_cidr: "10.54.236.0/24"
+  bootstrap:
+    # Management networks shared by hosts (CIDRs, separated by comma)
+    management_cidr: "10.54.236.0/24"
 ```
 
 #### Postgres
@@ -441,8 +441,7 @@ If the number of MAAS region nodes is not known, you can set `max_connections` t
 ```yaml
 deployment:
   postgres:
-    # Maximum number of concurrent connections to allow to the database
-      server
+    # Maximum number of concurrent connections to allow to the database server
     max_connections: "default"
 ```
 
@@ -470,18 +469,18 @@ If `passthrough` is selected, also provide `ssl_cacert` if you want to use a sel
 
 ```yaml
 deployment:
-    haproxy:
-        # Virtual IP to use for the Cluster in HA
-        virtual_ip: ""
-        # The TLS mode
-        tls_mode: "disabled"
-        # Path to SSL Certificate for HAProxy (enter nothing to skip TLS)
-        ssl_cert: ""
-        # Path to private key for the SSL certificate (enter nothing to skip TLS)
-        ssl_key: ""
-        # Path to CA certificate, if you want to use a self-signed certificate when
-        # in passthrough mode
-        ssl_cacert: ""
+  haproxy:
+    # Virtual IP to use for the Cluster in HA
+    virtual_ip: ""
+    # The TLS mode
+    tls_mode: "disabled"
+    # Path to SSL Certificate for HAProxy (enter nothing to skip TLS)
+    ssl_cert: ""
+    # Path to private key for the SSL certificate (enter nothing to skip TLS)
+    ssl_key: ""
+    # Path to CA certificate, if you want to use a self-signed certificate when
+    # in passthrough mode
+    ssl_cacert: ""
 ```
 
 > [!NOTE]
@@ -497,8 +496,8 @@ The Juju section allows you to configure extra arguments which will be passed to
 
 ```yaml
 juju:
-	bootstrap_args: []
-	scale_args: []
+  bootstrap_args: []
+  scale_args: []
 ```
 
 #### Charms
@@ -537,14 +536,14 @@ You can configure the Terraform plans MAAS Anvil uses to, for example, change wh
 
 ```yaml
 terraform:
-    maas-region-plan:
-        source: /snap/maas-anvil/63/etc/deploy-maas-region
-    maas-agent-plan:
-        source: /snap/maas-anvil/63/etc/deploy-maas-agent
-    haproxy-plan:
-        source: /snap/maas-anvil/63/etc/deploy-haproxy
-    postgresql-plan:
-        source: /snap/maas-anvil/63/etc/deploy-postgresql
+  maas-region-plan:
+    source: /snap/maas-anvil/63/etc/deploy-maas-region
+  maas-agent-plan:
+    source: /snap/maas-anvil/63/etc/deploy-maas-agent
+  haproxy-plan:
+    source: /snap/maas-anvil/63/etc/deploy-haproxy
+  postgresql-plan:
+    source: /snap/maas-anvil/63/etc/deploy-postgresql
 ```
 
 ## CLI interface
