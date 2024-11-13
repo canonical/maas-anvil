@@ -67,7 +67,7 @@ ubuntu@infra1:~$ maas-anvil cluster bootstrap \
 
 ### Add new nodes to the MAAS cluster
 
-To add additional nodes to the cluster, you must first create join tokens on the initial node on which the cluster was bootstrapped. Make sure that you specify the fully qualified domain name (FQDN) of the joining node in the name flag.
+To add additional nodes to the cluster, you must first create join tokens on the initial node on which the cluster was bootstrapped. Make sure that you specify the fully qualified domain name (FQDN) of the joining node in the fqdn flag.
 
 ```bash
 ubuntu@infra1:~$ maas-anvil cluster add --fqdn infra2.
