@@ -549,36 +549,37 @@ terraform:
 ## CLI interface
 
 ### `maas-anvil [OPTIONS] COMMAND [ARGS]...`
-
+```
 MAAS Anvil is an installer that makes deploying MAAS in HA easy. To get started run the prepare-node-script command and bootstrap the first node. Read more about MAAS Anvil in the documentation.
 
 Commands:  
-Prepare, create and manage a cluster:  
-prepare-node-script Generates a script to prepare the node for use with MAAS Anvil.  
-cluster bootstrap Initializes the cluster on the first node.  
-cluster add Generates a token for a new node to join the cluster.  
-cluster join Joins the node to a MAAS Anvil cluster when given a valid join  
- token.
+  Prepare, create and manage a cluster:  
+    prepare-node-script  Generates a script to prepare the node for use with MAAS Anvil.  
+    cluster bootstrap    Initializes the cluster on the first node.  
+    cluster add          Generates a token for a new node to join the cluster.  
+    cluster join         Joins the node to a MAAS Anvil cluster when given a valid join  
+                         token.
 
-Configure and update the cluster:  
-manifest generate Generates a manifest file with which a MAAS Anvil deployment can  
- be configured.  
-manifest list Lists the currently active manifest file.  
-manifest show Shows the manifest data.  
-refresh Refresh the cluster with a new manifest file.
+  Configure and update the cluster:  
+    manifest generate    Generates a manifest file with which a MAAS Anvil deployment can  
+                         be configured.  
+    manifest list        Lists the currently active manifest file.  
+    manifest show        Shows the manifest data.  
+    refresh              Refresh the cluster with a new manifest file.
 
-Monitor and debug the cluster:  
-cluster list Lists all nodes in the MAAS Anvil cluster.  
-inspect Inspects the MAAS Anvil cluster, will report any issues it finds and  
- create a tarball of logs and traces.
+  Monitor and debug the cluster:  
+    cluster list         Lists all nodes in the MAAS Anvil cluster.  
+    inspect              Inspects the MAAS Anvil cluster, will report any issues it finds and  
+                         create a tarball of logs and traces.
 
-Manage a deployment:  
-juju-login Logs into the Juju controller used by MAAS Anvil.
+  Manage a deployment:  
+    juju-login           Logs into the Juju controller used by MAAS Anvil.
 
 Options:  
- \-q, \--quiet  
- \-v, \--verbose  
- \-h, \--help Show this message and exit.
+  -q, --quiet  
+  -v, --verbose  
+  -h, --help             Show this message and exit.
+```
 
 ---
 
