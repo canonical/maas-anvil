@@ -81,6 +81,7 @@ def postgresql_upgrade_steps(
             model,
             deployment_preseed=preseed,
             refresh=True,
+            verb="Refresh",
         ),
     ]
 
@@ -123,6 +124,7 @@ class DeployPostgreSQLApplicationStep(DeployMachineApplicationStep):
         deployment_preseed: dict[Any, Any] | None = None,
         accept_defaults: bool = False,
         refresh: bool = False,
+        verb: str = "Deploy",
     ):
         super().__init__(
             client,
@@ -132,8 +134,8 @@ class DeployPostgreSQLApplicationStep(DeployMachineApplicationStep):
             APPLICATION,
             model,
             "postgresql-plan",
-            "Deploy PostgreSQL",
-            "Deploying PostgreSQL",
+            f"{verb.capitalize()} PostgreSQL",
+            f"{verb.capitalize()}ing PostgreSQL",
             refresh,
         )
 
