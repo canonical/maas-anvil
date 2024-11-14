@@ -177,9 +177,9 @@ class LatestInChannelCoordinator:
                     self.preseed,
                 )
             )
-        if self.client.cluster.list_nodes_by_role("agent"):
+        if self.client.cluster.list_nodes_by_role("region"):
             plan.extend(
-                maas_agent_upgrade_steps(
+                maas_region_upgrade_steps(
                     self.client,
                     self.manifest,
                     self.jhelper,
@@ -187,9 +187,9 @@ class LatestInChannelCoordinator:
                     self.preseed,
             )
             )
-        if self.client.cluster.list_nodes_by_role("region"):
+        if self.client.cluster.list_nodes_by_role("agent"):
             plan.extend(
-                maas_region_upgrade_steps(
+                maas_agent_upgrade_steps(
                     self.client,
                     self.manifest,
                     self.jhelper,

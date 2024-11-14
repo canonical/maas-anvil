@@ -262,18 +262,18 @@ class ChannelUpgradeCoordinator:
                     self.deployment.infrastructure_model,
                 )
             )
-        if self.client.cluster.list_nodes_by_role("agent"):
+        if self.client.cluster.list_nodes_by_role("region"):
             plan.append(
-                UpgradeMAASAgentCharm(
+                UpgradeMAASRegionCharm(
                     self.client,
                     self.jhelper,
                     self.manifest,
                     self.deployment.infrastructure_model,
                 )
             )
-        if self.client.cluster.list_nodes_by_role("region"):
+        if self.client.cluster.list_nodes_by_role("agent"):
             plan.append(
-                UpgradeMAASRegionCharm(
+                UpgradeMAASAgentCharm(
                     self.client,
                     self.jhelper,
                     self.manifest,
