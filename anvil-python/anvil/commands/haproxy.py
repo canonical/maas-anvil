@@ -119,7 +119,7 @@ def tls_questions(tls_modes: list[str]) -> dict[str, questions.PromptQuestion]:
             validation_function=validate_cacert_chain,
         ),
         "tls_mode": questions.PromptQuestion(
-            f"TLS mode: {tls_modes}?",
+            f"TLS mode: {tls_modes}",
             default_value="disabled",
             validation_function=get_validate_tls_mode_fn(tls_modes),
         ),
