@@ -49,7 +49,25 @@ variable "enable_haproxy" {
 }
 
 variable "tls_mode" {
-  description = "TLS Mode for MAAS Region charm ('', 'termination', or 'passthrough')"
+  description = "TLS Mode for MAAS Region charm ('disabled', 'termination', or 'passthrough')"
+  type        = string
+  default     = "disabled"
+}
+
+variable "ssl_cert_content" {
+  description = "SSL certificate for tls_mode=passthrough"
+  type        = string
+  default     = ""
+}
+
+variable "ssl_key_content" {
+  description = "SSL private key for tls_mode=passthrough"
+  type        = string
+  default     = ""
+}
+
+variable "ssl_cacert_content" {
+  description = "CA Cert chain for self-signed certificates, requires tls_mode=passthrough"
   type        = string
   default     = ""
 }
