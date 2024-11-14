@@ -46,7 +46,7 @@ ubuntu@infra{1,2,3}:~$ sudo snap install maas-anvil --edge
 ubuntu@infra{1,2,3}:~$ maas-anvil prepare-node-script | bash -x
 ```
 
-Among other things, the prepare-node-script adds the current user to the `snap_daemon` group. In order for the group changes to take effect, you must `log out` and `log in` again. If the file ownership of groups is not a major concern for you, you can also run the following command to activate the changes to the groups immediately.
+Among other things, the prepare-node-script adds the current user to the `snap_daemon` group. In order for the group changes to take effect, you must _log out_ and _log in_ again. If the file ownership of groups is not a major concern for you, you can also run the following command to activate the changes to the groups immediately.
 
 ```bash
 ubuntu@infra{1,2,3}:~$ newgrp snap_daemon
@@ -63,7 +63,7 @@ ubuntu@infra1:~$ maas-anvil cluster bootstrap \
 ```
 
 > [!NOTE]
-> The `--accept-defaults` flag, as the name suggests, accepts the default configuration of MAAS Anvil. The most important configurations are the [virtual IP](#virtual-ip-vip), [PostgreSQL max_connections](#max-connections) and [TLS termination](#tsl). If the `--accept-defaults` flag is omitted, you will be prompted for the configuration during the deployment. If you want to specify the configuration beforehand, you can create a manifest file and provide the manifest file with the `--manifest` flag. [Read more about how to configure your MAAS Anvil deployment with a manifest file](#configure-your-maas-anvil-deployment).
+> The `--accept-defaults` flag, as the name suggests, accepts the default configuration of MAAS Anvil. The most important configurations are the [virtual IP](#virtual-ip-vip), [PostgreSQL max_connections](#max-connections) and [TLS termination](#tls). If the `--accept-defaults` flag is omitted, you will be prompted for the configuration during the deployment. If you want to specify the configuration beforehand, you can create a manifest file and provide the manifest file with the `--manifest` flag. [Read more about how to configure your MAAS Anvil deployment with a manifest file](#configure-your-maas-anvil-deployment).
 
 ### Add new nodes to the MAAS cluster
 
@@ -133,7 +133,7 @@ ubuntu@infra{1,2,3}:~$ sudo snap install maas-anvil --edge
 ubuntu@infra{1,2,3}:~$ maas-anvil prepare-node-script | bash -x
 ```
 
-Among other things, the prepare-node-script adds the current user to the `snap_daemon` group. In order for the group changes to take effect, you must `log out` and `log in` again. If the file ownership of groups is not a major concern for you, you can also run the following command to activate the changes to the groups immediately.
+Among other things, the prepare-node-script adds the current user to the `snap_daemon` group. In order for the group changes to take effect, you must _log out_ and _log in_ again. If the file ownership of groups is not a major concern for you, you can also run the following command to activate the changes to the groups immediately.
 
 ```bash
 ubuntu@infra{1,2,3}:~$ newgrp snap_daemon
@@ -203,7 +203,7 @@ And use `juju login` as usual.
 
 ## Configure your MAAS Anvil deployment
 
-When deploying MAAS in high availability, you may need to configure the maximum connection to the database, the virtual IP, TSL, the charms versions used or even the way a component is deployed. MAAS Anvil allows you to configure all of these things, and this section explains how to do it.
+When deploying MAAS in high availability, you may need to configure the maximum connection to the database, the virtual IP, TLS, the charms versions used or even the way a component is deployed. MAAS Anvil allows you to configure all of these things, and this section explains how to do it.
 
 If you want to know exactly what configuration options are available and what effects they have, please read the section on [Configuration options](#configuration-options).
 
@@ -457,12 +457,12 @@ deployment:
 
 You can configure the VIP which should be used for the cluster in High availability (HA). The Keepalived charm will be installed to enable connecting to the MAAS Anvil HA cluster using the VIP. To enable VIP provide any valid IP, to disable it set an empty value.
 
-##### TSL
+##### TLS
 
 > [!NOTE]
 > The default values are `tls_mode:"disabled"`, `ssl_cert: ""` and `ssl_key: ""`.
 
-To configure TSL for HAProxy, set `tls_mode` either to `termination` or `passthrough` and configure the path to the SSL certificate and the path to the private key for the SSL certificate. To disable it, set `tls_mode` to `disabled` and provide no SSL certificate or private key.  
+To configure TLS for HAProxy, set `tls_mode` either to `termination` or `passthrough` and configure the path to the SSL certificate and the path to the private key for the SSL certificate. To disable it, set `tls_mode` to `disabled` and provide no SSL certificate or private key.  
 If `passthrough` is selected, also provide `ssl_cacert` if you want to use a self-signed certificate.
 
 > [!IMPORTANT]
