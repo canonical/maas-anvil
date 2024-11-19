@@ -245,15 +245,23 @@ deployment:
   haproxy:
     # Virtual IP to use for the Cluster in HA
     virtual_ip: ""
-    # The TLS mode
-    tls_mode: "disabled"
-    # Path to SSL Certificate for HAProxy (enter nothing to skip TLS)
+    # Path to SSL Certificate for HAProxy
     ssl_cert: ""
-    # Path to private key for the SSL certificate (enter nothing to skip TLS)
+    # Path to private key for the SSL certificate
     ssl_key: ""
-    # Path to CA certificate, if you want to use a self-signed certificate when
-    # in passthrough mode
+    # Path to CA cert chain, for use with self-signed SSL certificates (enter nothing to skip)
     ssl_cacert: ""
+    # TLS mode: ['termination', 'passthrough', 'disabled']?
+    tls_mode: "disabled"
+  maas-region:
+    # Path to SSL Certificate for HAProxy
+    ssl_cert: ""
+    # Path to private key for the SSL certificate
+    ssl_key: ""
+    # Path to CA cert chain, for use with self-signed SSL certificates (enter nothing to skip)
+    ssl_cacert: ""
+    # TLS mode: ['passthrough', 'disabled']?
+    tls_mode: "disabled"
 software:
   # juju:
   #   bootstrap_args: []
