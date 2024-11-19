@@ -290,6 +290,9 @@ software:
   #     source: /snap/maas-anvil/63/etc/deploy-postgresql
 ```
 
+> [!NOTE]
+> Questions related to TLS are duplicated between `haproxy` and `maas-region`. If you plan to use both `maas-region` and `haproxy`, write the configuration values in the `haproxy` section. If you do not plan to use `haproxy`, write the configuration values in the `maas-region` section.
+
 As mentioned above, you can find a more detailed explanation of all available configuration options in the [Configuration options](#configuration-options) section.
 
 Once you have set up a manifest file to your liking, you can deploy it when you bootstrap your deployment as follows:
