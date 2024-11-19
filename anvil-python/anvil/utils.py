@@ -121,12 +121,16 @@ class FormatCommandGroupsGroup(click.Group):
 
                 if filter_fn is None:
                     all_commands.append(cmd.name)
-                else:
+                elif isinstance(
+                    cmd, click.Group
+                ):  # Type check for subcommands
                     for subcmd in cmd.commands.values():
                         if filter_fn(subcmd):
                             all_commands.append(f"{cmd.name} {subcmd.name}")
 
-        max_length = max(len(cmd) for cmd in all_commands)
+        max_length = (
+            max(len(cmd) for cmd in all_commands) if all_commands else 0
+        )
 
         # Click by default has no concept of groups so we need to generate them ourselfs
         with formatter.section("Commands"):
@@ -154,8 +158,9 @@ class FormatCommandGroupsGroup(click.Group):
                                 cmd.name.ljust(max_length),
                                 cmd.get_short_help_str(75),
                             )
-                        )
-                    else:
+                    elif isinstance(
+                        cmd, click.Group
+                    ):  # Type check for subcommands
                         for subcmd in cmd.commands.values():
                             if filter_fn(subcmd):
                                 group_commands.append(
@@ -170,5 +175,4 @@ class FormatCommandGroupsGroup(click.Group):
                 formatter.write_dl(
                     group_commands, col_max=max_length, col_spacing=2
                 )
-
                 formatter.dedent()
