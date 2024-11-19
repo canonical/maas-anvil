@@ -158,6 +158,7 @@ class FormatCommandGroupsGroup(click.Group):
                                 cmd.name.ljust(max_length),
                                 cmd.get_short_help_str(75),
                             )
+                        )
                     elif isinstance(
                         cmd, click.Group
                     ):  # Type check for subcommands
