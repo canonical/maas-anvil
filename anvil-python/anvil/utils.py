@@ -78,7 +78,7 @@ class FormatCommandGroupsGroup(click.Group):
 
     def format_commands(
         self, ctx: click.Context, formatter: click.HelpFormatter
-    ):
+    ) -> None:
         commandGroups = [
             (
                 "Prepare, create and manage a cluster",
@@ -95,15 +95,10 @@ class FormatCommandGroupsGroup(click.Group):
                 ],
             ),
             (
-                "Monitor and debug the cluster",
+                "Manage and debug the cluster",
                 [
                     ("cluster", lambda cmd: cmd.name == "list"),
                     ("inspect", None),
-                ],
-            ),
-            (
-                "Manage a deployment",
-                [
                     ("juju-login", None),
                 ],
             ),
@@ -143,7 +138,7 @@ class FormatCommandGroupsGroup(click.Group):
                 else:
                     formatter.write_paragraph()
 
-                formatter.write_heading(click.style(title, underline=True))
+                formatter.write_heading(title)
                 formatter.indent()
                 # Collect commands for this group
                 group_commands = []

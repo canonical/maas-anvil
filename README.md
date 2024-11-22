@@ -236,66 +236,66 @@ A manifest file will be created in the default location `$HOME/.config/anvil/man
 
 ```yaml
 deployment:
-  bootstrap:
-    # Management networks shared by hosts (CIDRs, separated by comma)
-    management_cidr: ""
-  postgres:
-    # Maximum number of concurrent connections to allow to the database server
-    max_connections: "default"
-  haproxy:
-    # Virtual IP to use for the Cluster in HA
-    virtual_ip: ""
-    # Path to SSL Certificate for HAProxy
-    ssl_cert: ""
-    # Path to private key for the SSL certificate
-    ssl_key: ""
-    # Path to CA cert chain, for use with self-signed SSL certificates (enter nothing to skip)
-    ssl_cacert: ""
-    # TLS mode: ['termination', 'passthrough', 'disabled']?
-    tls_mode: "disabled"
-  maas-region:
-    # Path to SSL Certificate for HAProxy
-    ssl_cert: ""
-    # Path to private key for the SSL certificate
-    ssl_key: ""
-    # Path to CA cert chain, for use with self-signed SSL certificates (enter nothing to skip)
-    ssl_cacert: ""
-    # TLS mode: ['passthrough', 'disabled']?
-    tls_mode: "disabled"
+    bootstrap:
+        # Management networks shared by hosts (CIDRs, separated by comma)
+        management_cidr: ""
+    postgres:
+        # Maximum number of concurrent connections to allow to the database server
+        max_connections: "default"
+    haproxy:
+        # Virtual IP to use for the Cluster in HA
+        virtual_ip: ""
+        # Path to SSL Certificate for HAProxy
+        ssl_cert: ""
+        # Path to private key for the SSL certificate
+        ssl_key: ""
+        # Path to CA cert chain, for use with self-signed SSL certificates (enter nothing to skip)
+        ssl_cacert: ""
+        # TLS mode: ['termination', 'passthrough', 'disabled']?
+        tls_mode: "disabled"
+    maas-region:
+        # Path to SSL Certificate for HAProxy
+        ssl_cert: ""
+        # Path to private key for the SSL certificate
+        ssl_key: ""
+        # Path to CA cert chain, for use with self-signed SSL certificates (enter nothing to skip)
+        ssl_cacert: ""
+        # TLS mode: ['passthrough', 'disabled']?
+        tls_mode: "disabled"
 software:
-  # juju:
-  #   bootstrap_args: []
-  #   scale_args: []
-  # charms:
-  #   maas-region:
-  #     channel: 3.4/edge
-  #     revision: null
-  #     config: null
-  #   maas-agent:
-  #     channel: 3.4/edge
-  #     revision: null
-  #     config: null
-  #   haproxy:
-  #     channel: latest/stable
-  #     revision: null
-  #     config: null
-  #   postgresql:
-  #     channel: 14/stable
-  #     revision: null
-  #     config: null
-  #   keepalived:
-  #     channel: latest/stable
-  #     revision: null
-  #     config: null
-  # terraform:
-  #   maas-region-plan:
-  #     source: /snap/maas-anvil/63/etc/deploy-maas-region
-  #   maas-agent-plan:
-  #     source: /snap/maas-anvil/63/etc/deploy-maas-agent
-  #   haproxy-plan:
-  #     source: /snap/maas-anvil/63/etc/deploy-haproxy
-  #   postgresql-plan:
-  #     source: /snap/maas-anvil/63/etc/deploy-postgresql
+    # juju:
+    #   bootstrap_args: []
+    #   scale_args: []
+    # charms:
+    #   maas-region:
+    #     channel: 3.4/edge
+    #     revision: null
+    #     config: null
+    #   maas-agent:
+    #     channel: 3.4/edge
+    #     revision: null
+    #     config: null
+    #   haproxy:
+    #     channel: latest/stable
+    #     revision: null
+    #     config: null
+    #   postgresql:
+    #     channel: 14/stable
+    #     revision: null
+    #     config: null
+    #   keepalived:
+    #     channel: latest/stable
+    #     revision: null
+    #     config: null
+    # terraform:
+    #   maas-region-plan:
+    #     source: /snap/maas-anvil/63/etc/deploy-maas-region
+    #   maas-agent-plan:
+    #     source: /snap/maas-anvil/63/etc/deploy-maas-agent
+    #   haproxy-plan:
+    #     source: /snap/maas-anvil/63/etc/deploy-haproxy
+    #   postgresql-plan:
+    #     source: /snap/maas-anvil/63/etc/deploy-postgresql
 ```
 
 > [!NOTE]
@@ -419,9 +419,9 @@ You can configure Management networks shared by hosts (CIDRs, separated by comma
 
 ```yaml
 deployment:
-  bootstrap:
-    # Management networks shared by hosts (CIDRs, separated by comma)
-    management_cidr: "10.54.236.0/24"
+    bootstrap:
+        # Management networks shared by hosts (CIDRs, separated by comma)
+        management_cidr: "10.54.236.0/24"
 ```
 
 #### Postgres
@@ -454,9 +454,9 @@ If the number of MAAS region nodes is not known, you can set `max_connections` t
 
 ```yaml
 deployment:
-  postgres:
-    # Maximum number of concurrent connections to allow to the database server
-    max_connections: "default"
+    postgres:
+        # Maximum number of concurrent connections to allow to the database server
+        max_connections: "default"
 ```
 
 #### HA proxy
@@ -483,18 +483,18 @@ If `passthrough` is selected, also provide `ssl_cacert` if you want to use a sel
 
 ```yaml
 deployment:
-  haproxy:
-    # Virtual IP to use for the Cluster in HA
-    virtual_ip: ""
-    # The TLS mode
-    tls_mode: "disabled"
-    # Path to SSL Certificate for HAProxy (enter nothing to skip TLS)
-    ssl_cert: ""
-    # Path to private key for the SSL certificate (enter nothing to skip TLS)
-    ssl_key: ""
-    # Path to CA certificate, if you want to use a self-signed certificate when
-    # in passthrough mode
-    ssl_cacert: ""
+    haproxy:
+        # Virtual IP to use for the Cluster in HA
+        virtual_ip: ""
+        # The TLS mode
+        tls_mode: "disabled"
+        # Path to SSL Certificate for HAProxy (enter nothing to skip TLS)
+        ssl_cert: ""
+        # Path to private key for the SSL certificate (enter nothing to skip TLS)
+        ssl_key: ""
+        # Path to CA certificate, if you want to use a self-signed certificate when
+        # in passthrough mode
+        ssl_cacert: ""
 ```
 
 > [!NOTE]
@@ -510,8 +510,8 @@ The Juju section allows you to configure extra arguments which will be passed to
 
 ```yaml
 juju:
-  bootstrap_args: []
-  scale_args: []
+    bootstrap_args: []
+    scale_args: []
 ```
 
 #### Charms
@@ -550,20 +550,23 @@ You can configure the Terraform plans MAAS Anvil uses to, for example, change wh
 
 ```yaml
 terraform:
-  maas-region-plan:
-    source: /snap/maas-anvil/63/etc/deploy-maas-region
-  maas-agent-plan:
-    source: /snap/maas-anvil/63/etc/deploy-maas-agent
-  haproxy-plan:
-    source: /snap/maas-anvil/63/etc/deploy-haproxy
-  postgresql-plan:
-    source: /snap/maas-anvil/63/etc/deploy-postgresql
+    maas-region-plan:
+        source: /snap/maas-anvil/63/etc/deploy-maas-region
+    maas-agent-plan:
+        source: /snap/maas-anvil/63/etc/deploy-maas-agent
+    haproxy-plan:
+        source: /snap/maas-anvil/63/etc/deploy-haproxy
+    postgresql-plan:
+        source: /snap/maas-anvil/63/etc/deploy-postgresql
 ```
 
 ## CLI interface
 
 ### maas-anvil [OPTIONS] COMMAND [ARGS]...
+
 ```
+Usage: maas-anvil [OPTIONS] COMMAND [ARGS]...
+
   MAAS Anvil is an installer that makes deploying MAAS charms in HA easy.
 
   To get started run the prepare-node-script command and bootstrap the first
@@ -591,15 +594,14 @@ Commands:
     manifest generate    Generates a manifest file.
     refresh              Updates all charms within their current channel.
 
-  Monitor and debug the cluster:
+  Manage and debug the cluster:
     cluster list         Lists all nodes in the MAAS Anvil cluster.
     inspect              Inspects the cluster and reports any issues it finds.
-
-  Manage a deployment:
     juju-login           Logs into the Juju controller used by MAAS Anvil.
 ```
 
 ### maas-anvil cluster [OPTIONS] COMMAND [ARGS]...
+
 ```
   Creates and manages a MAAS Anvil cluster across connected nodes.
 
@@ -615,17 +617,18 @@ Commands:
   remove     Removes a node from the MAAS Anvil cluster.
 
 Example:
-  Run the cluster bootstrap command to initialize the cluster with the first node.  
-  maas-anvil cluster bootstrap  \    
-  --role database --role region --role agent --role haproxy  \    
+  Run the cluster bootstrap command to initialize the cluster with the first node.
+  maas-anvil cluster bootstrap  \
+  --role database --role region --role agent --role haproxy  \
   --accept-defaults
-  
-  Once the cluster is bootstrapped you can join additional nodes by running  
-  'maas-anvil cluster add' on the local node and  
+
+  Once the cluster is bootstrapped you can join additional nodes by running
+  'maas-anvil cluster add' on the local node and
   'maas-anvil cluster join' on the joining nodes.
 ```
 
 ### maas-anvil cluster bootstrap [OPTIONS]
+
 ```
 Usage: maas-anvil cluster bootstrap [OPTIONS]
 
@@ -645,12 +648,13 @@ Options:
 
 Example:
   Bootstrap a new cluster with all roles and default configurations on the first node.
-  maas-anvil cluster bootstrap \    
-  --role database --role region --role agent --role haproxy \    
+  maas-anvil cluster bootstrap \
+  --role database --role region --role agent --role haproxy \
   --accept-defaults
 ```
 
 ### maas-anvil cluster add [OPTIONS]
+
 ```
   Generates a token for a new node to join the cluster. Needs to be run on the
   node where the cluster was bootstrapped.
@@ -668,6 +672,7 @@ Example:
 ```
 
 ### maas-anvil cluster join [OPTIONS]
+
 ```
   Joins the node to a cluster when given a join token. Needs to be run on the
   joining node.
@@ -686,12 +691,13 @@ Options:
 Example:
   Join an additional node to the MAAS Anvil cluster. Run this command on the joining node
   and use the token previously created with 'maas-anvil cluster add' on the bootstrap node.
-  maas-anvil cluster join  \    
-  --role database --role region --role agent --role haproxy  \    
+  maas-anvil cluster join  \
+  --role database --role region --role agent --role haproxy  \
   --token $JOINTOKEN
 ```
 
 ### maas-anvil cluster list [OPTIONS]
+
 ```
   Lists all nodes in the MAAS Anvil cluster. Can be run on any node that is
   connected to an active MAAS Anvil cluster.
@@ -701,11 +707,12 @@ Options:
   -h, --help                 Show this message and exit.
 
 Example:
-  Verify the status of your MAAS Anvil cluster.  
+  Verify the status of your MAAS Anvil cluster.
   maas-anvil cluster list
 ```
 
 ### maas-anvil cluster remove [OPTIONS]
+
 ```
   Removes a node from the MAAS Anvil cluster. Needs to be run on the bootstrap
   node.
@@ -715,11 +722,12 @@ Options:
   -h, --help   Show this message and exit.
 
 Example:
-  Remove a node from the cluster. Run this command on the bootstrap node.  
+  Remove a node from the cluster. Run this command on the bootstrap node.
   maas-anvil cluster remove --fqdn infra2.
 ```
 
 ### maas-anvil inspect
+
 ```
   Inspects the cluster and reports any issues it finds. A tarball of logs and
   traces is created. You can attach this tarball to an issue filed in the MAAS
@@ -733,6 +741,7 @@ Options:
 ```
 
 ### maas-anvil juju-login
+
 ```
   Logs into the Juju controller used by MAAS Anvil. The login is performed
   using the current host user.
@@ -747,6 +756,7 @@ Example:
 ```
 
 ### maas-anvil manifest [OPTIONS] COMMAND [ARGS]...
+
 ```
   Generates and manages manifest files. A manifest file is a declarative YAML
   file with which configurations for a MAAS Anvil cluster deployment can be
@@ -767,6 +777,7 @@ Example:
 ```
 
 ### maas-anvil manifest generate [OPTIONS]
+
 ```
   Generates a manifest file. Either with the configuration of the currently
   deployed MAAS Anvil cluster or, if no cluster was bootstrapped yet, a
@@ -784,6 +795,7 @@ Example:
 ```
 
 ### maas-anvil manifest list [OPTIONS]
+
 ```
   Lists manifest files that were used in the cluster.
 
@@ -792,11 +804,12 @@ Options:
   -h, --help                 Show this message and exit.
 
 Example:
-  List previously used manifest files.  
+  List previously used manifest files.
   maas-anvil manifest list
 ```
 
 ### maas-anvil manifest show [OPTIONS]
+
 ```
   Shows the contents of a manifest file given an id. Get ids using the
   'manifest list' command. Use '--id=latest' to show the most recently
@@ -807,11 +820,12 @@ Options:
   -h, --help  Show this message and exit.
 
 Example:
-  Show the contents of the most recently committed manifest file.  
+  Show the contents of the most recently committed manifest file.
   maas-anvil manifest show --id=latest
 ```
 
 ### maas-anvil prepare-node-script [OPTIONS]
+
 ```
   Generates a script to prepare the node for use with MAAS Anvil. This must be
   run on every node on which you want to use MAAS Anvil.
@@ -821,11 +835,12 @@ Options:
 
 Example:
   Prepare a node for usage with MAAS Anvil by generating the 'prepare-node-script' and
-  running it immediately by piping it to bash.  
+  running it immediately by piping it to bash.
   maas-anvil prepare-node-script | bash -x
 ```
 
 ### maas-anvil refresh [OPTIONS]
+
 ```
   Updates all charms within their current channel. A manifest file can be
   passed to refresh the deployment with new configuration.
