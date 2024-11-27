@@ -28,11 +28,14 @@ REMOTE_ACCESS = "remote"
 class EpilogFormatterMixin:
     """Mixin class for formatting epilogs with examples."""
 
+    def __init__(self, epilog: str | None = None) -> None:
+        self.epilog = epilog
+
     def format_epilog(
         self, ctx: click.Context, formatter: click.HelpFormatter
     ) -> None:
         """Writes the epilog into the formatter if it exists."""
-        # We need to overwrite the default behaviour because otherwise
+        # We need to overwrite the default behavior because otherwise
         # the whole Example block would be indented.
         if self.epilog:
             epilog = inspect.cleandoc(self.epilog)
@@ -66,7 +69,7 @@ class CatchGroup(EpilogFormatterMixin, click.Group):
                 "An unexpected error has occurred."
                 " Please run 'maas-anvil inspect' to generate an inspection report."
             )
-            LOG.warn(message)
+            LOG.warning(message)
             LOG.error("Error: %s", e)
             sys.exit(1)
 
@@ -106,7 +109,7 @@ class FormatCommandGroupsGroup(click.Group):
 
         # First pass: collect all commands and find the longest one
         # so we can later apply appropriate padding so table columns
-        # are alligned across tables
+        # are aligned across tables
         all_commands = []
         for _, filters in commandGroups:
             for cmd_name, filter_fn in filters:
@@ -115,7 +118,7 @@ class FormatCommandGroupsGroup(click.Group):
                     continue
 
                 if filter_fn is None:
-                    all_commands.append(cmd.name)
+                    all_commands.append(f"{cmd.name}")
                 elif isinstance(
                     cmd, click.Group
                 ):  # Type check for subcommands
@@ -127,7 +130,7 @@ class FormatCommandGroupsGroup(click.Group):
             max(len(cmd) for cmd in all_commands) if all_commands else 0
         )
 
-        # Click by default has no concept of groups so we need to generate them ourselfs
+        # Click by default has no concept of groups so we need to generate them ourselves
         with formatter.section("Commands"):
             first = True
 
@@ -150,7 +153,7 @@ class FormatCommandGroupsGroup(click.Group):
                     if filter_fn is None:
                         group_commands.append(
                             (
-                                cmd.name.ljust(max_length),
+                                f"{cmd.name}".ljust(max_length),
                                 cmd.get_short_help_str(75),
                             )
                         )
