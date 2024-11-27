@@ -89,7 +89,7 @@ sudo snap connect maas-anvil:dot-config-anvil
     epilog="""
     \b
     Prepare a node for usage with MAAS Anvil by generating the 'prepare-node-script' and
-    running it immediately by piping it to bash.  
+    running it immediately by piping it to bash.
     maas-anvil prepare-node-script | bash -x
     """,
 )

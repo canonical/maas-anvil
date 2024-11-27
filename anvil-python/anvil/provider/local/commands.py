@@ -112,15 +112,15 @@ console = Console()
     cls=CatchGroup,
     epilog="""
     \b
-    Run the cluster bootstrap command to initialize the cluster with the first node.  
+    Run the cluster bootstrap command to initialize the cluster with the first node.
     maas-anvil cluster bootstrap  \\\
     \b
     --role database --role region --role agent --role haproxy  \\\
     \b
     --accept-defaults
     \b
-    Once the cluster is bootstrapped you can join additional nodes by running  
-    'maas-anvil cluster add' on the local node and  
+    Once the cluster is bootstrapped you can join additional nodes by running
+    'maas-anvil cluster add' on the local node and
     'maas-anvil cluster join' on the joining nodes.
     """,
 )
@@ -593,7 +593,7 @@ def join(
     cls=FormatEpilogCommand,
     epilog="""
     \b
-    Verify the status of your MAAS Anvil cluster.  
+    Verify the status of the MAAS Anvil cluster.
     maas-anvil cluster list
     """,
 )
@@ -649,7 +649,7 @@ def list(ctx: click.Context, format: str) -> None:
     cls=FormatEpilogCommand,
     epilog="""
     \b
-    Remove a node from the cluster. Run this command on the bootstrap node.  
+    Remove a node from the cluster. Run this command on the bootstrap node.
     maas-anvil cluster remove --fqdn infra2.
     """,
 )

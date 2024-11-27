@@ -67,7 +67,7 @@ def manifest(ctx: click.Context) -> None:
     """Generates and manages manifest files.
     A manifest file is a declarative YAML file with which configurations for
     a MAAS Anvil cluster deployment can be set. The manifest commands are read
-    only.
+    only. A manifest can be applied with "cluster bootstrap" or "cluster refresh".
     """
 
 

@@ -75,7 +75,7 @@ def generate_software_manifest(manifest: Manifest) -> str:
     cls=FormatEpilogCommand,
     epilog="""
     \b
-    List previously used manifest files.  
+    List previously used manifest files.
     maas-anvil manifest list
     """,
 )
@@ -121,7 +121,7 @@ def list(ctx: click.Context, format: str) -> None:
     cls=FormatEpilogCommand,
     epilog="""
     \b
-    Show the contents of the most recently committed manifest file.  
+    Show the contents of the most recently committed manifest file.
     maas-anvil manifest show --id=latest
     """,
 )

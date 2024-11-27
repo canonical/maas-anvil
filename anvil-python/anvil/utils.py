@@ -16,6 +16,7 @@
 import inspect
 import logging
 import sys
+from typing import Protocol
 
 import click
 from sunbeam.plugins.interface.v1.base import PluginError
@@ -25,14 +26,18 @@ LOCAL_ACCESS = "local"
 REMOTE_ACCESS = "remote"
 
 
+class HasEpilogProtocol(Protocol):
+    @property
+    def epilog(self) -> str: ...
+
+
 class EpilogFormatterMixin:
     """Mixin class for formatting epilogs with examples."""
 
-    def __init__(self, epilog: str | None = None) -> None:
-        self.epilog = epilog
-
     def format_epilog(
-        self, ctx: click.Context, formatter: click.HelpFormatter
+        self: HasEpilogProtocol,
+        ctx: click.Context,
+        formatter: click.HelpFormatter,
     ) -> None:
         """Writes the epilog into the formatter if it exists."""
         # We need to overwrite the default behavior because otherwise
@@ -87,7 +92,10 @@ class FormatCommandGroupsGroup(click.Group):
                 "Prepare, create and manage a cluster",
                 [
                     ("prepare-node-script", None),
-                    ("cluster", lambda cmd: cmd.name != "list"),
+                    (
+                        "cluster",
+                        lambda cmd: cmd.name not in ["list", "refresh"],
+                    ),
                 ],
             ),
             (
@@ -98,7 +106,7 @@ class FormatCommandGroupsGroup(click.Group):
                 ],
             ),
             (
-                "Manage and debug the cluster",
+                "Debug the cluster",
                 [
                     ("cluster", lambda cmd: cmd.name == "list"),
                     ("inspect", None),
