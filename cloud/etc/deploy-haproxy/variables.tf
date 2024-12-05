@@ -16,7 +16,7 @@
 variable "charm_haproxy_channel" {
   description = "Operator channel for HAProxy deployment"
   type        = string
-  default     = "14/stable"
+  default     = "latest/stable"
 }
 
 variable "charm_haproxy_revision" {
