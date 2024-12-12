@@ -16,6 +16,8 @@
 import click
 from rich.console import Console
 
+from anvil.utils import FormatEpilogCommand
+
 console = Console()
 
 
@@ -82,7 +84,16 @@ sudo snap connect maas-anvil:dot-config-anvil
 """
 
 
-@click.command()
+@click.command(
+    cls=FormatEpilogCommand,
+    epilog="""
+    \b
+    Prepare a node for usage with MAAS Anvil by generating the 'prepare-node-script' and
+    running it immediately by piping it to bash.
+    maas-anvil prepare-node-script | bash -x
+    """,
+)
 def prepare_node_script() -> None:
-    """Generate script to prepare a node for Anvil use."""
+    """Generates a script to prepare the node for use with MAAS Anvil.
+    This must be run on every node on which you want to use MAAS Anvil."""
     console.print(PREPARE_NODE_TEMPLATE, soft_wrap=True)

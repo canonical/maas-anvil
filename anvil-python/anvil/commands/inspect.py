@@ -38,14 +38,20 @@ console = Console()
 snap = Snap()
 
 
-@click.group(invoke_without_command=True)
+@click.group(
+    invoke_without_command=True,
+    epilog="""
+    \b
+    Inspect the MAAS Anvil cluster.
+    maas-anvil inspect
+    """,
+)
 @click.pass_context
 def inspect(ctx: click.Context) -> None:
-    """Inspect the maas-anvil installation.
-
-    This script will inspect your installation. It will report any issue
-    it finds, and create a tarball of logs and traces which can be
-    attached to an issue filed against the maas-anvil project.
+    """Inspects the cluster and reports any issues it finds. A tarball of
+    logs and traces is created.
+    You can attach this tarball to an issue filed in the MAAS Anvil Github
+    repository. github.com/canonical/maas-anvil
     """
     preflight_checks = []
     preflight_checks.append(DaemonGroupCheck())

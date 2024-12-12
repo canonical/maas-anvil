@@ -97,16 +97,36 @@ from anvil.jobs.common import (
 from anvil.jobs.juju import CONTROLLER
 from anvil.jobs.manifest import AddManifestStep, Manifest
 from anvil.provider.local.deployment import LocalDeployment
-from anvil.utils import CatchGroup
+from anvil.utils import (
+    CatchGroup,
+    FormatEpilogCommand,
+)
 
 LOG = logging.getLogger(__name__)
 console = Console()
 
 
-@click.group("cluster", context_settings=CONTEXT_SETTINGS, cls=CatchGroup)
+@click.group(
+    "cluster",
+    context_settings=CONTEXT_SETTINGS,
+    cls=CatchGroup,
+    epilog="""
+    \b
+    Run the cluster bootstrap command to initialize the cluster with the first node.
+    maas-anvil cluster bootstrap  \\\
+    \b
+    --role database --role region --role agent --role haproxy  \\\
+    \b
+    --accept-defaults
+    \b
+    Once the cluster is bootstrapped you can join additional nodes by running
+    'maas-anvil cluster add' on the local node and
+    'maas-anvil cluster join' on the joining nodes.
+    """,
+)
 @click.pass_context
 def cluster(ctx: click.Context) -> None:
-    """Manage the MAAS Cluster"""
+    """Creates and manages a MAAS Anvil cluster across connected nodes."""
 
 
 def remove_trailing_dot(value: str) -> str:
@@ -141,14 +161,31 @@ class LocalProvider(ProviderBase):
         return LOCAL_TYPE, LocalDeployment
 
 
-@click.command()
+@click.command(
+    cls=FormatEpilogCommand,
+    epilog="""
+    \b
+    Bootstrap a new cluster with all roles and default configurations on the first node.
+    maas-anvil cluster bootstrap \\\
+    \b
+    --role database --role region --role agent --role haproxy \\\
+    \b
+    --accept-defaults
+    """,
+)
 @click.option(
-    "-a", "--accept-defaults", help="Accept all defaults.", is_flag=True
+    "-a",
+    "--accept-defaults",
+    help="Bootstraps the cluster with default configuration.",
+    is_flag=True,
 )
 @click.option(
     "-m",
     "--manifest",
-    help="Manifest file.",
+    help=(
+        "If provided, the cluster is bootstrapped with the configuration "
+        "specified in the manifest file."
+    ),
     type=click.Path(
         exists=True, dir_okay=False, path_type=Path, allow_dash=True
     ),
@@ -162,8 +199,11 @@ class LocalProvider(ProviderBase):
         ["region", "agent", "database", "haproxy"], case_sensitive=False
     ),
     callback=validate_roles,
-    help="Specify additional roles, region or agent, for the "
-    "bootstrap node. Defaults to the database role.",
+    help=(
+        "Specifies the roles for the bootstrap node. Defaults to the "
+        "database role. Use multiple --role flags to assign more than one "
+        "role."
+    ),
 )
 @click.pass_context
 def bootstrap(
@@ -172,10 +212,7 @@ def bootstrap(
     manifest: Path | None = None,
     accept_defaults: bool = False,
 ) -> None:
-    """Bootstrap the local node.
-
-    Initialize the MAAS cluster.
-    """
+    """Bootstraps the first node to initialize a MAAS Anvil cluster."""
     deployment: LocalDeployment = ctx.obj
     client = deployment.get_client()
     snap = Snap()
@@ -326,23 +363,32 @@ def bootstrap(
     click.echo(f"Node has been bootstrapped with roles: {pretty_roles}")
 
 
-@click.command()
+@click.command(
+    cls=FormatEpilogCommand,
+    epilog="""
+    \b
+    Add an additional node to the cluster. Run this command on the bootstrap node.
+    maas-anvil cluster add --fqdn infra2.
+    """,
+)
 @click.option(
     "--fqdn",
     type=str,
     prompt=True,
-    help="Fully qualified node name",
+    help="The fully qualified domain name (FQDN) of the joining node.",
 )
 @click.option(
     "-f",
     "--format",
     type=click.Choice([FORMAT_DEFAULT, FORMAT_VALUE, FORMAT_YAML]),
     default=FORMAT_DEFAULT,
-    help="Output format.",
+    help="Output format of the join token.",
 )
 @click.pass_context
 def add(ctx: click.Context, fqdn: str, format: str) -> None:
-    """Generate a token for a new node to join the cluster."""
+    """Generates a token for a new node to join the cluster.
+    Needs to be run on the node where the cluster was bootstrapped.
+    """
     preflight_checks = [DaemonGroupCheck(), VerifyFQDNCheck(fqdn)]
     run_preflight_checks(preflight_checks, console)
     fqdn = remove_trailing_dot(fqdn)
@@ -384,11 +430,30 @@ def add(ctx: click.Context, fqdn: str, format: str) -> None:
             console.print("Node already a member of the MAAS cluster")
 
 
-@click.command()
-@click.option(
-    "-a", "--accept-defaults", help="Accept all defaults.", is_flag=True
+@click.command(
+    cls=FormatEpilogCommand,
+    epilog="""
+    \b
+    Join an additional node to the MAAS Anvil cluster. Run this command on the joining node
+    and use the token previously created with 'maas-anvil cluster add' on the bootstrap node.
+    maas-anvil cluster join  \\\
+    \b
+    --role database --role region --role agent --role haproxy  \\\
+    \b
+    --token $JOINTOKEN
+    """,
 )
-@click.option("--token", type=str, help="Join token")
+@click.option(
+    "-a",
+    "--accept-defaults",
+    help="Joins the cluster with default configuration.",
+    is_flag=True,
+)
+@click.option(
+    "--token",
+    type=str,
+    help="The join token generated on the bootstrap node with 'cluster add'.",
+)
 @click.option(
     "--role",
     "roles",
@@ -398,7 +463,10 @@ def add(ctx: click.Context, fqdn: str, format: str) -> None:
         ["region", "agent", "database", "haproxy"], case_sensitive=False
     ),
     callback=validate_roles,
-    help="Specify which roles the node will be assigned in the cluster.",
+    help=(
+        "Specifies the roles for the joining node. Use multiple --role "
+        "flags to assign more than one role."
+    ),
 )
 @click.pass_context
 def join(
@@ -407,9 +475,8 @@ def join(
     roles: List[Role],
     accept_defaults: bool = False,
 ) -> None:
-    """Join node to the cluster.
-
-    Join the node to the cluster.
+    """Joins the node to a cluster when given a join token.
+    Needs to be run on the joining node.
     """
     is_region_node = any(role.is_region_node() for role in roles)
     is_agent_node = any(role.is_agent_node() for role in roles)
@@ -522,17 +589,26 @@ def join(
     click.echo(f"Node joined cluster with roles: {pretty_roles}")
 
 
-@click.command()
+@click.command(
+    cls=FormatEpilogCommand,
+    epilog="""
+    \b
+    Verify the status of the MAAS Anvil cluster.
+    maas-anvil cluster list
+    """,
+)
 @click.option(
     "-f",
     "--format",
     type=click.Choice([FORMAT_TABLE, FORMAT_YAML]),
     default=FORMAT_TABLE,
-    help="Output format.",
+    help="Output format of the list.",
 )
 @click.pass_context
 def list(ctx: click.Context, format: str) -> None:
-    """List nodes in the cluster."""
+    """Lists all nodes in the MAAS Anvil cluster.
+    Can be run on any node that is connected to an active MAAS Anvil cluster.
+    """
     preflight_checks = [DaemonGroupCheck()]
     run_preflight_checks(preflight_checks, console)
     deployment: LocalDeployment = ctx.obj
@@ -569,13 +645,25 @@ def list(ctx: click.Context, format: str) -> None:
         click.echo(yaml.dump(nodes, sort_keys=True))
 
 
-@click.command()
+@click.command(
+    cls=FormatEpilogCommand,
+    epilog="""
+    \b
+    Remove a node from the cluster. Run this command on the bootstrap node.
+    maas-anvil cluster remove --fqdn infra2.
+    """,
+)
 @click.option(
-    "--fqdn", type=str, prompt=True, help="Fully qualified node name"
+    "--fqdn",
+    type=str,
+    prompt=True,
+    help="The fully qualified domain name (FQDN) of the leaving node.",
 )
 @click.pass_context
 def remove(ctx: click.Context, fqdn: str) -> None:
-    """Remove a node from the cluster."""
+    """Removes a node from the MAAS Anvil cluster.
+    Needs to be run on the bootstrap node.
+    """
     deployment: LocalDeployment = ctx.obj
     client = deployment.get_client()
     jhelper = JujuHelper(deployment.get_connected_controller())

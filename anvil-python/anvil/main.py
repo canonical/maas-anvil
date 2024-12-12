@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import click
 from snaphelpers import Snap
 from sunbeam import log
@@ -29,30 +30,45 @@ from anvil.commands import (
 from anvil.commands.utils import juju_login
 from anvil.provider.local.commands import LocalProvider
 from anvil.provider.local.deployment import LocalDeployment
-from anvil.utils import CatchGroup
+from anvil.utils import CatchGroup, FormatCommandGroupsGroup
 
 # Update the help options to allow -h in addition to --help for
 # triggering the help for various commands
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
-@click.group("init", context_settings=CONTEXT_SETTINGS, cls=CatchGroup)
+@click.group(
+    "init", context_settings=CONTEXT_SETTINGS, cls=FormatCommandGroupsGroup
+)
 @click.option("--quiet", "-q", default=False, is_flag=True)
 @click.option("--verbose", "-v", default=False, is_flag=True)
 @click.pass_context
 def cli(ctx: click.Context, quiet: bool, verbose: bool) -> CatchGroup:  # type: ignore[empty-body]
-    """Anvil is a MAAS installer for MAAS charms.
+    """MAAS Anvil is an installer that makes deploying MAAS charms in HA easy.
 
-    To get started with a single node, all-in-one MAAS installation, start
-    with initializing the local node. Once the local node has been initialized,
-    run the bootstrap process to get a live MAAS deployment.
+    To get started run the prepare-node-script command and bootstrap the first
+    node. For more details read the docs at: github.com/canonical/maas-anvil
     """
 
 
-@click.group("manifest", context_settings=CONTEXT_SETTINGS, cls=CatchGroup)
+@click.group(
+    "manifest",
+    context_settings=CONTEXT_SETTINGS,
+    cls=CatchGroup,
+    epilog="""
+    \b
+    Generate a manifest file with (default) configuration to be saved in the default
+    location of '$HOME/.config/anvil/manifest.yaml'
+    maas-anvil manifest generate
+    """,
+)
 @click.pass_context
 def manifest(ctx: click.Context) -> None:
-    """Manage manifests (read-only commands)"""
+    """Generates and manages manifest files.
+    A manifest file is a declarative YAML file with which configurations for
+    a MAAS Anvil cluster deployment can be set. The manifest commands are read
+    only. A manifest can be applied with "cluster bootstrap" or "cluster refresh".
+    """
 
 
 def main() -> None:

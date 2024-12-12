@@ -22,15 +22,26 @@ from sunbeam.jobs.common import run_plan, run_preflight_checks
 
 from anvil.jobs.checks import VerifyBootstrappedCheck
 from anvil.provider.local.deployment import LocalDeployment
+from anvil.utils import FormatEpilogCommand
 
 LOG = logging.getLogger(__name__)
 console = Console()
 
 
-@click.command()
+@click.command(
+    cls=FormatEpilogCommand,
+    epilog="""
+    \b
+    Log into the Juju controller to manually interact with the Juju controller created
+    by MAAS Anvil.
+    maas-anvil juju-login
+    """,
+)
 @click.pass_context
 def juju_login(ctx: click.Context) -> None:
-    """Login to the controller with current host user."""
+    """Logs into the Juju controller used by MAAS Anvil.
+    The login is performed using the current host user.
+    """
     deployment: LocalDeployment = ctx.obj
     run_preflight_checks(
         [VerifyBootstrappedCheck(deployment.get_client())], console
