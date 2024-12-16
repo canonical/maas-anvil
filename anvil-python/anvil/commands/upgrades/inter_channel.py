@@ -258,19 +258,18 @@ class ChannelUpgradeCoordinator:
                 self.manifest,
                 self.deployment.infrastructure_model,
             ),
-            # TODO: Don't allow updating MAAS until upgrade path sorted
-            # UpgradeMAASAgentCharm(
-            #     self.client,
-            #     self.jhelper,
-            #     self.manifest,
-            #     self.deployment.infrastructure_model,
-            # ),
-            # UpgradeMAASRegionCharm(
-            #     self.client,
-            #     self.jhelper,
-            #     self.manifest,
-            #     self.deployment.infrastructure_model,
-            # ),
+            UpgradeMAASAgentCharm(
+                self.client,
+                self.jhelper,
+                self.manifest,
+                self.deployment.infrastructure_model,
+            ),
+            UpgradeMAASRegionCharm(
+                self.client,
+                self.jhelper,
+                self.manifest,
+                self.deployment.infrastructure_model,
+            ),
             UpgradePlugins(self.deployment, upgrade_release=True),
         ]
         return plan
