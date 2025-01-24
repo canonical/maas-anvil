@@ -71,7 +71,7 @@ class DeployMAASRegionApplicationStep(DeployMachineApplicationStep):
             model,
             "maas-region-plan",
             f"{verb.capitalize()} MAAS Region",
-            f"{verb.capitalize()} MAAS Region",
+            f"{verb.capitalize()}ing MAAS Region",
             refresh,
         )
         self.preseed = deployment_preseed or {}
