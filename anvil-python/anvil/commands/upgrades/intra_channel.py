@@ -185,7 +185,7 @@ class LatestInChannelCoordinator:
                     self.jhelper,
                     self.deployment.infrastructure_model,
                     self.preseed,
-            )
+                )
             )
         if self.client.cluster.list_nodes_by_role("agent"):
             plan.extend(
