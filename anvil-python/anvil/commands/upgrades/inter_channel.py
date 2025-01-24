@@ -262,23 +262,24 @@ class ChannelUpgradeCoordinator:
                     self.deployment.infrastructure_model,
                 )
             )
-        if self.client.cluster.list_nodes_by_role("region"):
-            plan.append(
-                UpgradeMAASRegionCharm(
-                    self.client,
-                    self.jhelper,
-                    self.manifest,
-                    self.deployment.infrastructure_model,
-                )
-            )
-        if self.client.cluster.list_nodes_by_role("agent"):
-            plan.append(
-                UpgradeMAASAgentCharm(
-                    self.client,
-                    self.jhelper,
-                    self.manifest,
-                    self.deployment.infrastructure_model,
-                )
-            )
+        # TODO: Uncomment when charm upgrades merged
+        # if self.client.cluster.list_nodes_by_role("region"):
+        #     plan.append(
+        #         UpgradeMAASRegionCharm(
+        #             self.client,
+        #             self.jhelper,
+        #             self.manifest,
+        #             self.deployment.infrastructure_model,
+        #         )
+        #     )
+        # if self.client.cluster.list_nodes_by_role("agent"):
+        #     plan.append(
+        #         UpgradeMAASAgentCharm(
+        #             self.client,
+        #             self.jhelper,
+        #             self.manifest,
+        #             self.deployment.infrastructure_model,
+        #         )
+        #     )
         plan.append(UpgradePlugins(self.deployment, upgrade_release=True))
         return plan
