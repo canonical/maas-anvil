@@ -47,6 +47,7 @@ class DeployMAASAgentApplicationStep(DeployMachineApplicationStep):
         jhelper: JujuHelper,
         model: str,
         refresh: bool = False,
+        verb: str = "Deploy",
     ):
         super().__init__(
             client,
@@ -56,8 +57,8 @@ class DeployMAASAgentApplicationStep(DeployMachineApplicationStep):
             APPLICATION,
             model,
             "maas-agent-plan",
-            "Deploy MAAS Agent",
-            "Deploying MAAS Agent",
+            f"{verb.capitalize()} MAAS Agent",
+            f"{verb.capitalize()}ing MAAS Agent",
             refresh,
         )
 
@@ -134,6 +135,6 @@ def maas_agent_upgrade_steps(
     return [
         TerraformInitStep(manifest.get_tfhelper("maas-agent-plan")),
         DeployMAASAgentApplicationStep(
-            client, manifest, jhelper, model, refresh=True
+            client, manifest, jhelper, model, refresh=True, verb="Refresh"
         ),
     ]

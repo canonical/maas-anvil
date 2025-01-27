@@ -60,6 +60,7 @@ class DeployMAASRegionApplicationStep(DeployMachineApplicationStep):
         deployment_preseed: dict[Any, Any] | None = None,
         accept_defaults: bool = False,
         refresh: bool = False,
+        verb: str = "Deploy",
     ):
         super().__init__(
             client,
@@ -69,8 +70,8 @@ class DeployMAASRegionApplicationStep(DeployMachineApplicationStep):
             APPLICATION,
             model,
             "maas-region-plan",
-            "Deploy MAAS Region",
-            "Deploying MAAS Region",
+            f"{verb.capitalize()} MAAS Region",
+            f"{verb.capitalize()}ing MAAS Region",
             refresh,
         )
         self.preseed = deployment_preseed or {}
@@ -237,5 +238,6 @@ def maas_region_upgrade_steps(
             model,
             deployment_preseed=preseed,
             refresh=True,
+            verb="Refresh",
         ),
     ]
