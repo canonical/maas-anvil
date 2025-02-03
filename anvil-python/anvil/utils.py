@@ -97,6 +97,7 @@ class FormatCommandGroupsGroup(click.Group):
                         lambda cmd: cmd.name not in ["list", "refresh"],
                     ),
                     ("create-admin", None),
+                    ("get-api-key", None),
                 ],
             ),
             (

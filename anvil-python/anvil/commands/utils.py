@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import logging
 import re
 import subprocess
@@ -96,9 +97,7 @@ def validate_ssh_import(
     help="Import SSH keys from Launchpad (lp:user-id) or GitHub (gh:user-id)",
     callback=validate_ssh_import,
 )
-@click.pass_context
 def create_admin(
-    ctx: click.Context,
     username: str,
     password: str,
     email: str,
@@ -123,3 +122,37 @@ def create_admin(
             f"Failed to create MAAS admin account: {e.stderr.decode()}"
         )
     console.print("MAAS admin account has been successfully created.")
+
+
+@click.command(
+    cls=FormatEpilogCommand,
+    epilog="""
+    \b
+    Get a MAAS API key for the admin account:
+    maas-anvil get-api-key --username admin""",
+)
+@click.option(
+    "--username",
+    help="The username to retrieve an API key for",
+    required=True,
+)
+def get_api_key(
+    username: str,
+) -> None:
+    """Retrieves an API key for MAAS"""
+    cmd = [
+        "juju",
+        "run",
+        "maas-region/0",
+        "get-api-key",
+        f"username={username}",
+        "--format=json",
+    ]
+    try:
+        result = subprocess.run(cmd, check=True, capture_output=True)
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"Failed to retrieve API key: {e.stderr.decode()}")
+    api_key = json.loads(result.stdout.decode())["maas-region/0"]["results"][
+        "api-key"
+    ]
+    console.print(f"API key: {api_key}")
