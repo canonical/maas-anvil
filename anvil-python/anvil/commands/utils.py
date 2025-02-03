@@ -14,6 +14,8 @@
 # limitations under the License.
 
 import logging
+import re
+import subprocess
 
 import click
 from rich.console import Console
@@ -49,3 +51,75 @@ def juju_login(ctx: click.Context) -> None:
     run_plan([JujuLoginStep(deployment.juju_account)], console)
 
     console.print("Juju re-login complete.")
+
+
+def validate_ssh_import(
+    ctx: click.core.Context, param: click.core.Option, value: str | None
+) -> str | None:
+    if value and re.fullmatch("(lp|gh):.+", value) is None:
+        raise click.BadParameter(
+            "--ssh-import must be of the form 'lp:username' or 'gh:username'",
+            ctx,
+        )
+    return value
+
+
+@click.command(
+    cls=FormatEpilogCommand,
+    epilog="""
+    \b
+    Create a MAAS admin account with the following details:
+    Username: admin
+    Password: VerySecure9000
+    Email: admin@company.com
+    Launchpad account to import SSH key from: lp-username
+    \b
+    maas-anvil create-admin --username admin --password VerySecure9000 --email admin@company.com --ssh-import lp:lp-username""",
+)
+@click.option(
+    "--username",
+    help="The username for the new admin account",
+    required=True,
+)
+@click.option(
+    "--password",
+    help="The password for the new admin account",
+    required=True,
+)
+@click.option(
+    "--email",
+    help="The email address for the new admin account",
+    required=True,
+)
+@click.option(
+    "--ssh-import",
+    help="Import SSH keys from Launchpad (lp:user-id) or GitHub (gh:user-id)",
+    callback=validate_ssh_import,
+)
+@click.pass_context
+def create_admin(
+    ctx: click.Context,
+    username: str,
+    password: str,
+    email: str,
+    ssh_import: str | None,
+) -> None:
+    """Creates a MAAS admin account."""
+    cmd = [
+        "juju",
+        "run",
+        "maas-region/0",
+        "create-admin",
+        f"username={username}",
+        f"password={password}",
+        f"email={email}",
+    ]
+    if ssh_import:
+        cmd.append(f"ssh-import={ssh_import}")
+    try:
+        subprocess.run(cmd, check=True, capture_output=True)
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(
+            f"Failed to create MAAS admin account: {e.stderr.decode()}"
+        )
+    console.print("MAAS admin account has been successfully created.")
