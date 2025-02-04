@@ -21,7 +21,14 @@ import subprocess
 import click
 from rich.console import Console
 from sunbeam.commands.juju import JujuLoginStep
-from sunbeam.jobs.common import run_plan, run_preflight_checks
+from sunbeam.jobs.common import (
+    FORMAT_DEFAULT,
+    FORMAT_VALUE,
+    FORMAT_YAML,
+    run_plan,
+    run_preflight_checks,
+)
+import yaml
 
 from anvil.jobs.checks import VerifyBootstrappedCheck
 from anvil.provider.local.deployment import LocalDeployment
@@ -136,8 +143,16 @@ def create_admin(
     help="The username to retrieve an API key for",
     required=True,
 )
+@click.option(
+    "-f",
+    "--format",
+    type=click.Choice([FORMAT_DEFAULT, FORMAT_VALUE, FORMAT_YAML]),
+    default=FORMAT_DEFAULT,
+    help="Output format of the API key.",
+)
 def get_api_key(
     username: str,
+    format: str,
 ) -> None:
     """Retrieves an API key for MAAS"""
     cmd = [
@@ -152,7 +167,19 @@ def get_api_key(
         result = subprocess.run(cmd, check=True, capture_output=True)
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"Failed to retrieve API key: {e.stderr.decode()}")
-    api_key = json.loads(result.stdout.decode())["maas-region/0"]["results"][
-        "api-key"
-    ]
-    console.print(f"API key: {api_key}")
+    try:
+        api_key = json.loads(result.stdout.decode())["maas-region/0"][
+            "results"
+        ]["api-key"]
+    except (KeyError, json.JSONDecodeError):
+        LOG.error(
+            f"Unknown response from maas-region/0 when getting API key: {result.stdout.decode()}"
+        )
+        raise RuntimeError("Failed to parse response from maas-region/0")
+
+    if format == FORMAT_DEFAULT:
+        console.print(f"API key: {api_key}", soft_wrap=True)
+    elif format == FORMAT_YAML:
+        click.echo(yaml.dump({"api-key": api_key}))
+    elif format == FORMAT_VALUE:
+        click.echo(api_key)
