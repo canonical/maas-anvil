@@ -116,6 +116,7 @@ def create_admin(
         "run",
         "maas-region/0",
         "create-admin",
+        "--format=json",
         f"username={username}",
         f"password={password}",
         f"email={email}",
@@ -123,11 +124,24 @@ def create_admin(
     if ssh_import:
         cmd.append(f"ssh-import={ssh_import}")
     try:
-        subprocess.run(cmd, check=True, capture_output=True)
+        result = subprocess.run(cmd, check=True, capture_output=True)
     except subprocess.CalledProcessError as e:
         raise RuntimeError(
             f"Failed to create MAAS admin account: {e.stderr.decode()}"
         )
+    try:
+        result_dict = json.loads(result.stdout.decode())
+        if result_dict["maas-region/0"]["status"] == "failed":
+            raise RuntimeError(
+                "Failed to create admin account, response from maas-region: "
+                f"{result_dict['maas-region/0']['message']}: "
+                f"{result_dict['maas-region/0']['results']['stderr']}"
+            )
+    except (KeyError, json.JSONDecodeError):
+        LOG.error(
+            f"Unknown response from maas-region/0 when getting API key: {result.stdout.decode()}"
+        )
+        raise RuntimeError("Failed to parse response from maas-region/0")
     console.print("MAAS admin account has been successfully created.")
 
 
@@ -168,6 +182,13 @@ def get_api_key(
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"Failed to retrieve API key: {e.stderr.decode()}")
     try:
+        result_dict = json.loads(result.stdout.decode())
+        if result_dict["maas-region/0"]["status"] == "failed":
+            raise RuntimeError(
+                "Failed to get API key, response from maas-region: "
+                f"{result_dict['maas-region/0']['message']}: "
+                f"{result_dict['maas-region/0']['results']['stderr']}"
+            )
         api_key = json.loads(result.stdout.decode())["maas-region/0"][
             "results"
         ]["api-key"]
