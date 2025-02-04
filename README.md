@@ -32,10 +32,10 @@ The following instructions assume that you have three nodes `infra1`, `infra2`, 
 
 In addition, the instructions assume that MAAS Anvil deploys all available components (roles) on all three nodes:
 
--   MAAS region controller
--   MAAS rack controller (agent)
--   PostgreSQL
--   HAProxy
+- MAAS region controller
+- MAAS rack controller (agent)
+- PostgreSQL
+- HAProxy
 
 #### Preparation steps for each node
 
@@ -113,7 +113,7 @@ ubuntu@infra1:~$ maas-anvil cluster list
 To finish up your deployment you can create the MAAS admin user with the following command:
 
 ```bash
-ubuntu@infra1:~$ juju run maas-region/0 create-admin username=admin password=pass email=admin@maas.io ssh-import=lp:maasadmin
+ubuntu@infra1:~$ maas-anvil create-admin --username admin --password pass --email admin@maas.io --ssh-import=lp:maasadmin
 ```
 
 You should now have a running MAAS Anvil HA cluster with one admin user ✨.
@@ -209,8 +209,8 @@ If you want to know exactly what configuration options are available and what ef
 
 The configuration options of MAAS Anvil are generally divided into two categories:
 
--   Deployment
--   Software
+- Deployment
+- Software
 
 In the deployment category you can configure general options for deployment, in the software category you can select versions and configuration of all charms used in MAAS Anvil and define how these charms are deployed.
 
@@ -518,17 +518,17 @@ juju:
 
 MAAS Anvil is using the following charms:
 
--   [maas-region](https://charmhub.io/maas-region)
--   [maas-agent](https://charmhub.io/maas-agent)
--   [haproxy](https://charmhub.io/haproxy)
--   [postgresql](https://charmhub.io/postgresql)
--   [keepalived](https://charmhub.io/keepalived)
+- [maas-region](https://charmhub.io/maas-region)
+- [maas-agent](https://charmhub.io/maas-agent)
+- [haproxy](https://charmhub.io/haproxy)
+- [postgresql](https://charmhub.io/postgresql)
+- [keepalived](https://charmhub.io/keepalived)
 
 For each of those charms you manually set the
 
--   channel
--   revision
--   custom configuration
+- channel
+- revision
+- custom configuration
 
 Check which configuration can be passed to a charm in their respective documentation.
 
@@ -562,7 +562,7 @@ terraform:
 
 ### CLI interface
 
-#### maas-anvil [OPTIONS] COMMAND [ARGS]...
+#### maas-anvil [OPTIONS] COMMAND [ARGS]
 
 ```text
 Usage: maas-anvil [OPTIONS] COMMAND [ARGS]...
@@ -586,6 +586,8 @@ Commands:
     cluster add          Generates a token for a new node to join the cluster.
     cluster join         Joins the node to a cluster when given a join token.
     cluster remove       Removes a node from the MAAS Anvil cluster.
+    create-admin         Creates a MAAS admin account.
+    get-api-key          Retrieves an API key for MAAS
 
   Configure and update the cluster:
     manifest list        Lists manifest files that were used in the cluster.
@@ -599,7 +601,7 @@ Commands:
     juju-login           Logs into the Juju controller used by MAAS Anvil.
 ```
 
-#### maas-anvil cluster [OPTIONS] COMMAND [ARGS]...
+#### maas-anvil cluster [OPTIONS] COMMAND [ARGS]
 
 ```text
   Creates and manages a MAAS Anvil cluster across connected nodes.
@@ -754,7 +756,7 @@ Example:
   maas-anvil juju-login
 ```
 
-#### maas-anvil manifest [OPTIONS] COMMAND [ARGS]...
+#### maas-anvil manifest [OPTIONS] COMMAND [ARGS]
 
 ```text
   Generates and manages manifest files. A manifest file is a declarative YAML
@@ -856,4 +858,48 @@ Options:
 Example:
   Refresh the MAAS Anvil cluster.
   maas-anvil refresh
+```
+
+#### maas-anvil create-admin [OPTIONS]
+
+```text
+Usage: maas-anvil create-admin [OPTIONS]
+
+  Creates a MAAS admin account.
+
+Options:
+  --username TEXT    The username for the new admin account  [required]
+  --password TEXT    The password for the new admin account  [required]
+  --email TEXT       The email address for the new admin account  [required]
+  --ssh-import TEXT  Import SSH keys from Launchpad (lp:user-id) or GitHub
+                     (gh:user-id)
+  -h, --help         Show this message and exit.
+
+Example:
+  Create a MAAS admin account with the following details:
+  Username: admin
+  Password: VerySecure9000
+  Email: admin@company.com
+  Launchpad account to import SSH key from: lp-username
+
+  maas-anvil create-admin --username admin --password VerySecure9000 --email admin@company.com --ssh-import lp:lp-username
+```
+
+#### maas-anvil get-api-key [OPTIONS]
+
+```text
+Usage: maas-anvil get-api-key [OPTIONS]
+
+  Retrieves an API key for MAAS
+
+Options:
+  --username TEXT                 The username to retrieve an API key for
+                                  [required]
+  -f, --format [default|value|yaml]
+                                  Output format of the API key.
+  -h, --help                      Show this message and exit.
+
+Example:
+  Get a MAAS API key for the admin account:
+  maas-anvil get-api-key --username admin
 ```
