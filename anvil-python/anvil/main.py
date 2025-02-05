@@ -27,7 +27,7 @@ from anvil.commands import (
     prepare_node as prepare_node_cmds,
     refresh as refresh_cmds,
 )
-from anvil.commands.utils import juju_login
+from anvil.commands.utils import create_admin, get_api_key, juju_login
 from anvil.provider.local.commands import LocalProvider
 from anvil.provider.local.deployment import LocalDeployment
 from anvil.utils import CatchGroup, FormatCommandGroupsGroup
@@ -92,6 +92,8 @@ def main() -> None:
 
     # Miscellania
     cli.add_command(juju_login)
+    cli.add_command(create_admin)
+    cli.add_command(get_api_key)
 
     cli(obj=deployment)
 
