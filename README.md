@@ -562,7 +562,7 @@ terraform:
 
 ### CLI interface
 
-#### maas-anvil [OPTIONS] COMMAND [ARGS]
+#### maas-anvil [OPTIONS] COMMAND [ARGS]...
 
 ```text
 Usage: maas-anvil [OPTIONS] COMMAND [ARGS]...
@@ -587,7 +587,7 @@ Commands:
     cluster join         Joins the node to a cluster when given a join token.
     cluster remove       Removes a node from the MAAS Anvil cluster.
     create-admin         Creates a MAAS admin account.
-    get-api-key          Retrieves an API key for MAAS
+    get-api-key          Retrieves an API key for MAAS.
 
   Configure and update the cluster:
     manifest list        Lists manifest files that were used in the cluster.
@@ -601,7 +601,7 @@ Commands:
     juju-login           Logs into the Juju controller used by MAAS Anvil.
 ```
 
-#### maas-anvil cluster [OPTIONS] COMMAND [ARGS]
+#### maas-anvil cluster [OPTIONS] COMMAND [ARGS]...
 
 ```text
   Creates and manages a MAAS Anvil cluster across connected nodes.
@@ -756,7 +756,7 @@ Example:
   maas-anvil juju-login
 ```
 
-#### maas-anvil manifest [OPTIONS] COMMAND [ARGS]
+#### maas-anvil manifest [OPTIONS] COMMAND [ARGS]...
 
 ```text
   Generates and manages manifest files. A manifest file is a declarative YAML

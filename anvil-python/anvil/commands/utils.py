@@ -168,7 +168,7 @@ def get_api_key(
     username: str,
     format: str,
 ) -> None:
-    """Retrieves an API key for MAAS"""
+    """Retrieves an API key for MAAS."""
     cmd = [
         "juju",
         "run",
