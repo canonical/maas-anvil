@@ -13,10 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import logging
 import re
-import subprocess
 
 import click
 from rich.console import Console
@@ -25,11 +23,14 @@ from sunbeam.jobs.common import (
     FORMAT_DEFAULT,
     FORMAT_VALUE,
     FORMAT_YAML,
+    ResultType,
     run_plan,
     run_preflight_checks,
 )
+from sunbeam.jobs.juju import JujuHelper
 import yaml
 
+from anvil.commands.maas_region import MAASCreateAdminStep, MAASGetAPIKeyStep
 from anvil.jobs.checks import VerifyBootstrappedCheck
 from anvil.provider.local.deployment import LocalDeployment
 from anvil.utils import FormatEpilogCommand
@@ -104,44 +105,31 @@ def validate_ssh_import(
     help="Import SSH keys from Launchpad (lp:user-id) or GitHub (gh:user-id)",
     callback=validate_ssh_import,
 )
+@click.pass_context
 def create_admin(
-    username: str,
-    password: str,
-    email: str,
+    ctx: click.Context,
     ssh_import: str | None,
+    email: str,
+    password: str,
+    username: str,
 ) -> None:
     """Creates a MAAS admin account."""
-    cmd = [
-        "juju",
-        "run",
-        "maas-region/0",
-        "create-admin",
-        "--format=json",
-        f"username={username}",
-        f"password={password}",
-        f"email={email}",
-    ]
-    if ssh_import:
-        cmd.append(f"ssh-import={ssh_import}")
-    try:
-        result = subprocess.run(cmd, check=True, capture_output=True)
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(
-            f"Failed to create MAAS admin account: {e.stderr.decode()}"
-        )
-    try:
-        result_dict = json.loads(result.stdout.decode())
-        if result_dict["maas-region/0"]["status"] == "failed":
-            raise RuntimeError(
-                "Failed to create admin account, response from maas-region: "
-                f"{result_dict['maas-region/0']['message']}: "
-                f"{result_dict['maas-region/0']['results']['stderr']}"
+    deployment: LocalDeployment = ctx.obj
+    deployment.reload_juju_credentials()
+    jhelper = JujuHelper(deployment.get_connected_controller())
+    run_plan(
+        [
+            MAASCreateAdminStep(
+                username,
+                password,
+                email,
+                ssh_import,
+                jhelper,
+                deployment.infrastructure_model,
             )
-    except (KeyError, json.JSONDecodeError):
-        LOG.error(
-            f"Unknown response from maas-region/0 when getting API key: {result.stdout.decode()}"
-        )
-        raise RuntimeError("Failed to parse response from maas-region/0")
+        ],
+        console,
+    )
     console.print("MAAS admin account has been successfully created.")
 
 
@@ -164,43 +152,36 @@ def create_admin(
     default=FORMAT_DEFAULT,
     help="Output format of the API key.",
 )
+@click.pass_context
 def get_api_key(
+    ctx: click.Context,
     username: str,
     format: str,
 ) -> None:
     """Retrieves an API key for MAAS."""
-    cmd = [
-        "juju",
-        "run",
-        "maas-region/0",
-        "get-api-key",
-        f"username={username}",
-        "--format=json",
-    ]
-    try:
-        result = subprocess.run(cmd, check=True, capture_output=True)
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Failed to retrieve API key: {e.stderr.decode()}")
-    try:
-        result_dict = json.loads(result.stdout.decode())
-        if result_dict["maas-region/0"]["status"] == "failed":
-            raise RuntimeError(
-                "Failed to get API key, response from maas-region: "
-                f"{result_dict['maas-region/0']['message']}: "
-                f"{result_dict['maas-region/0']['results']['stderr']}"
-            )
-        api_key = json.loads(result.stdout.decode())["maas-region/0"][
-            "results"
-        ]["api-key"]
-    except (KeyError, json.JSONDecodeError):
-        LOG.error(
-            f"Unknown response from maas-region/0 when getting API key: {result.stdout.decode()}"
-        )
-        raise RuntimeError("Failed to parse response from maas-region/0")
+    deployment: LocalDeployment = ctx.obj
+    deployment.reload_juju_credentials()
+    jhelper = JujuHelper(deployment.get_connected_controller())
 
-    if format == FORMAT_DEFAULT:
-        console.print(f"API key: {api_key}", soft_wrap=True)
-    elif format == FORMAT_YAML:
-        click.echo(yaml.dump({"api-key": api_key}))
-    elif format == FORMAT_VALUE:
-        click.echo(api_key)
+    def _print_output(api_key: str) -> None:
+        """Helper for printing formatted output."""
+        if format == FORMAT_DEFAULT:
+            console.print(
+                f"MAAS API key for user {username}: {api_key}", soft_wrap=True
+            )
+        elif format == FORMAT_YAML:
+            click.echo(yaml.dump({"api-key": api_key}))
+        elif format == FORMAT_VALUE:
+            click.echo(api_key)
+
+    plan_results = run_plan(
+        [
+            MAASGetAPIKeyStep(
+                username, jhelper, deployment.infrastructure_model
+            )
+        ],
+        console,
+    )
+    get_api_key_step_result = plan_results.get("MAASGetAPIKeyStep")
+    if get_api_key_step_result.result_type == ResultType.COMPLETED:
+        _print_output(get_api_key_step_result.message)
