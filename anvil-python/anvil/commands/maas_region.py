@@ -16,11 +16,17 @@
 import logging
 from typing import Any, List
 
+from rich.status import Status
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformException, TerraformInitStep
 from sunbeam.jobs import questions
-from sunbeam.jobs.common import BaseStep, ResultType
-from sunbeam.jobs.juju import JujuHelper
+from sunbeam.jobs.common import BaseStep, Result, ResultType
+from sunbeam.jobs.juju import (
+    ActionFailedException,
+    JujuHelper,
+    LeaderNotFoundException,
+    run_sync,
+)
 from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
     DeployMachineApplicationStep,
@@ -241,3 +247,121 @@ def maas_region_upgrade_steps(
             verb="Refresh",
         ),
     ]
+
+
+class MAASCreateAdminStep(BaseStep):
+    """Create MAAS admin user."""
+
+    def __init__(
+        self,
+        username: str,
+        password: str,
+        email: str,
+        ssh_import: str | None,
+        jhelper: JujuHelper,
+        model: str,
+    ):
+        super().__init__("Create MAAS admin user", "Creating MAAS admin user")
+        self.username = username
+        self.password = password
+        self.email = email
+        self.ssh_import = ssh_import
+        self.app = APPLICATION
+        self.jhelper = jhelper
+        self.model = model
+
+    def run(self, status: Status | None = None) -> Result:
+        """Run maas-region create-admin action."""
+        action_cmd = "create-admin"
+        try:
+            unit = run_sync(self.jhelper.get_leader_unit(self.app, self.model))
+        except LeaderNotFoundException as e:
+            LOG.debug(f"Unable to get {self.app} leader")
+            return Result(ResultType.FAILED, str(e))
+
+        action_params = {
+            "username": self.username,
+            "password": self.password,
+            "email": self.email,
+        }
+        if self.ssh_import:
+            action_params["ssh-import"] = self.ssh_import
+
+        try:
+            LOG.debug(
+                f"Running action {action_cmd} with params {action_params}"
+            )
+            action_result = run_sync(
+                self.jhelper.run_action(
+                    unit, self.model, action_cmd, action_params
+                )
+            )
+        except ActionFailedException as e:
+            LOG.debug(f"Running action {action_cmd} on {unit} failed")
+            return Result(ResultType.FAILED, e.args[0].get("stderr"))
+
+        LOG.debug(f"Result from action {action_cmd}: {action_result}")
+        if action_result.get("return-code", 0) > 1:
+            return Result(
+                ResultType.FAILED,
+                f"Action {action_cmd} on {unit} returned error: {action_result.get('stderr')}",
+            )
+
+        return Result(ResultType.COMPLETED)
+
+
+class MAASGetAPIKeyStep(BaseStep):
+    """Retrieve an API key for a MAAS user."""
+
+    def __init__(
+        self,
+        username: str,
+        jhelper: JujuHelper,
+        model: str,
+    ):
+        super().__init__(
+            "Retrieve the MAAS API key", "Retrieving the MAAS API key"
+        )
+        self.username = username
+        self.app = APPLICATION
+        self.jhelper = jhelper
+        self.model = model
+
+    def run(self, status: Status | None = None) -> Result:
+        """Run maas-region get-api-key action."""
+        action_cmd = "get-api-key"
+        try:
+            unit = run_sync(self.jhelper.get_leader_unit(self.app, self.model))
+        except LeaderNotFoundException as e:
+            LOG.debug(f"Unable to get {self.app} leader")
+            return Result(ResultType.FAILED, str(e))
+
+        action_params = {
+            "username": self.username,
+        }
+
+        try:
+            LOG.debug(
+                f"Running action {action_cmd} with params {action_params}"
+            )
+            action_result = run_sync(
+                self.jhelper.run_action(
+                    unit, self.model, action_cmd, action_params
+                )
+            )
+        except ActionFailedException as e:
+            LOG.debug(f"Running action {action_cmd} on {unit} failed")
+            return Result(ResultType.FAILED, e.args[0].get("stderr"))
+
+        LOG.debug(f"Result from action {action_cmd}: {action_result}")
+        if action_result.get("return-code", 0) > 1:
+            return Result(
+                ResultType.FAILED,
+                f"Action {action_cmd} on {unit} returned error: {action_result.get('stderr')}",
+            )
+        if api_key := action_result.get("api-key"):
+            return Result(ResultType.COMPLETED, message=api_key)
+        return Result(
+            ResultType.FAILED,
+            f"Action {action_cmd} on {unit} returned unexpected results content",
+        )
