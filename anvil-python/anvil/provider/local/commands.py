@@ -232,6 +232,9 @@ def bootstrap(
             manifest_data=manifest_data or {},
             include_defaults=True,
         )
+
+        # don't ask deployment questions if we pass a manifest
+        accept_defaults = True
     else:
         manifest_obj = Manifest.get_default_manifest(deployment)
 
