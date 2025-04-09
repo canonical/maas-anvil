@@ -100,7 +100,7 @@ markdown-it-py==3.0.0
     # via rich
 mdurl==0.1.2
     # via markdown-it-py
-multidict==6.3.2
+multidict==6.2.0
     # via
     #   aiohttp
     #   yarl
@@ -150,7 +150,7 @@ pygments==2.19.1
     # via rich
 pymacaroons==0.13.0
     # via macaroonbakery
-pymongo==4.11.3
+pymongo==4.12.0
     # via python-libmaas
 pynacl==1.5.0
     # via
@@ -220,7 +220,7 @@ snap-helpers @ git+https://github.com/skatsaounis/snap-helpers
     #   sunbeam
 sniffio==1.3.1
     # via anyio
-sunbeam @ git+https://github.com/skatsaounis/snap-openstack@devel/juju-lts#subdirectory=sunbeam-python
+sunbeam @ git+https://github.com/canonical/snap-openstack@unmaintained/juju-lts-anvil#subdirectory=sunbeam-python
     # via anvil (pyproject.toml)
 terminaltables==3.1.10
     # via python-libmaas
@@ -246,7 +246,7 @@ websocket-client==1.8.0
     # via kubernetes
 websockets==15.0.1
     # via juju
-yarl==1.18.3
+yarl==1.19.0
     # via aiohttp
 
 # The following packages are considered to be unsafe in a requirements file:

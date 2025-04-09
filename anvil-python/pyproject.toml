@@ -28,7 +28,7 @@ dependencies = [
   "pydantic==1.10.14",
   "rich",
   "snap-helpers@ git+https://github.com/skatsaounis/snap-helpers",
-  "sunbeam@ git+https://github.com/skatsaounis/snap-openstack@devel/juju-lts#subdirectory=sunbeam-python",
+  "sunbeam@ git+https://github.com/canonical/snap-openstack@unmaintained/juju-lts-anvil#subdirectory=sunbeam-python",
 ]
 [project.optional-dependencies]
 testing = [
