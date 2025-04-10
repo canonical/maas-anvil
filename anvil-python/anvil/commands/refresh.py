@@ -82,7 +82,7 @@ def refresh(
     manifest = None
     if manifest_path:
         try:
-            with click.open_file(manifest_path) as file:  # type: ignore
+            with click.open_file(manifest_path) as file:
                 manifest_data = yaml.safe_load(file)
         except (OSError, yaml.YAMLError) as e:
             LOG.debug(e)

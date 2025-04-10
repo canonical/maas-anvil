@@ -21,7 +21,7 @@ from anvil.utils import FormatEpilogCommand
 console = Console()
 
 
-JUJU_CHANNEL = "3.4/stable"
+JUJU_CHANNEL = "3.6/stable"
 SUPPORTED_RELEASE = "jammy"
 
 PREPARE_NODE_TEMPLATE = f"""#!/bin/bash

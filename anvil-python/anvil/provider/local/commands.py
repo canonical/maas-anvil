@@ -221,7 +221,7 @@ def bootstrap(
     manifest_obj = None
     if manifest:
         try:
-            with click.open_file(manifest) as file:  # type: ignore
+            with click.open_file(manifest) as file:
                 manifest_data = yaml.safe_load(file)
         except (OSError, yaml.YAMLError) as e:
             LOG.debug(e)
