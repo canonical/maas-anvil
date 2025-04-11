@@ -52,7 +52,7 @@ jobs:
   functional-test-amd64:
     needs: build-amd64
     name: Functional test
-    runs-on: [self-hosted, xlarge]
+    runs-on: [self-hosted, large, noble, x64]
     steps:
       - name: Checkout
         uses: actions/checkout@v4

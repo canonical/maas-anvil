@@ -22,7 +22,7 @@ console = Console()
 
 
 JUJU_CHANNEL = "3.6/stable"
-SUPPORTED_RELEASE = "jammy"
+SUPPORTED_RELEASE = "noble"
 
 PREPARE_NODE_TEMPLATE = f"""#!/bin/bash
 [ $(lsb_release -sc) != '{SUPPORTED_RELEASE}' ] && \
