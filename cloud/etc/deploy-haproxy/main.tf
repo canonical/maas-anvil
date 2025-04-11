@@ -46,7 +46,7 @@ resource "juju_application" "haproxy" {
     name     = "haproxy"
     channel  = var.charm_haproxy_channel
     revision = var.charm_haproxy_revision
-    base     = "ubuntu@22.04"
+    base     = "ubuntu@24.04"
   }
 
   config = merge(
@@ -67,7 +67,7 @@ resource "juju_application" "keepalived" {
     name     = "keepalived"
     channel  = var.charm_keepalived_channel
     revision = var.charm_keepalived_revision
-    base     = "ubuntu@22.04"
+    base     = "ubuntu@24.04"
   }
 
   config = merge(

@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-MAAS_REGION_CHANNEL = "3.5/edge"
-MAAS_AGENT_CHANNEL = "3.5/edge"
-POSTGRESQL_CHANNEL = "14/stable"
+MAAS_REGION_CHANNEL = "3.6/edge"
+MAAS_AGENT_CHANNEL = "3.6/edge"
+POSTGRESQL_CHANNEL = "16/beta"
 HAPROXY_CHANNEL = "latest/stable"
 KEEPALIVED_CHANNEL = "latest/stable"
 

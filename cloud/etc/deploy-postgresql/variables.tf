@@ -16,7 +16,7 @@
 variable "charm_postgresql_channel" {
   description = "Operator channel for PostgreSQL deployment"
   type        = string
-  default     = "14/stable"
+  default     = "16/beta"
 }
 
 variable "charm_postgresql_revision" {
