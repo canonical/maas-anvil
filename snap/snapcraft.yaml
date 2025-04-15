@@ -1,5 +1,5 @@
 name: maas-anvil
-base: core22
+base: core24
 summary: Metal as a Service installer
 license: Apache-2.0
 description: |
@@ -8,9 +8,9 @@ version: "0.1"
 confinement: strict
 grade: stable
 
-architectures:
-  - build-on: amd64
-  - build-on: arm64
+platforms:
+  amd64:
+  arm64:
 
 system-usernames:
   snap_daemon: shared
@@ -50,7 +50,6 @@ apps:
 
 parts:
   dqlite:
-    build-attributes: [core22-step-dependencies]
     after:
       - raft
     source: https://github.com/canonical/dqlite
@@ -73,7 +72,6 @@ parts:
       - lib/*/libuv*
 
   raft:
-    build-attributes: [core22-step-dependencies]
     source: https://github.com/canonical/raft
     source-type: git
     source-depth: 1
@@ -109,13 +107,13 @@ parts:
       set -ex
 
       # Setup build environment
-      export CGO_CFLAGS="-I${SNAPCRAFT_STAGE}/include/ -I${SNAPCRAFT_STAGE}/usr/local/include/"
-      export CGO_LDFLAGS="-L${SNAPCRAFT_STAGE}/lib/ -L${SNAPCRAFT_STAGE}/usr/local/lib/"
+      export CGO_CFLAGS="-I${CRAFT_STAGE}/include/ -I${CRAFT_STAGE}/usr/local/include/"
+      export CGO_LDFLAGS="-L${CRAFT_STAGE}/lib/ -L${CRAFT_STAGE}/usr/local/lib/"
       export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)|(-s)"
 
       # Build the binaries
       cd sunbeam-microcluster
-      go build -o "${SNAPCRAFT_PART_INSTALL}/bin/sunbeamd" -tags=libsqlite3 ./cmd/sunbeamd
+      go build -o "${CRAFT_PART_INSTALL}/bin/sunbeamd" -tags=libsqlite3 ./cmd/sunbeamd
     prime:
       - bin/sunbeamd
 
@@ -132,8 +130,8 @@ parts:
     override-build: |
       go mod download
       go build -ldflags "-s -w"
-      mkdir -p $SNAPCRAFT_PART_INSTALL/bin
-      cp terraform $SNAPCRAFT_PART_INSTALL/bin/terraform
+      mkdir -p $CRAFT_PART_INSTALL/bin
+      cp terraform $CRAFT_PART_INSTALL/bin/terraform
     stage:
       - bin/terraform
 
@@ -143,11 +141,11 @@ parts:
     source: cloud/
     override-build: |
       craftctl default
-      for plan in $(ls $SNAPCRAFT_PART_INSTALL/etc/);
+      for plan in $(ls $CRAFT_PART_INSTALL/etc/);
       do
-        cd $SNAPCRAFT_PART_INSTALL/etc/$plan
-        $SNAPCRAFT_STAGE/bin/terraform init
-        $SNAPCRAFT_STAGE/bin/terraform providers mirror $SNAPCRAFT_PRIME/usr/share/terraform-providers
+        cd $CRAFT_PART_INSTALL/etc/$plan
+        $CRAFT_STAGE/bin/terraform init
+        $CRAFT_STAGE/bin/terraform providers mirror $CRAFT_PRIME/usr/share/terraform-providers
         rm -rf ./.terraform
       done
 
