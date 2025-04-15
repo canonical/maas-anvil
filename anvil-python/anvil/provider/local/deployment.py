@@ -26,7 +26,16 @@ from sunbeam.provider.local.deployment import (
     LocalDeployment as SunbeamLocalDeployment,
 )
 
-from anvil.commands.haproxy import HAPROXY_CONFIG_KEY, haproxy_questions
+from anvil.commands.haproxy import (
+    HAPROXY_CONFIG_KEY,
+    HAPROXY_VALID_TLS_MODES,
+    haproxy_questions,
+    tls_questions,
+)
+from anvil.commands.maas_region import (
+    MAAS_REGION_VALID_TLS_MODES,
+    MAASREGION_CONFIG_KEY,
+)
 from anvil.commands.postgresql import (
     POSTGRESQL_CONFIG_KEY,
     postgresql_questions,
@@ -77,13 +86,29 @@ class LocalDeployment(SunbeamLocalDeployment):
             variables = load_answers(client, HAPROXY_CONFIG_KEY)
         except ClusterServiceUnavailableException:
             variables = {}
+        qs = haproxy_questions()
+        qs.update(tls_questions(HAPROXY_VALID_TLS_MODES))
         haproxy_config_bank = QuestionBank(
-            questions=haproxy_questions(),
+            questions=qs,
             console=console,
             previous_answers=variables,
         )
         preseed_content.extend(
             show_questions(haproxy_config_bank, section="haproxy")
+        )
+
+        # MAAS region questions
+        try:
+            variables = load_answers(client, MAASREGION_CONFIG_KEY)
+        except ClusterServiceUnavailableException:
+            variables = {}
+        maas_region_config_bank = QuestionBank(
+            questions=tls_questions(MAAS_REGION_VALID_TLS_MODES),
+            console=console,
+            previous_answers=variables,
+        )
+        preseed_content.extend(
+            show_questions(maas_region_config_bank, section="maas-region")
         )
 
         preseed_content_final = "\n".join(preseed_content)

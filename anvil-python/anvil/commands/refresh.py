@@ -28,17 +28,28 @@ from anvil.commands.upgrades.inter_channel import ChannelUpgradeCoordinator
 from anvil.commands.upgrades.intra_channel import LatestInChannelCoordinator
 from anvil.jobs.manifest import AddManifestStep, Manifest
 from anvil.provider.local.deployment import LocalDeployment
+from anvil.utils import FormatEpilogCommand
 
 LOG = logging.getLogger(__name__)
 console = Console()
 
 
-@click.command()
+@click.command(
+    cls=FormatEpilogCommand,
+    epilog="""
+    \b
+    Refresh the MAAS Anvil cluster.
+    maas-anvil refresh
+    """,
+)
 @click.option(
     "-m",
     "--manifest",
     "manifest_path",
-    help="Manifest file.",
+    help=(
+        "If provided, the cluster is refreshed with the configuration "
+        "specified in the manifest file."
+    ),
     type=click.Path(
         exists=True, dir_okay=False, path_type=Path, allow_dash=True
     ),
@@ -49,7 +60,10 @@ console = Console()
     is_flag=True,
     show_default=True,
     default=False,
-    help="Upgrade MAAS Anvil release.",
+    help=(
+        "Allows charm upgrades if the new manifest specifies charms in channels "
+        "with higher tracks than the current one."
+    ),
 )
 @click.pass_context
 def refresh(
@@ -57,9 +71,9 @@ def refresh(
     manifest_path: Path | None = None,
     upgrade_release: bool = False,
 ) -> None:
-    """Refresh deployment.
-
-    Refresh the deployment and allow passing new configuration options.
+    """Updates all charms within their current channel.
+    A manifest file can be passed to refresh the deployment with
+    new configuration.
     """
 
     deployment: LocalDeployment = ctx.obj
@@ -68,7 +82,7 @@ def refresh(
     manifest = None
     if manifest_path:
         try:
-            with click.open_file(manifest_path) as file:  # type: ignore
+            with click.open_file(manifest_path) as file:
                 manifest_data = yaml.safe_load(file)
         except (OSError, yaml.YAMLError) as e:
             LOG.debug(e)

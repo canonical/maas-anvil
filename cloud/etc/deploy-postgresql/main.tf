@@ -18,7 +18,7 @@ terraform {
   required_providers {
     juju = {
       source  = "juju/juju"
-      version = "= 0.11.0"
+      version = "= 0.15.1"
     }
   }
 
@@ -52,5 +52,10 @@ resource "juju_application" "postgresql" {
     base     = "ubuntu@22.04"
   }
 
-  config = merge(local.max_connections, var.charm_postgresql_config)
+  config = merge(
+    local.max_connections,
+    # workaround for https://bugs.launchpad.net/maas/+bug/2097079
+    { "plugin_audit_enable" : false },
+    var.charm_postgresql_config
+  )
 }

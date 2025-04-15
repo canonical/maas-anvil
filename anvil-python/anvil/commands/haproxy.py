@@ -15,13 +15,12 @@
 
 import ipaddress
 import logging
-import os.path
-from typing import Any, List
+from typing import Any, Callable, List
 
 from rich.console import Console
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.juju import BOOTSTRAP_CONFIG_KEY
-from sunbeam.commands.terraform import TerraformInitStep
+from sunbeam.commands.terraform import TerraformException, TerraformInitStep
 from sunbeam.jobs import questions
 from sunbeam.jobs.common import BaseStep, ResultType
 from sunbeam.jobs.juju import JujuHelper
@@ -42,18 +41,18 @@ HAPROXY_APP_TIMEOUT = 180  # 3 minutes, managing the application should be fast
 HAPROXY_UNIT_TIMEOUT = (
     1200  # 15 minutes, adding / removing units can take a long time
 )
-LOG = logging.getLogger(__name__)
+HAPROXY_VALID_TLS_MODES = ["termination", "passthrough", "disabled"]
 
 
 def validate_cert_file(filepath: str) -> None:
     if filepath == "":
         return
-    if not os.path.isfile(filepath):
-        raise ValueError(f"{filepath} does not exist")
     try:
         with open(filepath) as f:
             if "BEGIN CERTIFICATE" not in f.read():
                 raise ValueError("Invalid certificate file")
+    except FileNotFoundError:
+        raise ValueError(f"{filepath} does not exist")
     except PermissionError:
         raise ValueError(f"Permission denied when trying to read {filepath}")
 
@@ -61,12 +60,25 @@ def validate_cert_file(filepath: str) -> None:
 def validate_key_file(filepath: str) -> None:
     if filepath == "":
         return
-    if not os.path.isfile(filepath):
-        raise ValueError(f"{filepath} does not exist")
     try:
         with open(filepath) as f:
             if "BEGIN PRIVATE KEY" not in f.read():
                 raise ValueError("Invalid key file")
+    except FileNotFoundError:
+        raise ValueError(f"{filepath} does not exist")
+    except PermissionError:
+        raise ValueError(f"Permission denied when trying to read {filepath}")
+
+
+def validate_cacert_chain(filepath: str) -> None:
+    if filepath == "":
+        return
+    try:
+        with open(filepath) as f:
+            if "BEGIN CERTIFICATE" not in f.read():
+                raise ValueError("Invalid CA certificate file")
+    except FileNotFoundError:
+        raise ValueError(f"{filepath} does not exist")
     except PermissionError:
         raise ValueError(f"Permission denied when trying to read {filepath}")
 
@@ -81,23 +93,46 @@ def validate_virtual_ip(value: str) -> None:
         raise ValueError(f"{value} is not a valid IP address: {e}")
 
 
+def get_validate_tls_mode_fn(valid_modes: list[str]) -> Callable[[str], None]:
+    def validate_tls_mode(value: str) -> None:
+        if value not in valid_modes:
+            raise ValueError(f"TLS Mode must be one of {valid_modes}")
+
+    return validate_tls_mode
+
+
+def tls_questions(tls_modes: list[str]) -> dict[str, questions.PromptQuestion]:
+    return {
+        "ssl_cert": questions.PromptQuestion(
+            "Path to SSL Certificate for HAProxy",
+            default_value="",
+            validation_function=validate_cert_file,
+        ),
+        "ssl_key": questions.PromptQuestion(
+            "Path to private key for the SSL certificate",
+            default_value="",
+            validation_function=validate_key_file,
+        ),
+        "ssl_cacert": questions.PromptQuestion(
+            "Path to CA cert chain, for use with self-signed SSL certificates (enter nothing to skip)",
+            default_value="",
+            validation_function=validate_cacert_chain,
+        ),
+        "tls_mode": questions.PromptQuestion(
+            f"TLS mode: {tls_modes}",
+            default_value="disabled",
+            validation_function=get_validate_tls_mode_fn(tls_modes),
+        ),
+    }
+
+
 def haproxy_questions() -> dict[str, questions.PromptQuestion]:
     return {
         "virtual_ip": questions.PromptQuestion(
             "Virtual IP to use for the Cluster in HA",
             default_value="",
             validation_function=validate_virtual_ip,
-        ),
-        "ssl_cert": questions.PromptQuestion(
-            "Path to SSL Certificate for HAProxy (enter nothing to skip TLS)",
-            default_value="",
-            validation_function=validate_cert_file,
-        ),
-        "ssl_key": questions.PromptQuestion(
-            "Path to private key for the SSL certificate (enter nothing to skip TLS)",
-            default_value="",
-            validation_function=validate_key_file,
-        ),
+        )
     }
 
 
@@ -115,6 +150,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         deployment_preseed: dict[Any, Any] | None = None,
         accept_defaults: bool = False,
         refresh: bool = False,
+        verb: str = "Deploy",
     ):
         super().__init__(
             client,
@@ -124,8 +160,8 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             APPLICATION,
             model,
             "haproxy-plan",
-            "Deploy HAProxy",
-            "Deploying HAProxy",
+            f"{verb.capitalize()} HAProxy",
+            f"{verb.capitalize()}ing HAProxy",
             refresh,
         )
         self.preseed = deployment_preseed or {}
@@ -154,24 +190,33 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         variables.setdefault("virtual_ip", "")
         variables.setdefault("ssl_cert", "")
         variables.setdefault("ssl_key", "")
+        variables.setdefault("ssl_cacert", "")
+        variables.setdefault("tls_mode", "disabled")
 
         # Set defaults
         self.preseed.setdefault("virtual_ip", "")
         self.preseed.setdefault("ssl_cert", "")
         self.preseed.setdefault("ssl_key", "")
+        self.preseed.setdefault("ssl_cacert", "")
+        self.preseed.setdefault("tls_mode", "disabled")
 
+        qs = haproxy_questions()
+        qs.update(tls_questions(HAPROXY_VALID_TLS_MODES))
         haproxy_config_bank = questions.QuestionBank(
-            questions=haproxy_questions(),
+            questions=qs,
             console=console,
             preseed=self.preseed.get("haproxy"),
             previous_answers=variables,
             accept_defaults=self.accept_defaults,
         )
 
-        cert_filepath = haproxy_config_bank.ssl_cert.ask()
-        variables["ssl_cert"] = cert_filepath
-        key_filepath = haproxy_config_bank.ssl_key.ask()
-        variables["ssl_key"] = key_filepath
+        tls_mode = haproxy_config_bank.tls_mode.ask()
+        variables["tls_mode"] = tls_mode
+        if tls_mode != "disabled":
+            variables["ssl_cert"] = haproxy_config_bank.ssl_cert.ask()
+            variables["ssl_key"] = haproxy_config_bank.ssl_key.ask()
+            if tls_mode == "passthrough":
+                variables["ssl_cacert"] = haproxy_config_bank.ssl_cacert.ask()
         virtual_ip = haproxy_config_bank.virtual_ip.ask()
         variables["virtual_ip"] = virtual_ip
 
@@ -183,21 +228,27 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
             self.client, self._HAPROXY_CONFIG
         )
 
-        cert_filepath = variables["ssl_cert"]
-        key_filepath = variables["ssl_key"]
-        if cert_filepath != "" and key_filepath != "":
-            with open(cert_filepath) as cert_file:
-                variables["ssl_cert_content"] = cert_file.read()
-            with open(key_filepath) as key_file:
-                variables["ssl_key_content"] = key_file.read()
+        if variables["tls_mode"] != "disabled":
             variables["haproxy_port"] = 443
-            variables["haproxy_services_yaml"] = self.get_tls_services_yaml()
+            variables["haproxy_services_yaml"] = self.get_tls_services_yaml(
+                variables["tls_mode"]
+            )
+            if not variables["ssl_cert"] or not variables["ssl_key"]:
+                raise TerraformException(
+                    "Both ssl_cert and ssl_key must be provided when enabling TLS"
+                )
+            with open(variables["ssl_cert"]) as cert_file:
+                variables["ssl_cert_content"] = cert_file.read()
+            with open(variables["ssl_key"]) as key_file:
+                variables["ssl_key_content"] = key_file.read()
         else:
             variables["haproxy_port"] = 80
 
         # Terraform does not need the content of these answers
-        variables.pop("ssl_cert", None)
-        variables.pop("ssl_key", None)
+        variables.pop("tls_mode", "disabled")
+        variables.pop("ssl_cert", "")
+        variables.pop("ssl_key", "")
+        variables.pop("ssl_cacert", "")
 
         LOG.debug(f"extra tfvars: {variables}")
         return variables
@@ -209,7 +260,7 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         )
         return answers["bootstrap"]["management_cidr"].split(",")
 
-    def get_tls_services_yaml(self) -> str:
+    def get_tls_services_yaml(self, tls_mode: str) -> str:
         """Get the HAProxy services.yaml for TLS, inserting the VIP for the frontend bind"""
         cidrs = self.get_management_cidrs()
         services: str = (
@@ -219,9 +270,12 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
   service_options:
     - balance leastconn
     - cookie SRVNAME insert
-    - http-request redirect scheme https unless { ssl_fc }
-  server_options: maxconn 100 cookie S{i} check
-  crts: [DEFAULT]
+    - http-request redirect scheme https unless { ssl_fc }"""
+            + ("\n    - mode tcp" if tls_mode == "passthrough" else "")
+            + """
+  server_options: maxconn 100 cookie S{i} check"""
+            + ("\n  crts: [DEFAULT]" if tls_mode == "termination" else "")
+            + """
 - service_name: agent_service
   service_host: 0.0.0.0
   service_port: 80
@@ -323,5 +377,6 @@ def haproxy_upgrade_steps(
             model,
             deployment_preseed=preseed,
             refresh=True,
+            verb="Refresh",
         ),
     ]

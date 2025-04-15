@@ -31,6 +31,7 @@ import yaml
 
 from anvil.jobs.checks import DaemonGroupCheck, VerifyBootstrappedCheck
 from anvil.jobs.manifest import Manifest
+from anvil.utils import FormatEpilogCommand
 
 LOG = logging.getLogger(__name__)
 console = Console()
@@ -70,17 +71,24 @@ def generate_software_manifest(manifest: Manifest) -> str:
         raise click.ClickException(f"Manifest generation failed: {e!s}")
 
 
-@click.command()
+@click.command(
+    cls=FormatEpilogCommand,
+    epilog="""
+    \b
+    List previously used manifest files.
+    maas-anvil manifest list
+    """,
+)
 @click.option(
     "-f",
     "--format",
     type=click.Choice([FORMAT_TABLE, FORMAT_YAML]),
     default=FORMAT_TABLE,
-    help="Output format.",
+    help="Output format of the list.",
 )
 @click.pass_context
 def list(ctx: click.Context, format: str) -> None:
-    """List manifests"""
+    """Lists manifest files that were used in the cluster."""
     deployment: Deployment = ctx.obj
     client = deployment.get_client()
     manifests = []
@@ -109,13 +117,22 @@ def list(ctx: click.Context, format: str) -> None:
         click.echo(yaml.dump(manifests))
 
 
-@click.command()
-@click.option("--id", type=str, prompt=True, help="Manifest ID")
+@click.command(
+    cls=FormatEpilogCommand,
+    epilog="""
+    \b
+    Show the contents of the most recently committed manifest file.
+    maas-anvil manifest show --id=latest
+    """,
+)
+@click.option(
+    "--id", type=str, prompt=True, help="The database id of the manifest file."
+)
 @click.pass_context
 def show(ctx: click.Context, id: str) -> None:
-    """Show Manifest data.
-
-    Use '--id=latest' to get the last committed manifest.
+    """Shows the contents of a manifest file given an id.
+    Get ids using the 'manifest list' command. Use '--id=latest' to show the most
+    recently committed manifest.
     """
     deployment: Deployment = ctx.obj
     client = deployment.get_client()
@@ -132,34 +149,37 @@ def show(ctx: click.Context, id: str) -> None:
         click.echo(f"Error: No manifest exists with id {id}")
 
 
-@click.command()
+@click.command(
+    cls=FormatEpilogCommand,
+    epilog="""
+    \b
+    Generate a manifest file with (default) configuration to be saved in the default
+    location of '$HOME/.config/anvil/manifest.yaml'
+    maas-anvil manifest generate
+    """,
+)
 @click.option(
-    "-f",
-    "--manifest-file",
+    "-o",
+    "--output",
     help="Output file for manifest, defaults to $HOME/.config/anvil/manifest.yaml",
     type=click.Path(dir_okay=False, path_type=Path),
 )
 @click.pass_context
 def generate(
     ctx: click.Context,
-    manifest_file: Path | None = None,
+    output: Path | None = None,
 ) -> None:
-    """Generate manifest file.
-
-    Generate manifest file with the deployed configuration.
-    If the cluster is not bootstrapped, fallback to default
-    configuration.
+    """Generates a manifest file. Either with the configuration of the currently deployed
+    MAAS Anvil cluster or, if no cluster was bootstrapped yet, a default configuration.
     """
     deployment: Deployment = ctx.obj
 
-    if not manifest_file:
+    if not output:
         home = os.environ.get("SNAP_REAL_HOME", "")
-        manifest_file = Path(home) / ".config" / "anvil" / "manifest.yaml"
+        output = Path(home) / ".config" / "anvil" / "manifest.yaml"
 
-    LOG.debug(
-        f"Creating {manifest_file} parent directory if it does not exist"
-    )
-    manifest_file.parent.mkdir(mode=0o775, parents=True, exist_ok=True)
+    LOG.debug(f"Creating {output} parent directory if it does not exist")
+    output.parent.mkdir(mode=0o775, parents=True, exist_ok=True)
 
     try:
         client = deployment.get_client()
@@ -185,7 +205,7 @@ def generate(
     software_content = generate_software_manifest(manifest_obj)
 
     try:
-        with manifest_file.open("w") as file:
+        with output.open("w") as file:
             file.write("# Generated Anvil Deployment Manifest\n\n")
             file.write(preseed_content)
             file.write("\n")
@@ -194,4 +214,4 @@ def generate(
         LOG.debug(e)
         raise click.ClickException(f"Manifest generation failed: {e!s}")
 
-    click.echo(f"Generated manifest is at {manifest_file!s}")
+    click.echo(f"Generated manifest is at {output!s}")
