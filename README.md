@@ -28,7 +28,7 @@ MAAS Anvil streamlines the deployment process using MAAS charms. After deploymen
 
 ### Bootstrap a maas-anvil cluster to learn the basics
 
-The following instructions assume that you have three nodes `infra1`, `infra2`, `infra3` running Ubuntu 22.04 LTS and their networking is configured correctly.
+The following instructions assume that you have three nodes `infra1`, `infra2`, `infra3` running Ubuntu 24.04 LTS and their networking is configured correctly.
 
 In addition, the instructions assume that MAAS Anvil deploys all available components (roles) on all three nodes:
 
@@ -268,11 +268,11 @@ software:
     #   scale_args: []
     # charms:
     #   maas-region:
-    #     channel: 3.4/edge
+    #     channel: 3.6/edge
     #     revision: null
     #     config: null
     #   maas-agent:
-    #     channel: 3.4/edge
+    #     channel: 3.6/edge
     #     revision: null
     #     config: null
     #   haproxy:
@@ -280,7 +280,7 @@ software:
     #     revision: null
     #     config: null
     #   postgresql:
-    #     channel: 14/stable
+    #     channel: 16/beta
     #     revision: null
     #     config: null
     #   keepalived:
@@ -435,7 +435,7 @@ With this option you can configure the maximum number of concurrent connections 
 
 **Default**
 
-`default` applies the default values of PostgreSQL to [max_connections](https://www.postgresql.org/docs/14/runtime-config-connection.html). The default is typically 100 connections, but might be less if your kernel settings will not support it (as determined during initdb).
+`default` applies the default values of PostgreSQL to [max_connections](https://www.postgresql.org/docs/16/runtime-config-connection.html). The default is typically 100 connections, but might be less if your kernel settings will not support it (as determined during initdb).
 
 If you are aiming for MAAS HA though you have to do one of the following:
 
@@ -537,7 +537,7 @@ Check which configuration can be passed to a charm in their respective documenta
 ```yaml
 charms
   maas-region:
-    channel: 3.4/edge
+    channel: 3.6/edge
     revision: null
     config: null
 ```

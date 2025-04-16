@@ -109,9 +109,9 @@ EOF
 To create your VMs, execute the following:
 
 ```bash
-lxc launch ubuntu:22.04 infra1 --vm -p ${PROFILE_NAME}
-lxc launch ubuntu:22.04 infra2 --vm -p ${PROFILE_NAME}
-lxc launch ubuntu:22.04 infra3 --vm -p ${PROFILE_NAME}
+lxc launch ubuntu:24.04 infra1 --vm -p ${PROFILE_NAME}
+lxc launch ubuntu:24.04 infra2 --vm -p ${PROFILE_NAME}
+lxc launch ubuntu:24.04 infra3 --vm -p ${PROFILE_NAME}
 ```
 
 If you are running these commands in a script, include the lines below to wait for the VMs to be ready.
