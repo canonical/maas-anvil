@@ -4,7 +4,7 @@ summary: Metal as a Service installer
 license: Apache-2.0
 description: |
   Total automation of your physical servers for amazing data center operational efficiency.
-version: "0.1"
+version: "3.6"
 confinement: strict
 grade: stable
 
