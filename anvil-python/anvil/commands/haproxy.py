@@ -31,6 +31,7 @@ from sunbeam.jobs.steps import (
 
 from anvil.jobs.manifest import Manifest
 from anvil.jobs.steps import RemoveMachineUnitStep
+from anvil.utils import get_architecture
 
 LOG = logging.getLogger(__name__)
 
@@ -249,6 +250,9 @@ class DeployHAProxyApplicationStep(DeployMachineApplicationStep):
         variables.pop("ssl_cert", "")
         variables.pop("ssl_key", "")
         variables.pop("ssl_cacert", "")
+
+        if get_architecture() == "arm64":
+            variables["arch"] = "arm64"
 
         LOG.debug(f"extra tfvars: {variables}")
         return variables

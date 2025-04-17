@@ -15,6 +15,7 @@
 
 import inspect
 import logging
+import platform
 import sys
 from typing import Protocol
 
@@ -185,3 +186,17 @@ class FormatCommandGroupsGroup(click.Group):
                     group_commands, col_max=max_length, col_spacing=2
                 )
                 formatter.dedent()
+
+
+def get_architecture() -> str:
+    """
+    Returns a string identifying the system architecture as 'amd64', 'arm64', or 'other'.
+    """
+    arch: str = platform.machine().lower()
+
+    if arch in ("x86_64", "amd64"):
+        return "amd64"
+    elif arch in ("aarch64", "arm64"):
+        return "arm64"
+    else:
+        return "other"

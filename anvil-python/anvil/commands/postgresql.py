@@ -29,6 +29,7 @@ from sunbeam.jobs.steps import (
 
 from anvil.jobs.manifest import Manifest
 from anvil.jobs.steps import RemoveMachineUnitStep
+from anvil.utils import get_architecture
 
 LOG = logging.getLogger(__name__)
 APPLICATION = "postgresql"
@@ -172,6 +173,8 @@ class DeployPostgreSQLApplicationStep(DeployMachineApplicationStep):
         variables["maas_region_nodes"] = len(
             self.client.cluster.list_nodes_by_role("region")
         )
+        if get_architecture() == "arm64":
+            variables["arch"] = "arm64"
         return variables
 
     def has_prompts(self) -> bool:
@@ -226,6 +229,8 @@ class ReapplyPostgreSQLTerraformPlanStep(DeployMachineApplicationStep):
         variables["maas_region_nodes"] = len(
             self.client.cluster.list_nodes_by_role("region")
         )
+        if get_architecture() == "arm64":
+            variables["arch"] = "arm64"
         return variables
 
     def is_skip(self, status: Status | None = None) -> Result:
