@@ -13,6 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+variable "arch" {
+  description = "The system architecture of the cluster nodes"
+  type        = string
+  default     = "amd64"
+}
+
 variable "charm_maas_agent_channel" {
   description = "Operator channel for MAAS Agent deployment"
   type        = string

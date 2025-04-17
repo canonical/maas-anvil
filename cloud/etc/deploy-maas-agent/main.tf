@@ -43,6 +43,10 @@ resource "juju_application" "maas-agent" {
   }
 
   config = var.charm_maas_agent_config
+
+  constraints = join(" ", [
+    "arch=${var.arch}",
+  ])
 }
 
 resource "juju_integration" "maas-agent-region" {

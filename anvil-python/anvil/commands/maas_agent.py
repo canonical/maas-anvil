@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
+from typing import Any, List
 
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformInitStep
@@ -26,6 +26,7 @@ from sunbeam.jobs.steps import (
 
 from anvil.jobs.manifest import Manifest
 from anvil.jobs.steps import RemoveMachineUnitStep
+from anvil.utils import get_architecture
 
 APPLICATION = "maas-agent"
 CONFIG_KEY = "TerraformVarsMaasagentPlan"
@@ -64,6 +65,12 @@ class DeployMAASAgentApplicationStep(DeployMachineApplicationStep):
 
     def get_application_timeout(self) -> int:
         return MAASAGENT_APP_TIMEOUT
+
+    def extra_tfvars(self) -> dict[str, Any]:
+        variables: dict[str, Any] = {}
+        if get_architecture() == "arm64":
+            variables["arch"] = "arm64"
+        return variables
 
 
 class AddMAASAgentUnitsStep(AddMachineUnitsStep):
