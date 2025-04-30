@@ -55,6 +55,10 @@ resource "juju_application" "haproxy" {
     local.ssl_key,
     var.charm_haproxy_config,
   )
+
+  constraints = join(" ", [
+    "arch=${var.arch}",
+  ])
 }
 
 resource "juju_application" "keepalived" {
@@ -75,6 +79,10 @@ resource "juju_application" "keepalived" {
     local.virtual_ip,
     var.charm_keepalived_config,
   )
+
+  constraints = join(" ", [
+    "arch=${var.arch}",
+  ])
 }
 
 resource "juju_integration" "maas-region-haproxy" {

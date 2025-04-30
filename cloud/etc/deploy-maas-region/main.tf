@@ -56,6 +56,10 @@ resource "juju_application" "maas-region" {
     local.ssl_cacert_content,
     var.charm_maas_region_config,
   )
+
+  constraints = join(" ", [
+    "arch=${var.arch}",
+  ])
 }
 
 resource "juju_integration" "maas-region-postgresql" {

@@ -35,6 +35,7 @@ from sunbeam.jobs.steps import (
 from anvil.commands.haproxy import HAPROXY_CONFIG_KEY, tls_questions
 from anvil.jobs.manifest import Manifest
 from anvil.jobs.steps import RemoveMachineUnitStep
+from anvil.utils import get_architecture
 
 LOG = logging.getLogger(__name__)
 
@@ -156,6 +157,8 @@ class DeployMAASRegionApplicationStep(DeployMachineApplicationStep):
             if answers["ssl_cacert"]:
                 with open(answers["ssl_cacert"]) as cacert_file:
                     variables["ssl_cacert_content"] = cacert_file.read()
+        if get_architecture() == "arm64":
+            variables["arch"] = "arm64"
         return variables
 
 

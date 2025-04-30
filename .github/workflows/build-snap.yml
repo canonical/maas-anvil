@@ -76,30 +76,29 @@ jobs:
         if: ${{ failure() && runner.debug }}
         uses: canonical/action-tmate@main
 
-  # TODO (@skatsaounis): Uncomment when arm64 installation is supported
-  # functional-test-arm64:
-  #   needs: build-arm64
-  #   name: Functional test
-  #   runs-on: [self-hosted, large, ARM64]
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #     - name: Download snap artifact
-  #       id: download
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: local-${{ needs.build-arm64.outputs.snap }}
-  #     - name: test
-  #       run: |
-  #         export COLUMNS=256
-  #         sudo snap install ${{ needs.build-arm64.outputs.snap }} --dangerous
-  #         maas-anvil prepare-node-script | bash -x
-  #         sg snap_daemon "maas-anvil -v cluster bootstrap --role database --role region --role agent --role haproxy --accept-defaults"
-  #     - name: Collect juju status
-  #       if: always()
-  #       run: |
-  #         juju status
-  #         juju debug-log --replay
-  #     - name: Setup tmate session
-  #       if: ${{ failure() && runner.debug }}
-  #       uses: canonical/action-tmate@main
+  functional-test-arm64:
+    needs: build-arm64
+    name: Functional test
+    runs-on: [self-hosted, large, noble, ARM64]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download snap artifact
+        id: download
+        uses: actions/download-artifact@v4
+        with:
+          name: local-${{ needs.build-arm64.outputs.snap }}
+      - name: test
+        run: |
+          export COLUMNS=256
+          sudo snap install ${{ needs.build-arm64.outputs.snap }} --dangerous
+          maas-anvil prepare-node-script | bash -x
+          sg snap_daemon "maas-anvil -v cluster bootstrap --role database --role region --role agent --role haproxy --accept-defaults"
+      - name: Collect juju status
+        if: always()
+        run: |
+          juju status
+          juju debug-log --replay
+      - name: Setup tmate session
+        if: ${{ failure() && runner.debug }}
+        uses: canonical/action-tmate@main

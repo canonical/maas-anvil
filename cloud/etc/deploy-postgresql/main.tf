@@ -58,4 +58,8 @@ resource "juju_application" "postgresql" {
     { "plugin_audit_enable" : false },
     var.charm_postgresql_config
   )
+
+  constraints = join(" ", [
+    "arch=${var.arch}",
+  ])
 }
