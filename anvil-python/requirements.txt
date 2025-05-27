@@ -6,7 +6,7 @@
 #
 aiohappyeyeballs==2.6.1
     # via aiohttp
-aiohttp==3.11.16
+aiohttp==3.12.2
     # via python-libmaas
 aiosignal==1.3.2
     # via aiohttp
@@ -25,7 +25,7 @@ bcrypt==4.3.0
     # via paramiko
 cachetools==5.5.2
     # via google-auth
-certifi==2025.1.31
+certifi==2025.4.26
     # via
     #   httpcore
     #   httpx
@@ -35,19 +35,19 @@ cffi==1.17.1
     # via
     #   cryptography
     #   pynacl
-charset-normalizer==3.4.1
+charset-normalizer==3.4.2
     # via requests
-click==8.1.8
+click==8.2.1
     # via sunbeam
 colorclass==2.2.2
     # via python-libmaas
 croniter==6.0.0
     # via sunbeam
-cryptography==44.0.2
+cryptography==45.0.3
     # via paramiko
 dnspython==2.7.0
     # via pymongo
-frozenlist==1.5.0
+frozenlist==1.6.0
     # via
     #   aiohttp
     #   aiosignal
@@ -55,11 +55,11 @@ gitdb==4.0.12
     # via gitpython
 gitpython==3.1.44
     # via sunbeam
-google-auth==2.39.0
+google-auth==2.40.2
     # via kubernetes
-h11==0.14.0
+h11==0.16.0
     # via httpcore
-httpcore==1.0.8
+httpcore==1.0.9
     # via httpx
 httpx==0.28.1
     # via lightkube
@@ -71,17 +71,17 @@ idna==3.10
     #   httpx
     #   requests
     #   yarl
-jsonschema==4.23.0
+jsonschema==4.24.0
     # via sunbeam
-jsonschema-specifications==2024.10.1
+jsonschema-specifications==2025.4.1
     # via jsonschema
-juju==3.6.1.1
+juju==3.6.1.2
     # via sunbeam
 kubernetes==30.1.0
     # via juju
-lightkube==0.17.1
+lightkube==0.17.2
     # via sunbeam
-lightkube-models==1.32.0.8
+lightkube-models==1.33.1.8
     # via
     #   lightkube
     #   sunbeam
@@ -94,11 +94,11 @@ markdown-it-py==3.0.0
     # via rich
 mdurl==0.1.2
     # via markdown-it-py
-multidict==6.4.3
+multidict==6.4.4
     # via
     #   aiohttp
     #   yarl
-mypy-extensions==1.0.0
+mypy-extensions==1.1.0
     # via typing-inspect
 netifaces==0.11.0
     # via sunbeam
@@ -107,7 +107,7 @@ oauthlib==3.2.2
     #   kubernetes
     #   python-libmaas
     #   requests-oauthlib
-packaging==24.2
+packaging==25.0
     # via juju
 paramiko==3.5.1
     # via juju
@@ -121,7 +121,7 @@ propcache==0.3.1
     # via
     #   aiohttp
     #   yarl
-protobuf==6.30.2
+protobuf==6.31.0
     # via macaroonbakery
 ptyprocess==0.7.0
     # via pexpect
@@ -144,7 +144,7 @@ pygments==2.19.1
     # via rich
 pymacaroons==0.13.0
     # via macaroonbakery
-pymongo==4.12.0
+pymongo==4.13.0
     # via python-libmaas
 pynacl==1.5.0
     # via
@@ -153,7 +153,7 @@ pynacl==1.5.0
     #   pymacaroons
 pyrfc3339==1.1
     # via macaroonbakery
-pyroute2==0.9.1
+pyroute2==0.9.2
     # via sunbeam
 python-dateutil==2.9.0.post0
     # via
@@ -194,11 +194,11 @@ rich==14.0.0
     # via
     #   anvil (pyproject.toml)
     #   sunbeam
-rpds-py==0.24.0
+rpds-py==0.25.1
     # via
     #   jsonschema
     #   referencing
-rsa==4.9
+rsa==4.9.1
     # via google-auth
 six==1.17.0
     # via
@@ -238,7 +238,7 @@ websocket-client==1.8.0
     # via kubernetes
 websockets==15.0.1
     # via juju
-yarl==1.19.0
+yarl==1.20.0
     # via aiohttp
 
 # The following packages are considered to be unsafe in a requirements file:
