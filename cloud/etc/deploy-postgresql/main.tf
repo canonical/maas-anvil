@@ -38,6 +38,13 @@ locals {
       experimental_max_connections = tonumber(var.max_connections)
     }
   )
+  aws_access_key = var.aws_access_key != "" ? { aws_access_key = var.aws_access_key } : {}
+  aws_secret_key = var.aws_secret_key != "" ? { aws_secret_key = var.aws_secret_key } : {}
+  aws_bucket     = var.aws_bucket != "" ? { aws_bucket = var.aws_bucket } : {}
+  aws_region     = var.aws_region != "" ? { aws_region = var.aws_region } : {}
+
+  # we enable the s3 steps if all of the keys are defined.
+  s3_enabled     = var.aws_access_key == "" || var.aws_secret_key == "" || var.aws_bucket == "" || var.aws_region == "" ? 0 : 1
 }
 
 resource "juju_application" "postgresql" {
@@ -65,6 +72,7 @@ resource "juju_application" "postgresql" {
 }
 
 resource "juju_application" "s3_integrator" {
+  count     = local.s3_enabled
   name      = "s3-integrator"
   model     = data.juju_model.machine_model.name
   units     = 3
@@ -77,10 +85,10 @@ resource "juju_application" "s3_integrator" {
 
   config = merge(
     {
-      "endpoint" = "https://s3.${var.aws_region}.amazonaws.com"
-      "bucket"   = var.aws_bucket
+      "endpoint" = "https://s3.${local.aws_region}.amazonaws.com"
+      "bucket"   = local.aws_bucket
       "path"     = "/postgresql"
-      "region"   = var.aws_region
+      "region"   = local.aws_region
     },
     var.charm_s3_integrator_config,
   )
@@ -89,6 +97,7 @@ resource "juju_application" "s3_integrator" {
 }
 
 resource "terraform_data" "juju_wait_for_s3_postgres" {
+  count = local.s3_enabled
   input = {
     model = juju_application.s3_integrator.model
   }
@@ -112,6 +121,7 @@ resource "terraform_data" "juju_wait_for_s3_postgres" {
 }
 
 resource "terraform_data" "sync_credentials" {
+  count = local.s3_enabled
   input = {
     model = terraform_data.juju_wait_for_s3_postgres.model
   }
@@ -123,13 +133,14 @@ resource "terraform_data" "sync_credentials" {
             secret-key="${AWS_SECRET_KEY}"
     EOT
     environment = {
-      AWS_ACCESS_KEY = var.aws_access_key
-      AWS_SECRET_KEY = var.aws_secret_key
+      AWS_ACCESS_KEY = local.aws_access_key
+      AWS_SECRET_KEY = local.aws_secret_key
     }
   }
 }
 
 resource "juju_integration" "postgresql_s3_integration" {
+  count = local.s3_enabled
   model = terraform_data.sync_credentials.model
 
   application {
