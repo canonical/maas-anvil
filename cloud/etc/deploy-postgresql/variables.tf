@@ -87,20 +87,24 @@ variable "charm_s3_integrator_config" {
 variable "aws_access_key" {
     description = "Access key used to access the S3 backup bucket"
     type        = string
+    default     = ""
 }
 
 variable "aws_secret_key" {
     description = "Secret key used to access the S3 backup bucket"
     type        = string
     sensitive   = true
+    default     = ""
 }
 
 variable "aws_bucket" {
     description = "Bucket name to store MAAS backups in"
     type        = string
+    default     = ""
 }
 
 variable "aws_region" {
     description = "The AWS region the S3 bucket is in"
     type        = string
+    default     = ""
 }
