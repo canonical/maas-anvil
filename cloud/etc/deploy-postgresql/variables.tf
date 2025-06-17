@@ -65,3 +65,42 @@ variable "max_connections_per_region" {
   type        = number
   default     = 50
 }
+
+variable "charm_s3_integrator_channel" {
+  description = "Operator channel for S3 Integrator deployment"
+  type        = string
+  default     = "1/stable"
+}
+
+variable "charm_s3_integrator_revision" {
+  description = "Operator channel revision for S3 Integrator deployment"
+  type        = number
+  default     = null
+}
+
+variable "charm_s3_integrator_config" {
+  description = "Operator config for S3 Integrator deployment"
+  type        = map(string)
+  default     = {}
+}
+
+variable "aws_access_key" {
+    description = "Access key used to access the S3 backup bucket"
+    type        = string
+}
+
+variable "aws_secret_key" {
+    description = "Secret key used to access the S3 backup bucket"
+    type        = string
+    sensitive   = true
+}
+
+variable "aws_bucket" {
+    description = "Bucket name to store MAAS backups in"
+    type        = string
+}
+
+variable "aws_region" {
+    description = "The AWS region the S3 bucket is in"
+    type        = string
+}
