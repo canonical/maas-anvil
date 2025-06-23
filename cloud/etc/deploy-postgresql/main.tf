@@ -55,7 +55,7 @@ locals {
     var.charm_s3_integrator_config,
   )
 
-  s3_enabled = local.s3_config["enabled"]
+  s3_enabled = local.s3_config["enabled"] ? 1 : 0
 }
 
 resource "juju_application" "postgresql" {
@@ -83,7 +83,7 @@ resource "juju_application" "postgresql" {
 }
 
 resource "juju_application" "s3_integrator" {
-  count = local.s3_enabled ? 1 : 0
+  count = local.s3_enabled
   name  = "s3-integrator"
   model = data.juju_model.machine_model.name
   units = 3
@@ -99,7 +99,7 @@ resource "juju_application" "s3_integrator" {
 }
 
 resource "null_resource" "juju_wait_for_s3_postgres" {
-  count = local.s3_enabled ? 1 : 0
+  count = local.s3_enabled
 
   provisioner "local-exec" {
     command = <<-EOT
@@ -122,7 +122,7 @@ resource "null_resource" "juju_wait_for_s3_postgres" {
 }
 
 resource "null_resource" "sync_credentials" {
-  count = local.s3_enabled ? 1 : 0
+  count = local.s3_enabled
 
   provisioner "local-exec" {
     command = <<-EOT
@@ -140,7 +140,7 @@ resource "null_resource" "sync_credentials" {
 }
 
 resource "juju_integration" "postgresql_s3_integration" {
-  count = local.s3_enabled ? 1 : 0
+  count = local.s3_enabled
   model = data.juju_model.machine_model.name
 
   application {
