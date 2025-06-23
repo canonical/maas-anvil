@@ -39,13 +39,23 @@ locals {
     }
   )
 
-  # we enable the s3 steps if all of the keys are defined.
-  s3_enabled = (
-    var.aws_access_key != "" &&
-    var.aws_secret_key != "" &&
-    var.aws_bucket     != "" &&
-    var.aws_region     != ""
-  ) ? 1 : 0
+  s3_config = merge(
+    {
+      # Access
+      "access_key" = var.aws_access_key
+      "secret_key" = var.aws_secret_key
+      # S3 config
+      "endpoint" = "https://s3.${var.aws_region}.amazonaws.com"
+      "bucket"   = var.aws_bucket
+      "path"     = "/postgresql"
+      "region"   = var.aws_region
+      # Is it even enabled
+      "enabled"  = var.s3_enabled
+    },
+    var.charm_s3_integrator_config,
+  )
+
+  s3_enabled = local.s3_config["enabled"]
 }
 
 resource "juju_application" "postgresql" {
@@ -73,35 +83,23 @@ resource "juju_application" "postgresql" {
 }
 
 resource "juju_application" "s3_integrator" {
-  count     = local.s3_enabled
-  name      = "s3-integrator"
-  model     = data.juju_model.machine_model.name
-  units     = 3
-  placement = ["0", "1", "2"]
+  count = local.s3_enabled ? 1 : 0
+  name  = "s3-integrator"
+  model = data.juju_model.machine_model.name
+  units = 3
 
   charm {
     name    = "s3-integrator"
     channel = var.charm_s3_integrator_channel
   }
 
-  config = merge(
-    {
-      "endpoint" = "https://s3.${var.aws_region}.amazonaws.com"
-      "bucket"   = var.aws_bucket
-      "path"     = "/postgresql"
-      "region"   = var.aws_region
-    },
-    var.charm_s3_integrator_config,
-  )
+  config = local.s3_config
 
   constraints = "arch=${var.arch}"
 }
 
-resource "terraform_data" "juju_wait_for_s3_postgres" {
-  count = local.s3_enabled
-  input = {
-    model = juju_application.s3_integrator.model
-  }
+resource "null_resource" "juju_wait_for_s3_postgres" {
+  count = local.s3_enabled ? 1 : 0
 
   provisioner "local-exec" {
     command = <<-EOT
@@ -116,33 +114,34 @@ resource "terraform_data" "juju_wait_for_s3_postgres" {
         )'
     EOT
     environment = {
-      MODEL = self.input.model
+      MODEL = data.juju_model.machine_model.name
     }
   }
+
+  depends_on = [ juju_application.s3_integrator[0] ]
 }
 
-resource "terraform_data" "sync_credentials" {
-  count = local.s3_enabled
-  input = {
-    model = terraform_data.juju_wait_for_s3_postgres.model
-  }
+resource "null_resource" "sync_credentials" {
+  count = local.s3_enabled ? 1 : 0
 
   provisioner "local-exec" {
     command = <<-EOT
         juju run s3-integrator/leader sync-s3-credentials \
-            access-key="${AWS_ACCESS_KEY}" \
-            secret-key="${AWS_SECRET_KEY}"
+            access-key="$access" \
+            secret-key="$secret"
     EOT
     environment = {
-      AWS_ACCESS_KEY = var.aws_access_key
-      AWS_SECRET_KEY = var.aws_secret_key
+      access = local.s3_config["access_key"]
+      secret = local.s3_config["secret_key"]
     }
   }
+
+  depends_on = [ null_resource.juju_wait_for_s3_postgres[0] ]
 }
 
 resource "juju_integration" "postgresql_s3_integration" {
-  count = local.s3_enabled
-  model = terraform_data.sync_credentials.model
+  count = local.s3_enabled ? 1 : 0
+  model = data.juju_model.machine_model.name
 
   application {
     name     = "s3-integrator"
@@ -153,4 +152,6 @@ resource "juju_integration" "postgresql_s3_integration" {
     name     = "postgresql"
     endpoint = "database"
   }
+
+  depends_on = [ null_resource.sync_credentials[0] ]
 }

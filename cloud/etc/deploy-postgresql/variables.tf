@@ -83,6 +83,11 @@ variable "charm_s3_integrator_config" {
   type        = map(string)
   default     = {}
 }
+variable "s3_enabled" {
+    description = "Whether we should enable s3 integration"
+    type        = bool
+    default     = false
+}
 
 variable "aws_access_key" {
     description = "Access key used to access the S3 backup bucket"
