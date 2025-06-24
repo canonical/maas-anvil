@@ -41,21 +41,17 @@ locals {
 
   s3_config = merge(
     {
-      # Access
-      "access_key" = var.aws_access_key
-      "secret_key" = var.aws_secret_key
-      # S3 config
       "endpoint" = "https://s3.${var.aws_region}.amazonaws.com"
       "bucket"   = var.aws_bucket
       "path"     = "/postgresql"
       "region"   = var.aws_region
-      # Is it even enabled
-      "enabled"  = var.s3_enabled
     },
     var.charm_s3_integrator_config,
   )
+  access_key = var.aws_access_key
+  secret_key = var.aws_secret_key
 
-  s3_enabled = local.s3_config["enabled"] ? 1 : 0
+  s3_enabled = 1 #var.s3_enabled ? 1 : 0
 }
 
 resource "juju_application" "postgresql" {
@@ -86,7 +82,7 @@ resource "juju_application" "s3_integrator" {
   count = local.s3_enabled
   name  = "s3-integrator"
   model = data.juju_model.machine_model.name
-  units = 3
+  units = 0 #subbordinate charm
 
   charm {
     name    = "s3-integrator"
