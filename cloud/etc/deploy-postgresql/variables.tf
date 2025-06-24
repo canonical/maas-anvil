@@ -28,7 +28,8 @@ variable "charm_postgresql_channel" {
 variable "charm_postgresql_revision" {
   description = "Operator channel revision for PostgreSQL deployment"
   type        = number
-  default     = null
+  # workaround for: https://bugs.launchpad.net/maas/+bug/2097079, https://github.com/canonical/postgresql-operator/issues/1001
+  default = 758
 }
 
 variable "charm_postgresql_config" {
