@@ -18,10 +18,9 @@ from typing import Any, List
 
 from rich.status import Status
 from sunbeam.clusterd.client import Client
-from sunbeam.clusterd.service import ConfigItemNotFoundException
 from sunbeam.commands.terraform import TerraformInitStep
 from sunbeam.jobs import questions
-from sunbeam.jobs.common import BaseStep, Result, ResultType, read_config
+from sunbeam.jobs.common import BaseStep, Result, ResultType
 from sunbeam.jobs.juju import JujuHelper
 from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
@@ -31,7 +30,6 @@ from sunbeam.jobs.steps import (
 from anvil.jobs.manifest import Manifest
 from anvil.jobs.steps import RemoveMachineUnitStep
 from anvil.utils import get_architecture
-from anvil.versions import POSTGRESQL_CHANNEL
 
 LOG = logging.getLogger(__name__)
 APPLICATION = "postgresql"
@@ -175,22 +173,8 @@ class DeployPostgreSQLApplicationStep(DeployMachineApplicationStep):
         variables["maas_region_nodes"] = len(
             self.client.cluster.list_nodes_by_role("region")
         )
-        arch = get_architecture()
-        if arch == "arm64":
+        if get_architecture() == "arm64":
             variables["arch"] = "arm64"
-
-        try:
-            tfvars = read_config(self.client, self.config)
-        except ConfigItemNotFoundException:
-            tfvars = {}
-        channel = tfvars.get("charm_postgresql_channel", "")
-        # workaround for: https://bugs.launchpad.net/maas/+bug/2097079, https://github.com/canonical/postgresql-operator/issues/1001
-        if channel == POSTGRESQL_CHANNEL:
-            if arch == "arm64":
-                variables["charm_postgresql_revision"] = 757
-            else:
-                variables["charm_postgresql_revision"] = 758
-
         return variables
 
     def has_prompts(self) -> bool:
