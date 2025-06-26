@@ -49,11 +49,9 @@ from sunbeam.jobs.manifest import (
 import yaml
 
 from anvil.jobs.plugin import PluginManager
-from anvil.utils import get_architecture
 from anvil.versions import (
     MANIFEST_ATTRIBUTES_TFVAR_MAP,
     MANIFEST_CHARM_VERSIONS,
-    POSTGRESQL_CHANNEL,
     TERRAFORM_DIR_NAMES,
 )
 
@@ -130,12 +128,6 @@ class SoftwareConfig:
             tfplan: {"source": Path(snap.paths.snap / "etc" / tfplan_dir)}
             for tfplan, tfplan_dir in TERRAFORM_DIR_NAMES.items()
         }
-        # workaround for: https://bugs.launchpad.net/maas/+bug/2097079, https://github.com/canonical/postgresql-operator/issues/1001
-        if POSTGRESQL_CHANNEL == "16/beta":
-            if get_architecture() == "arm64":
-                software["charms"]["postgresql"]["revision"] = 757
-            else:
-                software["charms"]["postgresql"]["revision"] = 758
 
         # Update manifests from plugins
         software_from_plugins = plugin_manager.get_all_plugin_manifests(

@@ -16,6 +16,7 @@
 MAAS_REGION_CHANNEL = "3.6/edge"
 MAAS_AGENT_CHANNEL = "3.6/edge"
 POSTGRESQL_CHANNEL = "16/beta"
+S3_CHANNEL = "1/stable"
 HAPROXY_CHANNEL = "latest/stable"
 KEEPALIVED_CHANNEL = "latest/stable"
 
@@ -25,6 +26,7 @@ MACHINE_CHARMS = {
     "haproxy": HAPROXY_CHANNEL,
     "postgresql": POSTGRESQL_CHANNEL,
     "keepalived": KEEPALIVED_CHANNEL,
+    "s3-integrator": S3_CHANNEL,
 }
 K8S_CHARMS: dict[str, str] = {}
 
@@ -37,6 +39,7 @@ TERRAFORM_DIR_NAMES = {
     "maas-agent-plan": "deploy-maas-agent",
     "haproxy-plan": "deploy-haproxy",
     "postgresql-plan": "deploy-postgresql",
+    "s3-plan": "deploy-s3",
 }
 
 DEPLOY_MAAS_REGION_TFVAR_MAP = {
@@ -80,6 +83,16 @@ DEPLOY_POSTGRESQL_TFVAR_MAP = {
             "channel": "charm_postgresql_channel",
             "revision": "charm_postgresql_revision",
             "config": "charm_postgresql_config",
+        },
+    }
+}
+
+DEPLOY_S3_TFVAR_MAP = {
+    "charms": {
+        "s3-integrator": {
+            "channel": "charm_s3_integrator_channel",
+            "revision": "charm_s3_integrator_revision",
+            "config": "charm_s3_integrator_config",
         }
     }
 }
@@ -89,4 +102,5 @@ MANIFEST_ATTRIBUTES_TFVAR_MAP = {
     "maas-agent-plan": DEPLOY_MAAS_AGENT_TFVAR_MAP,
     "haproxy-plan": DEPLOY_HAPROXY_TFVAR_MAP,
     "postgresql-plan": DEPLOY_POSTGRESQL_TFVAR_MAP,
+    "s3-plan": DEPLOY_S3_TFVAR_MAP,
 }
