@@ -50,6 +50,7 @@ resource "juju_application" "s3_integrator" {
   count = local.s3_enabled
   name  = "s3-integrator"
   model = data.juju_model.machine_model.name
+  units = length(var.machine_ids)
 
   charm {
     name    = "s3-integrator"

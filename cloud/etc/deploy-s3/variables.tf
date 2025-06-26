@@ -24,6 +24,12 @@ variable "machine_model" {
   type        = string
 }
 
+variable "machine_ids" {
+  description = "List of machine ids to include"
+  type        = list(string)
+  default     = []
+}
+
 variable "charm_s3_integrator_channel" {
   description = "Operator channel for S3 Integrator deployment"
   type        = string
@@ -40,6 +46,37 @@ variable "charm_s3_integrator_config" {
   description = "Operator config for S3 Integrator deployment"
   type        = map(string)
   default     = {}
+}
+
+variable "machine_ids" {
+  description = "List of machine ids to include"
+  type        = list(string)
+  default     = []
+}
+variable "machine_ids" {
+  description = "List of machine ids to include"
+  type        = list(string)
+  default     = []
+}
+variable "machine_ids" {
+  description = "List of machine ids to include"
+  type        = list(string)
+  default     = []
+}
+variable "machine_ids" {
+  description = "List of machine ids to include"
+  type        = list(string)
+  default     = []
+}
+variable "machine_ids" {
+  description = "List of machine ids to include"
+  type        = list(string)
+  default     = []
+}
+variable "machine_ids" {
+  description = "List of machine ids to include"
+  type        = list(string)
+  default     = []
 }
 variable "s3_enabled" {
     description = "Whether we should enable s3 integration"
