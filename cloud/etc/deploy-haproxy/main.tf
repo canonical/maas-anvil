@@ -80,9 +80,6 @@ resource "juju_application" "keepalived" {
     var.charm_keepalived_config,
   )
 
-  constraints = join(" ", [
-    "arch=${var.arch}",
-  ])
 }
 
 resource "juju_integration" "maas-region-haproxy" {
