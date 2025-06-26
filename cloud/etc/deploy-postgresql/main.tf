@@ -38,20 +38,6 @@ locals {
       experimental_max_connections = tonumber(var.max_connections)
     }
   )
-
-  s3_config = merge(
-    {
-      "endpoint" = "https://s3.${var.aws_region}.amazonaws.com"
-      "bucket"   = var.aws_bucket
-      "path"     = "/postgresql"
-      "region"   = var.aws_region
-    },
-    var.charm_s3_integrator_config,
-  )
-  access_key = var.aws_access_key
-  secret_key = var.aws_secret_key
-
-  s3_enabled = 1 #var.s3_enabled ? 1 : 0
 }
 
 resource "juju_application" "postgresql" {
@@ -76,78 +62,4 @@ resource "juju_application" "postgresql" {
   constraints = join(" ", [
     "arch=${var.arch}",
   ])
-}
-
-resource "juju_application" "s3_integrator" {
-  count = local.s3_enabled
-  name  = "s3-integrator"
-  model = data.juju_model.machine_model.name
-  units = 0 #subbordinate charm
-
-  charm {
-    name    = "s3-integrator"
-    channel = var.charm_s3_integrator_channel
-  }
-
-  config = local.s3_config
-
-  constraints = "arch=${var.arch}"
-}
-
-resource "null_resource" "juju_wait_for_s3_postgres" {
-  count = local.s3_enabled
-
-  provisioner "local-exec" {
-    command = <<-EOT
-      juju wait-for model "$MODEL" --timeout 3600s \
-        --query='
-            all(
-                filter(
-                    units,
-                    unit => startsWith(unit.application.name, "s3-integrator") || startsWith(unit.application.name, "postgresql")
-                ),
-            unit => unit.workload-status == "active"
-        )'
-    EOT
-    environment = {
-      MODEL = data.juju_model.machine_model.name
-    }
-  }
-
-  depends_on = [ juju_application.s3_integrator[0] ]
-}
-
-resource "null_resource" "sync_credentials" {
-  count = local.s3_enabled
-
-  provisioner "local-exec" {
-    command = <<-EOT
-        juju run s3-integrator/leader sync-s3-credentials \
-            access-key="$access" \
-            secret-key="$secret"
-    EOT
-    environment = {
-      access = local.s3_config["access_key"]
-      secret = local.s3_config["secret_key"]
-    }
-  }
-
-  depends_on = [ null_resource.juju_wait_for_s3_postgres[0] ]
-}
-
-resource "juju_integration" "postgresql_s3_integration" {
-  count = local.s3_enabled
-  model = data.juju_model.machine_model.name
-
-  application {
-    name     = "s3-integrator"
-    endpoint = "s3"
-  }
-
-  application {
-    name     = "postgresql"
-    endpoint = "database"
-  }
-
-  depends_on = [ null_resource.sync_credentials[0] ]
 }

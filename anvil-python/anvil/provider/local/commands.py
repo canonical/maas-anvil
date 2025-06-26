@@ -88,6 +88,7 @@ from anvil.commands.postgresql import (
     RemovePostgreSQLUnitStep,
     postgresql_install_steps,
 )
+from anvil.commands.s3 import s3_install_steps
 from anvil.jobs.checks import DaemonGroupCheck, SystemRequirementsCheck
 from anvil.jobs.common import (
     Role,
@@ -324,6 +325,17 @@ def bootstrap(
         fqdn,
         accept_defaults,
         preseed,
+    )
+    plan4.extend(
+        s3_install_steps(
+            client,
+            manifest_obj,
+            jhelper,
+            deployment.infrastructure_model,
+            fqdn,
+            accept_defaults,
+            preseed,
+        )
     )
     if is_haproxy_node:
         plan4.extend(
