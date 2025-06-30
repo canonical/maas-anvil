@@ -16,7 +16,7 @@
 MAAS_REGION_CHANNEL = "3.6/edge"
 MAAS_AGENT_CHANNEL = "3.6/edge"
 POSTGRESQL_CHANNEL = "16/beta"
-S3_CHANNEL = "1/stable"
+S3_CHANNEL = "2/edge"
 HAPROXY_CHANNEL = "latest/stable"
 KEEPALIVED_CHANNEL = "latest/stable"
 

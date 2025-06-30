@@ -33,7 +33,7 @@ variable "machine_ids" {
 variable "charm_s3_integrator_channel" {
   description = "Operator channel for S3 Integrator deployment"
   type        = string
-  default     = "1/stable"
+  default     = "2/edge"
 }
 
 variable "charm_s3_integrator_revision" {
@@ -48,63 +48,39 @@ variable "charm_s3_integrator_config" {
   default     = {}
 }
 
-variable "machine_ids" {
-  description = "List of machine ids to include"
-  type        = list(string)
-  default     = []
-}
-variable "machine_ids" {
-  description = "List of machine ids to include"
-  type        = list(string)
-  default     = []
-}
-variable "machine_ids" {
-  description = "List of machine ids to include"
-  type        = list(string)
-  default     = []
-}
-variable "machine_ids" {
-  description = "List of machine ids to include"
-  type        = list(string)
-  default     = []
-}
-variable "machine_ids" {
-  description = "List of machine ids to include"
-  type        = list(string)
-  default     = []
-}
-variable "machine_ids" {
-  description = "List of machine ids to include"
-  type        = list(string)
-  default     = []
-}
 variable "s3_enabled" {
-    description = "Whether we should enable s3 integration"
-    type        = bool
-    default     = true
+  description = "Whether we should enable s3 integration"
+  type        = bool
+  default     = false
 }
 
-variable "aws_access_key" {
-    description = "Access key used to access the S3 backup bucket"
-    type        = string
-    default     = "admin"
+variable "access_key" {
+  description = "Access key used to access the S3 backup bucket"
+  type        = string
+  default     = ""
 }
 
-variable "aws_secret_key" {
-    description = "Secret key used to access the S3 backup bucket"
-    type        = string
-    sensitive   = true
-    default     = "password"
+variable "secret_key" {
+  description = "Secret key used to access the S3 backup bucket"
+  type        = string
+  sensitive   = true
+  default     = ""
 }
 
-variable "aws_bucket" {
-    description = "Bucket name to store MAAS backups in"
-    type        = string
-    default     = "anvil"
+variable "endpoint" {
+  description = "Endpoint the S3 backup exists at. Leave empty to derive endpoint from region: `https://s3.{region}.amazonaws.com`"
+  type        = string
+  default     = ""
 }
 
-variable "aws_region" {
-    description = "The AWS region the S3 bucket is in"
-    type        = string
-    default     = "minio"
+variable "bucket" {
+  description = "Bucket name to store MAAS backups in"
+  type        = string
+  default     = ""
+}
+
+variable "region" {
+  description = "The AWS region the S3 bucket is in"
+  type        = string
+  default     = ""
 }
