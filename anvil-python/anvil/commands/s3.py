@@ -16,10 +16,11 @@
 import logging
 from typing import Any, List
 
+from rich.status import Status
 from sunbeam.clusterd.client import Client
 from sunbeam.commands.terraform import TerraformInitStep
 from sunbeam.jobs import questions
-from sunbeam.jobs.common import BaseStep
+from sunbeam.jobs.common import BaseStep, Result, ResultType
 from sunbeam.jobs.juju import JujuHelper
 from sunbeam.jobs.steps import (
     AddMachineUnitsStep,
@@ -91,8 +92,6 @@ def s3_questions() -> dict[str, questions.PromptQuestion]:
 class DeployS3ApplicationStep(DeployMachineApplicationStep):
     """Deploy S3 application using Terraform"""
 
-    _CONFIG = S3_CONFIG_KEY
-
     def __init__(
         self,
         client: Client,
@@ -125,11 +124,21 @@ class DeployS3ApplicationStep(DeployMachineApplicationStep):
 
     def extra_tfvars(self) -> dict[str, Any]:
         variables: dict[str, Any] = questions.load_answers(
-            self.client, self._CONFIG
+            self.client, S3_CONFIG_KEY
         )
         if get_architecture() == "arm64":
             variables["arch"] = "arm64"
         return variables
+
+    def is_skip(self, status: Status | None = None) -> Result:
+        variables: dict[str, Any] = questions.load_answers(
+            self.client, S3_CONFIG_KEY
+        )
+        variables.setdefault("s3_enabled", False)
+        if not variables["s3_enabled"]:
+            return Result(ResultType.SKIPPED)
+        else:
+            return super().is_skip(status)
 
 
 class AddS3UnitsStep(AddMachineUnitsStep):
@@ -155,6 +164,16 @@ class AddS3UnitsStep(AddMachineUnitsStep):
 
     def get_unit_timeout(self) -> int:
         return S3_UNIT_TIMEOUT
+
+    def is_skip(self, status: Status | None = None) -> Result:
+        variables: dict[str, Any] = questions.load_answers(
+            self.client, S3_CONFIG_KEY
+        )
+        variables.setdefault("s3_enabled", False)
+        if not variables["s3_enabled"]:
+            return Result(ResultType.SKIPPED)
+        else:
+            return super().is_skip(status)
 
 
 class RemoveS3UnitStep(RemoveMachineUnitStep):
