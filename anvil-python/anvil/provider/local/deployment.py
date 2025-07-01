@@ -40,7 +40,6 @@ from anvil.commands.postgresql import (
     POSTGRESQL_CONFIG_KEY,
     postgresql_questions,
 )
-from anvil.commands.s3 import S3_CONFIG_KEY, s3_questions
 from anvil.jobs.questions import show_questions
 
 LOG = logging.getLogger(__name__)
@@ -81,18 +80,6 @@ class LocalDeployment(SunbeamLocalDeployment):
         preseed_content.extend(
             show_questions(postgresql_config_bank, section="postgres")
         )
-
-        # S3 questions
-        try:
-            variables = load_answers(client, S3_CONFIG_KEY)
-        except ClusterServiceUnavailableException:
-            variables = {}
-        s3_config_bank = QuestionBank(
-            questions=s3_questions(),
-            console=console,
-            previous_answers=variables,
-        )
-        preseed_content.extend(show_questions(s3_config_bank, section="s3"))
 
         # HAProxy questions
         try:

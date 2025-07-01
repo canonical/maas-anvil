@@ -38,6 +38,20 @@ locals {
       experimental_max_connections = tonumber(var.max_connections)
     }
   )
+
+  s3_config = merge(
+    {
+      "endpoint" = coalesce(var.endpoint, "https://s3.${var.region}.amazonaws.com")
+      "bucket"   = var.bucket
+      "path"     = "/postgresql"
+      "region"   = var.region
+    },
+    var.charm_s3_integrator_config,
+  )
+  access_key = var.access_key
+  secret_key = var.secret_key
+
+  s3_enabled = var.s3_enabled ? 1 : 0
 }
 
 resource "juju_application" "postgresql" {
@@ -62,4 +76,85 @@ resource "juju_application" "postgresql" {
   constraints = join(" ", [
     "arch=${var.arch}",
   ])
+}
+
+
+resource "juju_secret" "s3_credentials" {
+  count = local.s3_enabled
+  model = data.juju_model.machine_model.name
+  name  = "s3_credentials"
+  value = {
+    "access-key" = local.access_key
+    "secret-key" = local.secret_key
+  }
+  info = "Credentials used to access S3"
+}
+
+resource "juju_application" "s3_integrator" {
+  count     = local.s3_enabled
+  name      = "s3-integrator"
+  model     = data.juju_model.machine_model.name
+  units     = length(var.machine_ids)
+  placement = "0"
+
+  charm {
+    name     = "s3-integrator"
+    channel  = var.charm_s3_integrator_channel
+    revision = var.charm_s3_integrator_revision
+    base     = "ubuntu@24.04"
+  }
+
+  config = local.s3_config
+
+  constraints = "arch=${var.arch}"
+
+  depends_on = [
+    juju_secret.s3_credentials[0],
+  ]
+}
+
+resource "juju_access_secret" "s3_credentials" {
+  count        = local.s3_enabled
+  model        = data.juju_model.machine_model.name
+  applications = ["s3-integrator"]
+  secret_id    = juju_secret.s3_credentials[0].secret_id
+
+  depends_on = [
+    juju_secret.s3_credentials[0],
+    juju_application.s3_integrator[0],
+  ]
+}
+
+resource "null_resource" "s3_integrator_config" {
+  count = local.s3_enabled
+  depends_on = [
+    juju_secret.s3_credentials[0],
+    juju_application.s3_integrator[0],
+    juju_access_secret.s3_credentials[0],
+  ]
+
+  provisioner "local-exec" {
+    command = "juju config ${juju_application.s3_integrator[0].name} credentials=secret:${juju_secret.s3_credentials[0].secret_id}"
+  }
+}
+
+resource "juju_integration" "postgresql_s3_integration" {
+  count = local.s3_enabled
+  model = data.juju_model.machine_model.name
+
+  application {
+    name     = "s3-integrator"
+    endpoint = "s3-credentials"
+  }
+
+  application {
+    name     = "postgresql"
+    endpoint = "s3-parameters"
+  }
+
+  depends_on = [
+    juju_application.postgresql,
+    juju_application.s3_integrator[0],
+    null_resource.s3_integrator_config[0]
+  ]
 }

@@ -39,7 +39,6 @@ TERRAFORM_DIR_NAMES = {
     "maas-agent-plan": "deploy-maas-agent",
     "haproxy-plan": "deploy-haproxy",
     "postgresql-plan": "deploy-postgresql",
-    "s3-plan": "deploy-s3",
 }
 
 DEPLOY_MAAS_REGION_TFVAR_MAP = {
@@ -84,16 +83,11 @@ DEPLOY_POSTGRESQL_TFVAR_MAP = {
             "revision": "charm_postgresql_revision",
             "config": "charm_postgresql_config",
         },
-    }
-}
-
-DEPLOY_S3_TFVAR_MAP = {
-    "charms": {
         "s3-integrator": {
             "channel": "charm_s3_integrator_channel",
             "revision": "charm_s3_integrator_revision",
             "config": "charm_s3_integrator_config",
-        }
+        },
     }
 }
 
@@ -102,5 +96,4 @@ MANIFEST_ATTRIBUTES_TFVAR_MAP = {
     "maas-agent-plan": DEPLOY_MAAS_AGENT_TFVAR_MAP,
     "haproxy-plan": DEPLOY_HAPROXY_TFVAR_MAP,
     "postgresql-plan": DEPLOY_POSTGRESQL_TFVAR_MAP,
-    "s3-plan": DEPLOY_S3_TFVAR_MAP,
 }
