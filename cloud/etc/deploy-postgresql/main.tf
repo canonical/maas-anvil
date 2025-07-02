@@ -91,11 +91,10 @@ resource "juju_secret" "s3_credentials" {
 }
 
 resource "juju_application" "s3_integrator" {
-  count     = local.s3_enabled
-  name      = "s3-integrator"
-  model     = data.juju_model.machine_model.name
-  units     = length(var.machine_ids)
-  placement = "0"
+  count = local.s3_enabled
+  name  = "s3-integrator"
+  model = data.juju_model.machine_model.name
+  units = length(var.machine_ids)
 
   charm {
     name     = "s3-integrator"
@@ -113,23 +112,27 @@ resource "juju_application" "s3_integrator" {
   ]
 }
 
+resource "null_resource" "add_s3_unit" {
+  count = local.s3_enabled
+
+  provisioner "local-exec" {
+    command = "juju add-unit s3-integrator --to 0"
+  }
+
+  depends_on = [juju_application.s3_integrator[0]]
+}
+
+
 resource "juju_access_secret" "s3_credentials" {
   count        = local.s3_enabled
   model        = data.juju_model.machine_model.name
-  applications = ["s3-integrator"]
+  applications = [juju_application.s3_integrator[0].name]
   secret_id    = juju_secret.s3_credentials[0].secret_id
-
-  depends_on = [
-    juju_secret.s3_credentials[0],
-    juju_application.s3_integrator[0],
-  ]
 }
 
 resource "null_resource" "s3_integrator_config" {
   count = local.s3_enabled
   depends_on = [
-    juju_secret.s3_credentials[0],
-    juju_application.s3_integrator[0],
     juju_access_secret.s3_credentials[0],
   ]
 
@@ -143,18 +146,17 @@ resource "juju_integration" "postgresql_s3_integration" {
   model = data.juju_model.machine_model.name
 
   application {
-    name     = "s3-integrator"
+    name     = juju_application.s3_integrator[0].name
     endpoint = "s3-credentials"
   }
 
   application {
-    name     = "postgresql"
+    name     = juju_application.postgresql.name
     endpoint = "s3-parameters"
   }
 
   depends_on = [
-    juju_application.postgresql,
-    juju_application.s3_integrator[0],
+    null_resource.add_s3_unit[0],
     null_resource.s3_integrator_config[0]
   ]
 }
