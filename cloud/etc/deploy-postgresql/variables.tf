@@ -110,7 +110,7 @@ variable "endpoint" {
 }
 
 variable "bucket" {
-  description = "Bucket name to store MAAS backups in"
+  description = "Bucket name to store PostgreSQL backups in"
   type        = string
   default     = ""
 }
