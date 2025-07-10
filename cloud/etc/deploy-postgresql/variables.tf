@@ -75,7 +75,9 @@ variable "charm_s3_integrator_channel" {
 variable "charm_s3_integrator_revision" {
   description = "Operator channel revision for S3 Integrator deployment"
   type        = number
-  default     = null
+  # default     = null
+  # This version contains: https://github.com/canonical/object-storage-integrators/pull/36
+  default = 165
 }
 
 variable "charm_s3_integrator_config" {
