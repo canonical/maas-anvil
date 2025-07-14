@@ -93,7 +93,7 @@ resource "juju_secret" "s3_credentials" {
 resource "juju_application" "s3_integrator" {
   count = local.s3_enabled
 
-  name  = "s3-integrator"
+  name  = "s3-integrator-postgresql"
   model = data.juju_model.machine_model.name
 
   # TODO: This one should go away when we move out of manual cloud

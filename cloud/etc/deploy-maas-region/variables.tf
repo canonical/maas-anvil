@@ -28,7 +28,7 @@ variable "charm_maas_region_channel" {
 variable "charm_maas_region_revision" {
   description = "Operator channel revision for MAAS Region Controller deployment"
   type        = number
-  default     = null
+  default     = 149
 }
 
 variable "charm_maas_region_config" {
@@ -101,36 +101,36 @@ variable "charm_s3_integrator_config" {
 variable "s3_enabled" {
   description = "Whether we should enable s3 integration"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "access_key" {
   description = "Access key used to access the S3 backup bucket"
   type        = string
-  default     = ""
+  default     = "admin"
 }
 
 variable "secret_key" {
   description = "Secret key used to access the S3 backup bucket"
   type        = string
   sensitive   = true
-  default     = ""
+  default     = "password"
 }
 
 variable "endpoint" {
   description = "Endpoint the S3 backup exists at. Leave empty to derive endpoint from region: `https://s3.{region}.amazonaws.com`"
   type        = string
-  default     = ""
+  default     = "https://10.10.0.27:9000"
 }
 
 variable "bucket" {
   description = "Bucket name to store PostgreSQL backups in"
   type        = string
-  default     = ""
+  default     = "anvil"
 }
 
 variable "region" {
   description = "The AWS region the S3 bucket is in"
   type        = string
-  default     = ""
+  default     = "anvil"
 }

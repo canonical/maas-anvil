@@ -124,10 +124,10 @@ resource "juju_application" "s3_integrator" {
   model = data.juju_model.machine_model.name
 
   # TODO: This one should go away when we move out of manual cloud
-#   placement = "0"
+  placement = "0"
 
   charm {
-    name     = "s3-integrator"
+    name     = "s3-integrator-region"
     channel  = var.charm_s3_integrator_channel
     revision = var.charm_s3_integrator_revision
     base     = "ubuntu@24.04"
@@ -149,7 +149,7 @@ resource "juju_access_secret" "s3_credentials" {
   secret_id    = juju_secret.s3_credentials[0].secret_id
 }
 
-resource "juju_integration" "postgresql_s3_integration" {
+resource "juju_integration" "maas_region_s3_integration" {
   count = local.s3_enabled
 
   model = data.juju_model.machine_model.name

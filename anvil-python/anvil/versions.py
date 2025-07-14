@@ -48,6 +48,11 @@ DEPLOY_MAAS_REGION_TFVAR_MAP = {
             "revision": "charm_maas_region_revision",
             "config": "charm_maas_region_config",
         },
+        "s3-integrator": {
+            "channel": "charm_s3_integrator_channel",
+            "revision": "charm_s3_integrator_revision",
+            "config": "charm_s3_integrator_config",
+        },
     }
 }
 
