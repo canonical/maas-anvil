@@ -101,36 +101,36 @@ variable "charm_s3_integrator_config" {
 variable "s3_enabled" {
   description = "Whether we should enable s3 integration"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "access_key" {
   description = "Access key used to access the S3 backup bucket"
   type        = string
-  default     = "admin"
+  default     = ""
 }
 
 variable "secret_key" {
   description = "Secret key used to access the S3 backup bucket"
   type        = string
   sensitive   = true
-  default     = "password"
+  default     = ""
 }
 
 variable "endpoint" {
   description = "Endpoint the S3 backup exists at. Leave empty to derive endpoint from region: `https://s3.{region}.amazonaws.com`"
   type        = string
-  default     = "https://10.10.0.27:9000"
+  default     = ""
 }
 
 variable "bucket" {
   description = "Bucket name to store PostgreSQL backups in"
   type        = string
-  default     = "anvil"
+  default     = ""
 }
 
 variable "region" {
   description = "The AWS region the S3 bucket is in"
   type        = string
-  default     = "anvil"
+  default     = ""
 }
