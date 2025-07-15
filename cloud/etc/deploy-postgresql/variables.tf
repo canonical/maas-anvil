@@ -65,3 +65,60 @@ variable "max_connections_per_region" {
   type        = number
   default     = 50
 }
+
+variable "charm_s3_integrator_channel" {
+  description = "Operator channel for S3 Integrator deployment"
+  type        = string
+  default     = "2/edge"
+}
+
+variable "charm_s3_integrator_revision" {
+  description = "Operator channel revision for S3 Integrator deployment"
+  type        = number
+  # default     = null
+  # This version contains: https://github.com/canonical/object-storage-integrators/pull/36
+  default = 165
+}
+
+variable "charm_s3_integrator_config" {
+  description = "Operator config for S3 Integrator deployment"
+  type        = map(string)
+  default     = {}
+}
+
+variable "s3_enabled" {
+  description = "Whether we should enable s3 integration"
+  type        = bool
+  default     = false
+}
+
+variable "access_key" {
+  description = "Access key used to access the S3 backup bucket"
+  type        = string
+  default     = ""
+}
+
+variable "secret_key" {
+  description = "Secret key used to access the S3 backup bucket"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "endpoint" {
+  description = "Endpoint the S3 backup exists at. Leave empty to derive endpoint from region: `https://s3.{region}.amazonaws.com`"
+  type        = string
+  default     = ""
+}
+
+variable "bucket" {
+  description = "Bucket name to store PostgreSQL backups in"
+  type        = string
+  default     = ""
+}
+
+variable "region" {
+  description = "The AWS region the S3 bucket is in"
+  type        = string
+  default     = ""
+}

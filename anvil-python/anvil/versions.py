@@ -16,6 +16,7 @@
 MAAS_REGION_CHANNEL = "3.6/edge"
 MAAS_AGENT_CHANNEL = "3.6/edge"
 POSTGRESQL_CHANNEL = "16/beta"
+S3_CHANNEL = "2/edge"
 HAPROXY_CHANNEL = "latest/stable"
 KEEPALIVED_CHANNEL = "latest/stable"
 
@@ -25,6 +26,7 @@ MACHINE_CHARMS = {
     "haproxy": HAPROXY_CHANNEL,
     "postgresql": POSTGRESQL_CHANNEL,
     "keepalived": KEEPALIVED_CHANNEL,
+    "s3-integrator": S3_CHANNEL,
 }
 K8S_CHARMS: dict[str, str] = {}
 
@@ -45,6 +47,11 @@ DEPLOY_MAAS_REGION_TFVAR_MAP = {
             "channel": "charm_maas_region_channel",
             "revision": "charm_maas_region_revision",
             "config": "charm_maas_region_config",
+        },
+        "s3-integrator": {
+            "channel": "charm_s3_integrator_channel",
+            "revision": "charm_s3_integrator_revision",
+            "config": "charm_s3_integrator_config",
         },
     }
 }
@@ -80,7 +87,12 @@ DEPLOY_POSTGRESQL_TFVAR_MAP = {
             "channel": "charm_postgresql_channel",
             "revision": "charm_postgresql_revision",
             "config": "charm_postgresql_config",
-        }
+        },
+        "s3-integrator": {
+            "channel": "charm_s3_integrator_channel",
+            "revision": "charm_s3_integrator_revision",
+            "config": "charm_s3_integrator_config",
+        },
     }
 }
 
