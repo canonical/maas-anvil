@@ -35,6 +35,18 @@ locals {
   ssl_cert_content   = var.ssl_cert_content != "" ? { ssl_cert_content = var.ssl_cert_content } : {}
   ssl_key_content    = var.ssl_key_content != "" ? { ssl_key_content = var.ssl_key_content } : {}
   ssl_cacert_content = var.ssl_cacert_content != "" ? { ssl_cacert_content = var.ssl_cacert_content } : {}
+
+  s3_config = merge(
+    {
+      "endpoint" = coalesce(var.endpoint, "https://s3.${var.region}.amazonaws.com")
+      "bucket"   = var.bucket
+      "path"     = "/postgresql"
+      "region"   = var.region
+    },
+    var.charm_s3_integrator_config,
+  )
+
+  s3_enabled = var.s3_enabled ? 1 : 0
 }
 
 resource "juju_application" "maas-region" {
@@ -88,5 +100,67 @@ resource "juju_integration" "maas-region-haproxy" {
   application {
     name     = "haproxy"
     endpoint = "reverseproxy"
+  }
+}
+
+# Configure S3 if desired
+resource "juju_secret" "s3_credentials" {
+  count = local.s3_enabled
+
+  model = data.juju_model.machine_model.name
+  name  = "s3_credentials"
+
+  value = {
+    "access-key" = var.access_key
+    "secret-key" = var.secret_key
+  }
+  info = "Credentials used to access S3"
+}
+
+resource "juju_application" "s3_integrator" {
+  count = local.s3_enabled
+
+  name  = "s3-integrator"
+  model = data.juju_model.machine_model.name
+
+  # TODO: This one should go away when we move out of manual cloud
+  placement = "0"
+
+  charm {
+    name     = "s3-integrator-region"
+    channel  = var.charm_s3_integrator_channel
+    revision = var.charm_s3_integrator_revision
+    base     = "ubuntu@24.04"
+  }
+
+  config = merge(
+    local.s3_config,
+    { "credentials" = "secret:${juju_secret.s3_credentials[0].secret_id}" },
+  )
+
+  constraints = "arch=${var.arch}"
+}
+
+resource "juju_access_secret" "s3_credentials" {
+  count = local.s3_enabled
+
+  model        = data.juju_model.machine_model.name
+  applications = [juju_application.s3_integrator[0].name]
+  secret_id    = juju_secret.s3_credentials[0].secret_id
+}
+
+resource "juju_integration" "maas_region_s3_integration" {
+  count = local.s3_enabled
+
+  model = data.juju_model.machine_model.name
+
+  application {
+    name     = juju_application.s3_integrator[0].name
+    endpoint = "s3-credentials"
+  }
+
+  application {
+    name     = juju_application.maas-region.name
+    endpoint = "s3-parameters"
   }
 }
