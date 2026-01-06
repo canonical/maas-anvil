@@ -146,7 +146,7 @@ pymacaroons==0.13.0
     # via macaroonbakery
 pymongo==4.13.2
     # via python-libmaas
-pynacl==1.5.0
+pynacl==1.6.2
     # via
     #   macaroonbakery
     #   paramiko
