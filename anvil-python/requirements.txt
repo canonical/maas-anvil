@@ -127,7 +127,7 @@ ptyprocess==0.7.0
     # via pexpect
 pwgen==0.8.2.post0
     # via sunbeam
-pyasn1==0.6.1
+pyasn1==0.6.2
     # via
     #   juju
     #   pyasn1-modules
