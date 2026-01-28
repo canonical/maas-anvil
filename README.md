@@ -2,8 +2,8 @@
 
 MAAS Anvil is a snap for managing a charmed (HA) MAAS deployment.
 
-> [!IMPORTANT]
-> MAAS Anvil is currently in a closed beta stage, approaching production stability
+> [!WARNING]
+> This version of MAAS Anvil is **no longer maintained**. It will be superseded by a Terraform-driven solution for deploying charmed MAAS. Please see [this repository](https://github.com/canonical/maas-terraform-modules) for the current implementation.
 
 **MAAS Deployment Components**
 
