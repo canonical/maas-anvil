@@ -43,7 +43,7 @@ colorclass==2.2.2
     # via python-libmaas
 croniter==6.0.0
     # via sunbeam
-cryptography==45.0.5
+cryptography==46.0.6
     # via paramiko
 dnspython==2.7.0
     # via pymongo
