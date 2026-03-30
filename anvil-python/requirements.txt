@@ -140,7 +140,7 @@ pydantic==1.10.14
     # via
     #   anvil (pyproject.toml)
     #   sunbeam
-pygments==2.19.2
+pygments==2.20.0
     # via rich
 pymacaroons==0.13.0
     # via macaroonbakery
