@@ -53,7 +53,7 @@ frozenlist==1.7.0
     #   aiosignal
 gitdb==4.0.12
     # via gitpython
-gitpython==3.1.44
+gitpython==3.1.50
     # via sunbeam
 google-auth==2.40.3
     # via kubernetes
