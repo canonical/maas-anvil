@@ -65,7 +65,7 @@ httpx==0.28.1
     # via lightkube
 hvac==2.3.0
     # via juju
-idna==3.10
+idna==3.15
     # via
     #   anyio
     #   httpx
